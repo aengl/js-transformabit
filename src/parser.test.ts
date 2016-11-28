@@ -1,5 +1,5 @@
 import { Parser } from './parser';
-import * as ast from '../typings/ast-types';
+import * as ast from 'ast-types';
 const j = require('jscodeshift');
 
 describe('node', () => {
