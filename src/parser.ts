@@ -5,6 +5,8 @@ import * as estree from 'estree';
 import * as ast from 'ast-types';
 import js = require('jscodeshift');
 
+type TypeIdentifier = (estree.Node | ast.Type | string);
+
 const t = ast.namedTypes;
 
 const isCollection = (node: any) => node.constructor.name === 'Collection';
@@ -34,11 +36,27 @@ export class AtomistNode {
         }
     }
 
-    get type(): string {
-        if (this._node instanceof Array) {
-            throw new Error('Can\'t query type from a node collection');
+    size(): number {
+        if (this._path instanceof Array) {
+            return this._path.length;
         } else {
-            return this._node.type;
+            return 1;
+        }
+    }
+
+    at(index: number): AtomistNode {
+        return new AtomistNode(this.pathAt(index));
+    }
+
+    nodeAt(index: number): estree.Node {
+        if (this._node instanceof Array) {
+            return this._node[index];
+        }
+    }
+
+    pathAt(index: number): ast.Path {
+        if (this._path instanceof Array) {
+            return this._path[index];
         }
     }
 
@@ -46,8 +64,24 @@ export class AtomistNode {
         return js(this._node).toSource();
     }
 
-    findChildOfType(type: ast.Type, attr?: {}): AtomistNode {
-        return new AtomistNode(js(this._node).find(type, attr));
+    getPath(): ast.Path {
+        return js(this._path).get();
+    }
+
+    getNode(): estree.Node {
+        return this.getPath().value;
+    }
+
+    getType(): string {
+        return this.getPath().value.type;
+    }
+
+    findChildrenOfType(type: TypeIdentifier, attr?: {}): AtomistNode {
+        return new AtomistNode(js(this._path).find(type, attr));
+    }
+
+    findClosestParentOfType(type: TypeIdentifier, attr?: {}): AtomistNode {
+        return new AtomistNode(js(this._path).closest(type, attr));
     }
 
     isFile(): boolean {

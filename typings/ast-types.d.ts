@@ -47,6 +47,10 @@ declare module 'ast-types' {
     }
 
     class Path {
+        value: estree.Node;
+        parentPath: Path;
+        name: string;
+
         constructor(value: Path, parentPath?: Path, name?: string);
         getValueProperty(name: string): string;
         get(name: string): string;
