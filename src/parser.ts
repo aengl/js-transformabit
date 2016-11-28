@@ -1,9 +1,8 @@
-/// <reference path="../typings/ast-types.d.ts" />
 /// <reference path="../typings/jscodeshift.d.ts" />
 
 import * as estree from 'estree';
 import * as ast from 'ast-types';
-import js = require('jscodeshift');
+import * as js from 'jscodeshift';
 
 type TypeIdentifier = (estree.Node | ast.Type | string);
 
@@ -17,6 +16,7 @@ export class AtomistNode {
     _node: estree.Node | Array<estree.Node>;
     _path: ast.Path | Array<ast.Path>;
 
+    // constructor(obj: (string | ast.Path | js.Collection)) {
     constructor(obj: any) {
         if (isCollection(obj)) {
             this._node = obj.nodes();

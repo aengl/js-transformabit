@@ -4,15 +4,21 @@
  * https://github.com/facebook/jscodeshift
  */
 
-declare module "jscodeshift" {
+/// <reference path="ast-types.d.ts" />
+
+declare module 'jscodeshift' {
+
     import * as ast from 'ast-types';
     import * as estree from 'estree';
+
     export = jscodeshift;
 
     type ConvertibleToCollection =
         (string | estree.Node | Array<estree.Node> | ast.Path | Array<ast.Path> | Collection);
 
-    function jscodeshift(obj: ConvertibleToCollection, options?: Object): Collection;
+    var jscodeshift: {
+        (obj: ConvertibleToCollection, options?: Object): Collection;
+    };
 
     class Collection {
         constructor(paths: Array<ast.Path>, parent: Collection, types?: Array<any>);
