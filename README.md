@@ -4,7 +4,7 @@
 
 ## Building
 
-Run `npm run build` or `npm run build-watch`.
+Run `npm run build` or `npm run build-watch` or `tsc`.
 
 ## Testing
 

@@ -4,6 +4,7 @@
         "outDir": "./dist/",
         "sourceMap": true,
         "noImplicitAny": true,
+        "noUnusedLocals": true,
         "removeComments": true,
         "module": "commonjs",
         "target": "es5",

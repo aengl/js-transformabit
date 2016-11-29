@@ -4,8 +4,8 @@
   "description": "A collection of utilities for writing JS editors for Atomist.",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --m commonjs typings/jscodeshift.d.ts",
-    "build-watch": "tsc -w --m commonjs typings/jscodeshift.d.ts",
+    "build": "tsc",
+    "build-watch": "tsc -w",
     "test": "jest",
     "test-watch": "jest --watch"
   },
