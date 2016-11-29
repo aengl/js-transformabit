@@ -1,5 +1,5 @@
 {
-  "name": "atomist-js",
+  "name": "js-transformabit",
   "version": "0.1.0",
   "description": "A collection of utilities for writing JS editors for Atomist.",
   "main": "index.js",

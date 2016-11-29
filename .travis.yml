@@ -1,0 +1,8 @@
+language: typescript
+node_js:
+  - "node"
+before_script:
+  - npm install
+script:
+  - tsc
+  - npm test
