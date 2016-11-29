@@ -3,6 +3,7 @@
 import { Node, Path, Type, Program, namedTypes as t } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 
+import ast = require('ast-types');
 import js = require('jscodeshift');
 
 type TypeIdentifier = (Node | Type | string);
@@ -145,5 +146,32 @@ export class JsNode {
     findClosestScope(): JsNode {
         console.assert(this._path);
         return new JsNode(js(this._path).closestScope());
+    }
+
+    /**
+     * Descends the AST and returns the next node that satisfies the
+     * acceptCallback callback.
+     */
+    descend(acceptCallback?: (node: JsNode) => boolean): JsNode {
+        let skip = true;
+        let result: Path;
+        ast.visit(this._node, {
+            visitNode: function(p: Path) {
+                if (skip) {
+                    // This skips the node itself (just traverses children)
+                    skip = false;
+                    this.traverse(p);
+                } else {
+                    let node = new JsNode(p);
+                    if (acceptCallback === undefined || acceptCallback(node)) {
+                        result = p;
+                        return false;
+                    } else {
+                        this.traverse(p);
+                    }
+                }
+            }
+        });
+        return new JsNode(result);
     }
 }

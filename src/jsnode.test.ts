@@ -47,4 +47,12 @@ describe('node', () => {
         expect(node.getType()).toBe(t.FunctionDeclaration.toString());
         expect(node.format()).toBe(code);
     });
+
+    it('descend', () => {
+        let code = 'let foo = 42;';
+        let node = JsNode.fromCode(code).at(0).descend();
+        expect(node.format()).toBe('foo = 42');
+        node = new JsNode(code).descend(node => node.check(t.Literal));
+        expect(node.format()).toBe('42');
+    });
 });
