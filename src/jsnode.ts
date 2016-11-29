@@ -1,10 +1,9 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import * as estree from 'estree';
 import * as ast from 'ast-types';
 import * as js from 'jscodeshift';
 
-type TypeIdentifier = (estree.Node | ast.Type | string);
+type TypeIdentifier = (ast.Node | ast.Type | string);
 
 const t = ast.namedTypes;
 
@@ -12,12 +11,15 @@ const isCollection = (node: any) => node.constructor.name === 'Collection';
 const isPath = (node: any) => node instanceof ast.Path;
 const isNode = (node: any) => !!node.type;
 
-export class AtomistNode {
-    _node: estree.Node | Array<estree.Node>;
+export default class JsNode {
+    _node: ast.Node | Array<ast.Node>;
     _path: ast.Path | Array<ast.Path>;
 
     // constructor(obj: (string | ast.Path | js.Collection)) {
-    constructor(obj: any) {
+    constructor(obj: any, args?: Object) {
+        if (typeof(obj) === 'string') {
+            obj = js(obj, args);
+        }
         if (isCollection(obj)) {
             this._node = obj.nodes();
             this._path = obj.paths();
@@ -44,11 +46,11 @@ export class AtomistNode {
         }
     }
 
-    at(index: number): AtomistNode {
-        return new AtomistNode(this.pathAt(index));
+    at(index: number): JsNode {
+        return new JsNode(this.pathAt(index));
     }
 
-    nodeAt(index: number): estree.Node {
+    nodeAt(index: number): ast.Node {
         if (this._node instanceof Array) {
             return this._node[index];
         }
@@ -68,7 +70,7 @@ export class AtomistNode {
         return js(this._path).get();
     }
 
-    getNode(): estree.Node {
+    getNode(): ast.Node {
         return this.getPath().value;
     }
 
@@ -76,21 +78,15 @@ export class AtomistNode {
         return this.getPath().value.type;
     }
 
-    findChildrenOfType(type: TypeIdentifier, attr?: {}): AtomistNode {
-        return new AtomistNode(js(this._path).find(type, attr));
+    findChildrenOfType(type: TypeIdentifier, attr?: {}): JsNode {
+        return new JsNode(js(this._path).find(type, attr));
     }
 
-    findClosestParentOfType(type: TypeIdentifier, attr?: {}): AtomistNode {
-        return new AtomistNode(js(this._path).closest(type, attr));
+    findClosestParentOfType(type: TypeIdentifier, attr?: {}): JsNode {
+        return new JsNode(js(this._path).closest(type, attr));
     }
 
     isFile(): boolean {
         return t.File.check(this._node);
-    }
-}
-
-export namespace Parser {
-    export function parse(code: string): AtomistNode {
-        return new AtomistNode(js(code));
     }
 }
