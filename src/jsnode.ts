@@ -1,8 +1,9 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
 import { Node, Path, Type, Program, namedTypes as t } from 'ast-types';
-import js = require('jscodeshift');
 import { Collection } from 'jscodeshift-collection';
+
+import js = require('jscodeshift');
 
 type TypeIdentifier = (Node | Type | string);
 
@@ -122,7 +123,7 @@ export class JsNode {
     /**
      * Returns true if the node type matches the specified type.
      */
-    check(type: any) {
+    check(type: TypeIdentifier) {
         return this.getType() === type.toString();
     }
 

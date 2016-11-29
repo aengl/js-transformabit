@@ -12,6 +12,17 @@ declare module 'ast-types' {
 
     type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
 
+    function defineMethod(name: string, func: Function): Function;
+    function getFieldNames(object: Node): string[];
+    function getFieldValue(object: Node, fieldName: string): any;
+    function eachField(object: Node, callback: (name: string, value: any) => void, context?: Object): void;
+    function someField(object: Node, callback: (name: string, value: any) => void, context?: Object): string[];
+    function getSupertypeNames(typeName: string): string;
+    function astNodesAreEquivalent(): void;
+    function finalize(): void;
+    function use(plugin: any): any;
+    function visit(node: Node, methods: Object): void; // TODO: return PathVisitor
+
     class Type {
         static or(...args: Array<ConvertibleToType>): Type;
         static fromArray(arr: Array<ConvertibleToType>): Type;
@@ -68,8 +79,6 @@ declare module 'ast-types' {
         insertAfter(node: Path): Path;
         replace(replacement: Path): Array<Path>;
     }
-
-    function getSupertypeNames(typeName: string): string;
 
     var builtInTypes: {
         string: Type,
