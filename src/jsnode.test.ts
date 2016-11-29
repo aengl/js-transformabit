@@ -29,4 +29,13 @@ describe('node', () => {
         let declaration = identifier.findClosestParentOfType(t.Declaration);
         expect(declaration.format()).toBe(code);
     });
+
+    it('find closest scope', () => {
+        let code = 'function foo() { let foo = 42; }';
+        let node = new JsNode(code)
+            .findChildrenOfType(t.VariableDeclaration)
+            .findClosestScope();
+        expect(node.getType()).toBe(t.FunctionDeclaration.toString());
+        expect(node.format()).toBe(code);
+    });
 });

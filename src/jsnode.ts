@@ -113,6 +113,10 @@ export default class JsNode {
         return new JsNode(js(this._path).closest(type, attr));
     }
 
+    findClosestScope(): JsNode {
+        return new JsNode(js(this._path).closestScope());
+    }
+
     isFile(): boolean {
         return t.File.check(this._node);
     }
