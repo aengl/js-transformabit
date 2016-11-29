@@ -11,6 +11,12 @@ const isCollection = (node: any) => node.constructor.name === 'Collection';
 const isPath = (node: any) => node instanceof ast.Path;
 const isNode = (node: any) => !!node.type;
 
+/**
+ * Represents a node in the AST tree.
+ *
+ * Note that some nodes can be a collection (e.g. a program, or the body of a
+ * class).
+ */
 export default class JsNode {
     _node: ast.Node | Array<ast.Node>;
     _path: ast.Path | Array<ast.Path>;
@@ -38,6 +44,10 @@ export default class JsNode {
         }
     }
 
+    /**
+     * Returns the number of nodes at the root of the AST, or 1 if the root
+     * is not a collection of nodes.
+     */
     size(): number {
         if (this._path instanceof Array) {
             return this._path.length;
@@ -46,34 +56,51 @@ export default class JsNode {
         }
     }
 
+    /**
+     * If the node represents a collection of nodes, this method will pick the
+     * node at a specified index.
+     */
     at(index: number): JsNode {
-        return new JsNode(this.pathAt(index));
-    }
-
-    nodeAt(index: number): ast.Node {
-        if (this._node instanceof Array) {
-            return this._node[index];
+        let path = this.pathAt(index);
+        if (!path) {
+            throw new Error('The current node does not represent a collection');
         }
+        return new JsNode(path);
     }
 
-    pathAt(index: number): ast.Path {
-        if (this._path instanceof Array) {
-            return this._path[index];
-        }
-    }
-
-    print(): string {
+    /**
+     * Returns the source code for the AST.
+     */
+    format(): string {
         return js(this._node).toSource();
     }
 
+    /**
+     * Returns a path object for the current AST root.
+     *
+     * For more information about Paths, see:
+     * https://github.com/benjamn/ast-types
+     */
     getPath(): ast.Path {
         return js(this._path).get();
     }
 
+    /**
+     * Returns a node object for the current AST root.
+     *
+     * For more information about Paths, see:
+     * https://github.com/benjamn/ast-types
+     */
     getNode(): ast.Node {
         return this.getPath().value;
     }
 
+    /**
+     * Returns the type string for the current AST root, as specified by the
+     * Mozilla Parser API:
+     *
+     * https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
+     */
     getType(): string {
         return this.getPath().value.type;
     }
@@ -88,5 +115,14 @@ export default class JsNode {
 
     isFile(): boolean {
         return t.File.check(this._node);
+    }
+
+    private pathAt(index: number): ast.Path {
+        if (this._path instanceof Array) {
+            if (index >= this._path.length) {
+                throw new Error('Index out of bounds');
+            }
+            return this._path[index];
+        }
     }
 }

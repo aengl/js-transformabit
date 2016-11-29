@@ -9,7 +9,7 @@ describe('node', () => {
         let node = new JsNode(code);
         expect(node.getType()).toBe('File');
         expect(node.isFile()).toBe(true);
-        expect(node.print()).toBe(code);
+        expect(node.format()).toBe(code);
     });
 
     it('find child', () => {
@@ -17,16 +17,16 @@ describe('node', () => {
         let node = new JsNode(code);
         let identifiers = node.findChildrenOfType(t.Identifier);
         expect(identifiers.size()).toBe(2);
-        expect(identifiers.at(0).print()).toBe('foo');
-        expect(identifiers.at(1).print()).toBe('bar');
+        expect(identifiers.at(0).format()).toBe('foo');
+        expect(identifiers.at(1).format()).toBe('bar');
     });
 
     it('find closest parent', () => {
         let code = 'let foo = 42;';
         let node = new JsNode(code);
         let identifier = node.findChildrenOfType(t.Identifier);
-        expect(identifier.print()).toBe('foo');
+        expect(identifier.format()).toBe('foo');
         let declaration = identifier.findClosestParentOfType(t.Declaration);
-        expect(declaration.print()).toBe(code);
+        expect(declaration.format()).toBe(code);
     });
 });
