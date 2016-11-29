@@ -5,18 +5,17 @@
  */
 
 declare module 'ast-types' {
-
     import * as estree from 'estree';
 
     type Node = estree.Node;
     type Assignable = (Literal | Identifier);
 
-    type ConvertibleToType = (Type | Def | estree.Node | Array<Type | Def | estree.Node>);
+    type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
 
     class Type {
         static or(...args: Array<ConvertibleToType>): Type;
         static fromArray(arr: Array<ConvertibleToType>): Type;
-        static fromObject(obj: estree.Node): Type;
+        static fromObject(obj: Node): Type;
         static def(typeName: string): Type;
 
         name: string;
@@ -31,16 +30,16 @@ declare module 'ast-types' {
     class Field {
         constructor(name: string, type: ConvertibleToType, defaultFn: Function, hidden?: Boolean);
         toString(): string;
-        getValue(obj: estree.Node): any;
+        getValue(obj: Node): any;
     }
 
     class Def {
-        static fromValue(value: estree.Node): (Def | void);
+        static fromValue(value: Node): (Def | void);
 
         constructor(typeName: string);
         isSupertypeOf(that: Def): boolean;
-        checkAllFields(value: estree.Node, deep: boolean): boolean;
-        check(value: estree.Node, deep?: boolean): boolean;
+        checkAllFields(value: Node, deep: boolean): boolean;
+        check(value: Node, deep?: boolean): boolean;
         bases(): Def;
         build(...args: any[]): Def;
         getBuilderName(typeName: string): string;
@@ -50,7 +49,7 @@ declare module 'ast-types' {
     }
 
     class Path {
-        value: estree.Node;
+        value: Node;
         parentPath: Path;
         name: string;
 
@@ -283,11 +282,11 @@ declare module 'ast-types' {
         ForAwaitStatement: Type
     };
 
-    var builders: {[name: string]: (...args: Array<any>) => estree.Node};
+    var builders: {[name: string]: (...args: Array<any>) => Node};
 
     // type Printable = estree.Printable;
     type SourceLocation = estree.SourceLocation;
-    // type Node = estree.Node;
+    // type Node = Node;
     type Comment = estree.Comment;
     type Position = estree.Position;
     // type File = estree.File;
