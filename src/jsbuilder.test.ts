@@ -23,4 +23,24 @@ describe('builder', () => {
         builder.literal(67);
     });
 
+    it('function declaration', () => {
+        let builder = new JsBuilder();
+        builder.functionDeclaration("sayHello");
+
+        let paramsAsIdentifiers: ast.Identifier[] = [
+          builder.identifier("to"),
+          builder.identifier("from")
+        ];
+        builder.functionDeclaration("sayHello", paramsAsIdentifiers);
+
+        let paramsAsStrings: string[] = ["to", "from"];
+        builder.functionDeclaration("sayHello", paramsAsStrings);
+    });
+
+    it('block statement', () => {
+        let builder = new JsBuilder();
+        builder.blockStatement();
+    });
+
+
 });
