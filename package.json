@@ -9,10 +9,8 @@
     "test": "jest",
     "test-watch": "jest --watch"
   },
-  "author": "Andreas Engl <aen@trifork.com>",
-  "license": "ISC",
   "devDependencies": {
-    "@types/esprima": "^2.1.33",
+    "@types/estree": "0.0.34",
     "@types/jest": "^16.0.0",
     "@types/node": "^6.0.51",
     "jest": "^17.0.3",
