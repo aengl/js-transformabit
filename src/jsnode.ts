@@ -2,10 +2,11 @@
 
 import { Node, Path, Type, Program, namedTypes as t } from 'ast-types';
 import js = require('jscodeshift');
+import { Collection } from 'jscodeshift-collection';
 
 type TypeIdentifier = (Node | Type | string);
 
-const isCollection = (obj: any) => obj.constructor.name === 'Collection';
+const isCollection = (obj: any): obj is Collection => obj.constructor.name === 'Collection';
 const isPath = (obj: any): obj is Path => obj instanceof Path;
 // const isNode = (obj: any): obj is Node => !!obj.type;
 
@@ -58,16 +59,14 @@ export class JsNode {
         return new JsNodeCollection(program.body);
     }
 
-    // TODO: I can't seem to get access to the Collection declaration :(
-    // All the 'any's in this file should actually be js.Collection!
-    constructor(obj: (string | any | Path | Node), args?: Object) {
+    constructor(obj: (string | Collection | Path | Node), args?: Object) {
         if (typeof(obj) === 'string') {
             let collection = js(obj, args);
             this._node = collection.nodes()[0];
             this._path = collection.get();
         } else if (isCollection(obj)) {
-            this._node = (<any>obj).nodes()[0];
-            this._path = (<any>obj).get();
+            this._node = obj.nodes()[0];
+            this._path = obj.get();
         } else if (isPath(obj)) {
             this._node = obj.value;
             this._path = obj;
