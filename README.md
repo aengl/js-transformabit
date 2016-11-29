@@ -2,7 +2,7 @@
 
 ## Building
 
-Run `npm build` or `npm run build-watch`.
+Run `npm build` or `npm run build-watch` or `tsc`.
 
 ## Testing
 
