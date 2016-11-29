@@ -19,7 +19,7 @@ export class JsNodeCollection {
 
     constructor(obj: any) {
         if (obj instanceof Array) {
-            this._paths = obj;
+            this._paths = js(obj).paths();
         } else if (isCollection(obj)) {
             this._paths = obj.paths();
         }
@@ -55,9 +55,10 @@ export class JsNode {
         return new JsNode(code);
     }
 
-    // static fromCode(code: string): JsNodeCollection {
-    //     let program = new JsNode(code).findFirstChildOfType(t.Program).getNode();
-    // }
+    static fromCode(code: string): JsNodeCollection {
+        let program = <ast.Program>new JsNode(code).findFirstChildOfType(t.Program).getNode();
+        return new JsNodeCollection(program.body);
+    }
 
     // constructor(obj: (string | ast.Path | js.Collection)) {
     constructor(obj: any, args?: Object) {
@@ -119,6 +120,13 @@ export class JsNode {
         return this.getPath().value.type;
     }
 
+    /**
+     * Returns true if the node type matches the specified type.
+     */
+    check(type: any) {
+        return this.getType() === type.toString();
+    }
+
     findFirstChildOfType(type: TypeIdentifier, attr?: {}): JsNode {
         let collection = js(this._path).find(type, attr);
         return new JsNode(collection.get());
@@ -135,9 +143,5 @@ export class JsNode {
 
     findClosestScope(): JsNode {
         return new JsNode(js(this._path).closestScope());
-    }
-
-    isFile(): boolean {
-        return t.File.check(this._node);
     }
 }

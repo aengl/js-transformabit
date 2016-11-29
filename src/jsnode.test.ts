@@ -4,12 +4,21 @@ import { JsNode } from './jsnode';
 const t = ast.namedTypes;
 
 describe('node', () => {
-    it('parse & print', () => {
+    it('create & print', () => {
         let code = 'const foo = 42;';
-        let node = new JsNode(code);
-        expect(node.getType()).toBe('File');
-        expect(node.isFile()).toBe(true);
-        expect(node.format()).toBe(code);
+        expect(new JsNode(code).format()).toBe(code);
+    });
+
+    it('create from module', () => {
+        let code = 'const foo = 42;';
+        let node = JsNode.fromModuleCode(code);
+        expect(node.check(t.File)).toBe(true);
+    });
+
+    it('create from code', () => {
+        let code = 'const foo = 42;';
+        let node = JsNode.fromCode(code).at(0);
+        expect(node.check(t.VariableDeclaration)).toBe(true);
     });
 
     it('find child', () => {
