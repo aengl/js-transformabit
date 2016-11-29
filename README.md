@@ -1,3 +1,9 @@
-# atomist-js
+# js-transformabit
 
-A warm and fuzzy place.
+## Building
+
+Run `npm build` or `npm run build-watch`.
+
+## Testing
+
+Run `npm test` or `npm run test-watch`.

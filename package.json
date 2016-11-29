@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "build-watch": "tsc -wp",
     "test": "jest",
     "test-watch": "jest --watch"
   },
