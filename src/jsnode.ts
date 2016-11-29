@@ -12,14 +12,52 @@ const isPath = (node: any) => node instanceof ast.Path;
 const isNode = (node: any) => !!node.type;
 
 /**
- * Represents a node in the AST tree.
- *
- * Note that some nodes can be a collection (e.g. a program, or the body of a
- * class).
+ * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
-export default class JsNode {
-    _node: ast.Node | Array<ast.Node>;
-    _path: ast.Path | Array<ast.Path>;
+export class JsNodeCollection {
+    _paths: Array<ast.Path>;
+
+    constructor(obj: any) {
+        if (obj instanceof Array) {
+            this._paths = obj;
+        } else if (isCollection(obj)) {
+            this._paths = obj.paths();
+        }
+    }
+
+    /**
+     * Returns the number of nodes in the collection.
+     */
+    size(): number {
+        return this._paths.length;
+    }
+
+    /**
+     * If the node represents a collection of nodes, this method will pick the
+     * node at a specified index.
+     */
+    at(index: number): JsNode {
+        if (index >= this._paths.length) {
+            throw new Error('Index out of bounds');
+        }
+        return new JsNode(this._paths[index]);
+    }
+}
+
+/**
+ * Represents a node in the AST tree.
+ */
+export class JsNode {
+    _node: ast.Node;
+    _path: ast.Path;
+
+    static fromModuleCode(code: string): JsNode {
+        return new JsNode(code);
+    }
+
+    // static fromCode(code: string): JsNodeCollection {
+    //     let program = new JsNode(code).findFirstChildOfType(t.Program).getNode();
+    // }
 
     // constructor(obj: (string | ast.Path | js.Collection)) {
     constructor(obj: any, args?: Object) {
@@ -27,8 +65,8 @@ export default class JsNode {
             obj = js(obj, args);
         }
         if (isCollection(obj)) {
-            this._node = obj.nodes();
-            this._path = obj.paths();
+            this._node = obj.nodes()[0];
+            this._path = obj.get();
         } else if (isPath(obj)) {
             this._node = obj.node;
             this._path = obj;
@@ -45,30 +83,6 @@ export default class JsNode {
     }
 
     /**
-     * Returns the number of nodes at the root of the AST, or 1 if the root
-     * is not a collection of nodes.
-     */
-    size(): number {
-        if (this._path instanceof Array) {
-            return this._path.length;
-        } else {
-            return 1;
-        }
-    }
-
-    /**
-     * If the node represents a collection of nodes, this method will pick the
-     * node at a specified index.
-     */
-    at(index: number): JsNode {
-        let path = this.pathAt(index);
-        if (!path) {
-            throw new Error('The current node does not represent a collection');
-        }
-        return new JsNode(path);
-    }
-
-    /**
      * Returns the source code for the AST.
      */
     format(): string {
@@ -82,7 +96,7 @@ export default class JsNode {
      * https://github.com/benjamn/ast-types
      */
     getPath(): ast.Path {
-        return js(this._path).get();
+        return this._path;
     }
 
     /**
@@ -92,7 +106,7 @@ export default class JsNode {
      * https://github.com/benjamn/ast-types
      */
     getNode(): ast.Node {
-        return this.getPath().value;
+        return this._node;
     }
 
     /**
@@ -105,8 +119,14 @@ export default class JsNode {
         return this.getPath().value.type;
     }
 
-    findChildrenOfType(type: TypeIdentifier, attr?: {}): JsNode {
-        return new JsNode(js(this._path).find(type, attr));
+    findFirstChildOfType(type: TypeIdentifier, attr?: {}): JsNode {
+        let collection = js(this._path).find(type, attr);
+        return new JsNode(collection.get());
+    }
+
+    findChildrenOfType(type: TypeIdentifier, attr?: {}): JsNodeCollection {
+        let collection = js(this._path).find(type, attr);
+        return new JsNodeCollection(collection);
     }
 
     findClosestParentOfType(type: TypeIdentifier, attr?: {}): JsNode {
@@ -119,14 +139,5 @@ export default class JsNode {
 
     isFile(): boolean {
         return t.File.check(this._node);
-    }
-
-    private pathAt(index: number): ast.Path {
-        if (this._path instanceof Array) {
-            if (index >= this._path.length) {
-                throw new Error('Index out of bounds');
-            }
-            return this._path[index];
-        }
     }
 }

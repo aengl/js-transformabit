@@ -1,5 +1,5 @@
 import * as ast from 'ast-types';
-import JsNode from './jsnode';
+import { JsNode } from './jsnode';
 
 const t = ast.namedTypes;
 
@@ -24,7 +24,7 @@ describe('node', () => {
     it('find closest parent', () => {
         let code = 'let foo = 42;';
         let node = new JsNode(code);
-        let identifier = node.findChildrenOfType(t.Identifier);
+        let identifier = node.findFirstChildOfType(t.Identifier);
         expect(identifier.format()).toBe('foo');
         let declaration = identifier.findClosestParentOfType(t.Declaration);
         expect(declaration.format()).toBe(code);
@@ -33,7 +33,7 @@ describe('node', () => {
     it('find closest scope', () => {
         let code = 'function foo() { let foo = 42; }';
         let node = new JsNode(code)
-            .findChildrenOfType(t.VariableDeclaration)
+            .findFirstChildOfType(t.VariableDeclaration)
             .findClosestScope();
         expect(node.getType()).toBe(t.FunctionDeclaration.toString());
         expect(node.format()).toBe(code);
