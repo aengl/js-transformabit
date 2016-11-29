@@ -6,33 +6,29 @@
 
 /// <reference path="ast-types.d.ts" />
 
-declare module 'jscodeshift' {
+/**
+ * This top level import makes TypeScript think that this is a module and would
+ * normally cause typings to fail. We override this behaviour using a compiler
+ * flag, see this for details: http://stackoverflow.com/questions/37641960/
+ */
+import { Node, Path } from 'ast-types';
 
-    import * as ast from 'ast-types';
-    import * as estree from 'estree';
+type ConvertibleToCollection = (string | Node | Array<Node> | Path | Array<Path>);
 
-    export = jscodeshift;
-
-    type ConvertibleToCollection =
-        (string | estree.Node | Array<estree.Node> | ast.Path | Array<ast.Path> | Collection);
-
-    var jscodeshift: {
-        (obj: ConvertibleToCollection, options?: Object): Collection;
-    };
-
+export namespace jscodeshift {
     class Collection {
-        constructor(paths: Array<ast.Path>, parent: Collection, types?: Array<any>);
-        filter(callback: (childPath: ast.Path) => boolean): Collection;
-        forEach(callback: (path: ast.Path, i: number, paths: Array<ast.Path>) => void): void;
-        map(callback: (path: ast.Path, ...args: Array<any>) => (ast.Path | Array<ast.Path>), type: any, ...args: Array<any>): Collection;
+        constructor(paths: Array<Path>, parent: Collection, types?: Array<any>);
+        filter(callback: (childPath: Path) => boolean): Collection;
+        forEach(callback: (path: Path, i: number, paths: Array<Path>) => void): void;
+        map(callback: (path: Path, ...args: Array<any>) => (Path | Array<Path>), type: any, ...args: Array<any>): Collection;
         size(): number;
         length(): number;
-        nodes(): Array<estree.Node>;
-        paths(): Array<ast.Path>;
-        getAST(): Array<ast.Path>;
+        nodes(): Array<Node>;
+        paths(): Array<Path>;
+        getAST(): Array<Path>;
         toSource(options?: Object): string;
         at(index: number): Collection;
-        get(): ast.Path;
+        get(): Path;
         getTypes(): Array<string>;
         isOfType(type: any): boolean;
 
@@ -40,6 +36,13 @@ declare module 'jscodeshift' {
         find(type: any, filter: Object): Collection;
         closestScope(): Collection;
         closest(type: any, filter: Object): Collection;
-        getVariableDeclarators(nameGetter: (path: ast.Path, ...args: Array<any>) => string, ...args: Array<any>): Collection;
+        getVariableDeclarators(nameGetter: (path: Path, ...args: Array<any>) => string, ...args: Array<any>): Collection;
     }
+}
+
+declare module 'jscodeshift' {
+    var core: {
+        (obj: ConvertibleToCollection, options?: Object): jscodeshift.Collection;
+    };
+    export = core;
 }

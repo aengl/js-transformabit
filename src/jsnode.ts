@@ -1,21 +1,19 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import * as ast from 'ast-types';
-import * as js from 'jscodeshift';
+import { Node, Path, Type, Program, namedTypes as t } from 'ast-types';
+import js = require('jscodeshift');
 
-type TypeIdentifier = (ast.Node | ast.Type | string);
+type TypeIdentifier = (Node | Type | string);
 
-const t = ast.namedTypes;
-
-const isCollection = (node: any) => node.constructor.name === 'Collection';
-const isPath = (node: any) => node instanceof ast.Path;
-const isNode = (node: any) => !!node.type;
+const isCollection = (obj: any): obj is jscodeshift.Collection => obj.constructor.name === 'Collection';
+const isPath = (obj: any): obj is Path => obj instanceof Path;
+const isNode = (obj: any): obj is Node => !!obj.type;
 
 /**
- * Represents a collection of nodes. These nodes can be anywhere in the AST.
+ * Represents a collection of nodes. These nodes can be anywhere in the
  */
 export class JsNodeCollection {
-    _paths: Array<ast.Path>;
+    _paths: Array<Path>;
 
     constructor(obj: any) {
         if (obj instanceof Array) {
@@ -48,28 +46,28 @@ export class JsNodeCollection {
  * Represents a node in the AST tree.
  */
 export class JsNode {
-    _node: ast.Node;
-    _path: ast.Path;
+    _node: Node;
+    _path: Path;
 
-    static fromModuleCode(code: string): JsNode {
-        return new JsNode(code);
+    static fromModuleCode(code: string, args?: Object): JsNode {
+        return new JsNode(code, args);
     }
 
-    static fromCode(code: string): JsNodeCollection {
-        let program = <ast.Program>new JsNode(code).findFirstChildOfType(t.Program).getNode();
+    static fromCode(code: string, args?: Object): JsNodeCollection {
+        let program = <Program>new JsNode(code, args).findFirstChildOfType(t.Program).getNode();
         return new JsNodeCollection(program.body);
     }
 
-    // constructor(obj: (string | ast.Path | js.Collection)) {
-    constructor(obj: any, args?: Object) {
+    constructor(obj: (string | jscodeshift.Collection | Path | Node), args?: Object) {
         if (typeof(obj) === 'string') {
-            obj = js(obj, args);
-        }
-        if (isCollection(obj)) {
+            let collection = js(obj, args);
+            this._node = collection.nodes()[0];
+            this._path = collection.get();
+        } else if (isCollection(obj)) {
             this._node = obj.nodes()[0];
             this._path = obj.get();
         } else if (isPath(obj)) {
-            this._node = obj.node;
+            this._node = obj.value;
             this._path = obj;
         } else {
             this._node = obj;
@@ -84,7 +82,7 @@ export class JsNode {
     }
 
     /**
-     * Returns the source code for the AST.
+     * Returns the source code for the
      */
     format(): string {
         return js(this._node).toSource();
@@ -96,7 +94,7 @@ export class JsNode {
      * For more information about Paths, see:
      * https://github.com/benjamn/ast-types
      */
-    getPath(): ast.Path {
+    getPath(): Path {
         return this._path;
     }
 
@@ -106,7 +104,7 @@ export class JsNode {
      * For more information about Paths, see:
      * https://github.com/benjamn/ast-types
      */
-    getNode(): ast.Node {
+    getNode(): Node {
         return this._node;
     }
 
@@ -128,20 +126,22 @@ export class JsNode {
     }
 
     findFirstChildOfType(type: TypeIdentifier, attr?: {}): JsNode {
-        let collection = js(this._path).find(type, attr);
+        let collection = js(this._node).find(type, attr);
         return new JsNode(collection.get());
     }
 
     findChildrenOfType(type: TypeIdentifier, attr?: {}): JsNodeCollection {
-        let collection = js(this._path).find(type, attr);
+        let collection = js(this._node).find(type, attr);
         return new JsNodeCollection(collection);
     }
 
     findClosestParentOfType(type: TypeIdentifier, attr?: {}): JsNode {
+        console.assert(this._path);
         return new JsNode(js(this._path).closest(type, attr));
     }
 
     findClosestScope(): JsNode {
+        console.assert(this._path);
         return new JsNode(js(this._path).closestScope());
     }
 }
