@@ -1,7 +1,6 @@
 
 import * as ast from 'ast-types';
 
-const t = ast.namedTypes;
 
 export class JsBuilder {
 
@@ -56,7 +55,6 @@ export class JsBuilder {
     }
     return <ast.CallExpression>ast.builders["callExpression"](this.identifier(funcName), args);
   }
-
 
 }
 

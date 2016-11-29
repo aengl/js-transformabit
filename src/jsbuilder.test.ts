@@ -1,8 +1,6 @@
 import * as ast from 'ast-types';
 import { JsBuilder , VariableKind} from './jsbuilder';
 
-const t = ast.namedTypes;
-
 describe('builder', () => {
     it('variable without value', () => {
         let builder = new JsBuilder();
@@ -24,4 +22,5 @@ describe('builder', () => {
         builder.literal(true);
         builder.literal(67);
     });
+
 });
