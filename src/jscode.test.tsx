@@ -1,5 +1,15 @@
 
-import {VariableDeclaration, VariableDeclarator, VariableKind, Literal, Identifier, CallExpression, JsCode} from './jscode'
+import {
+  VariableDeclaration,
+  VariableDeclarator,
+  VariableKind,
+  Literal,
+  Identifier,
+  CallExpression,
+  BlockStatement,
+  FunctionDeclaration,
+  JsCode
+} from './jscode'
 
 
 
@@ -71,6 +81,62 @@ describe('jscode', () => {
       ) as CallExpression
 
       expect(toString.format()).toBe("toString(isTall(193, isMale))");
+    });
+
+    it('BlockStatement', () => {
+      let emptyBlock = (
+        <BlockStatement></BlockStatement>
+      ) as BlockStatement
+
+      expect(emptyBlock.format()).toBe("{}");
+
+      let simpleBlock = (
+        <BlockStatement>
+          <VariableDeclaration name="num" kind={VariableKind.Let}>
+            <Literal value={3}/>
+          </VariableDeclaration>
+        </BlockStatement>
+      ) as BlockStatement
+
+      expect(simpleBlock.format().replace(/\n/g, "")).toBe("{    let num = 3;}");
+    });
+
+
+    it('FunctionDeclaration', () => {
+      let empty = <FunctionDeclaration name="skip"/> as FunctionDeclaration
+      expect(empty.format()).toBe("function skip() {}");
+
+      let emptyWithParams = (
+        <FunctionDeclaration name="foo">
+          <Identifier name="bar"/>
+          <Identifier name="baz"/>
+        </FunctionDeclaration>
+      ) as FunctionDeclaration
+      expect(emptyWithParams.format()).toBe("function foo(bar, baz) {}");
+
+      let blockWithNoParams = (
+        <FunctionDeclaration name="foo">
+          <BlockStatement>
+            <VariableDeclaration name="num" kind={VariableKind.Let}>
+              <Literal value={3}/>
+            </VariableDeclaration>
+          </BlockStatement>
+        </FunctionDeclaration>
+      ) as FunctionDeclaration
+      expect(blockWithNoParams.format().replace(/\n/g, "")).toBe("function foo() {    let num = 3;}")
+
+      let withParamsAndBody = (
+        <FunctionDeclaration name="foo">
+          <Identifier name="bar"/>
+          <Identifier name="baz"/>
+          <BlockStatement>
+            <VariableDeclaration name="num" kind={VariableKind.Let}>
+              <Literal value={3}/>
+            </VariableDeclaration>
+          </BlockStatement>
+        </FunctionDeclaration>
+      ) as FunctionDeclaration
+      expect(withParamsAndBody.format().replace(/\n/g, "")).toBe("function foo(bar, baz) {    let num = 3;}")
     });
 
 });

@@ -183,3 +183,73 @@ export class CallExpression extends JsNode<ast.CallExpression> {
     return args;
   }
 }
+
+
+
+/*========================================================================
+                            Function Delcaration
+=========================================================================*/
+
+export type FunctionDeclarationProps = {
+  name: string
+}
+
+export class FunctionDeclaration extends JsNode<ast.FunctionDeclaration> {
+
+  props: FunctionDeclarationProps;
+  constructor(props: FunctionDeclarationProps, children: GenericJsNode[]) {
+    super();
+
+    let identifier = new Identifier({name: props.name}).getNode();
+    let params = this.getParameters(children);
+    let body = this.getBody(children);
+
+    this._node = <ast.FunctionDeclaration>ast.builders["functionDeclaration"](
+      identifier,
+      params,
+      body
+    );
+
+  }
+
+  private getParameters(children: GenericJsNode[]): ast.Node[] {
+    let params = Array<ast.Node>();
+    for (let index in children) {
+      if (children[index].check(ast.namedTypes.Identifier)) {
+        params.push(children[index].getNode());
+      }
+    }
+    return params;
+  }
+
+  private getBody(children: GenericJsNode[]): ast.Node {
+    for (let index in children) {
+      if (children[index].check(ast.namedTypes.BlockStatement)) {
+        return children[index].getNode();
+      }
+    }
+    return new BlockStatement({}, []).getNode();
+  }
+}
+
+
+/*========================================================================
+                            Block Statement
+=========================================================================*/
+
+export type BlockStatementProps = {
+
+}
+
+export class BlockStatement extends JsNode<ast.BlockStatement> {
+
+  props: BlockStatementProps;
+  constructor(props: BlockStatementProps, children: GenericJsNode[]) {
+    super();
+    let statements = new Array<ast.Node>();
+    for (let index in children) {
+      statements.push(children[index].getNode());
+    }
+    this._node = <ast.BlockStatement>ast.builders["blockStatement"](statements);
+  }
+}
