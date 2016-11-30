@@ -55,7 +55,7 @@ export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
   private getDeclarators(props: VariableDeclarationProps, children: GenericJsNode[]): ast.Node[] {
     let nodes = new Array<ast.Node>();
     if (props.name) {
-      nodes.push(new VariableDeclarator({name: props.name}, []).getNode());
+      nodes.push(new VariableDeclarator({name: props.name}, children).getNode());
       return nodes;
     }
     for (let index in children) {
@@ -85,7 +85,27 @@ export class VariableDeclarator extends JsNode<ast.VariableDeclarator> {
   constructor(props: VariableDeclaratorProps, children: GenericJsNode[]) {
     super();
     let identifier = new Identifier({name: props.name}).getNode();
-    this._node = <ast.VariableDeclarator>ast.builders["variableDeclarator"](identifier, null);
+    let init = this.getInit(children);
+    this._node = <ast.VariableDeclarator>ast.builders["variableDeclarator"](identifier, init);
+  }
+
+  private getInit(children: GenericJsNode[]): ast.Node {
+    if (children.length === 0) {
+      return null;
+    }
+    if (children[0].check(ast.namedTypes.Literal)) {
+      return children[0].getNode();
+    }
+
+    if (children[0].check(ast.namedTypes.CallExpression)) {
+      return children[0].getNode();
+    }
+
+    if (children[0].check(ast.namedTypes.Identifier)) {
+      return children[0].getNode();
+    }
+
+    throw new Error("Init value if specified must be either a literal, identifier, or a call expression");
   }
 }
 
