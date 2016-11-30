@@ -17,6 +17,7 @@
     "typescript": "^2.0.10"
   },
   "dependencies": {
-    "jscodeshift": "^0.3.30"
+    "jscodeshift": "^0.3.30",
+    "typescript": "^2.1.1"
   }
 }
