@@ -253,3 +253,40 @@ export class BlockStatement extends JsNode<ast.BlockStatement> {
     this._node = <ast.BlockStatement>ast.builders["blockStatement"](statements);
   }
 }
+
+
+/*========================================================================
+                            Expression Statement
+=========================================================================*/
+
+export type ExpressionStatementProps = {
+
+}
+
+export class ExpressionStatement extends JsNode<ast.ExpressionStatement> {
+
+  props: ExpressionStatementProps;
+  constructor(props: ExpressionStatementProps, children: GenericJsNode[]) {
+    super();
+    if (children.length > 1) {
+      throw new Error("Expression statement can not contain more than 1 statement");
+    }
+    if (children.length == 0) {
+      throw new Error("Expression statement must contain 1 statement");
+    }
+
+    switch (children[0].getType()) {
+      case "Identifier":
+      case "CallExpression":
+        this.setNode(children[0].getNode());
+        break;
+      default:
+        throw new Error("The expression in an ExpressionStatement must either be an Identifier or CallExpression")
+    }
+
+  }
+
+  private setNode(node: ast.Node) {
+    this._node = <ast.ExpressionStatement>ast.builders["expressionStatement"](node);
+  }
+}

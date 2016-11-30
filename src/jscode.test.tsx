@@ -8,6 +8,7 @@ import {
   CallExpression,
   BlockStatement,
   FunctionDeclaration,
+  ExpressionStatement,
   JsCode
 } from './jscode'
 
@@ -137,6 +138,22 @@ describe('jscode', () => {
         </FunctionDeclaration>
       ) as FunctionDeclaration
       expect(withParamsAndBody.format().replace(/\n/g, "")).toBe("function foo(bar, baz) {    let num = 3;}")
+    });
+
+    it('ExpressionStatement', () => {
+      let call = (
+        <ExpressionStatement>
+          <CallExpression name="foo"/>
+        </ExpressionStatement>
+      ) as ExpressionStatement
+      expect(call.format()).toBe("foo();")
+
+      let identifier = (
+        <ExpressionStatement>
+          <Identifier name="mevar"/>
+        </ExpressionStatement>
+      ) as ExpressionStatement
+      expect(identifier.format()).toBe("mevar;");
     });
 
 });
