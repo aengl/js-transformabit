@@ -6,15 +6,10 @@ describe('builder', () => {
         let builder = new JsBuilder();
         builder.variableDeclaration(VariableKind.Let, "socket");
         builder.variableDeclaration(VariableKind.Const, "max", builder.literal(8));
-        builder.variableDeclaration(VariableKind.Const, "max", builder.callExpression("getMax"));
         builder.variableDeclaration(VariableKind.Const, "max", builder.identifier("anotherVar"));
     });
 
-    it('call expression', () => {
-        let builder = new JsBuilder();
-        builder.callExpression("waitingTime");
-        builder.callExpression("waitingTime", new Array<ast.Assignable>());
-    });
+
 
     it('literals', () => {
         let builder = new JsBuilder();

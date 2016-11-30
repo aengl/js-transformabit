@@ -1,5 +1,5 @@
 
-import {VariableDeclaration, VariableDeclarator, VariableKind, Literal, JsCode} from './jscode'
+import {VariableDeclaration, VariableDeclarator, VariableKind, Literal, Identifier, CallExpression, JsCode} from './jscode'
 
 
 
@@ -48,6 +48,29 @@ describe('jscode', () => {
       let int = new Literal({value: 8});
       let bol = new Literal({value: true});
       let str = new Literal({value: "Hello"});
+    });
+
+
+    it('CallExpression', () => {
+      let foo = <CallExpression name="foo"/> as CallExpression
+      expect(foo.format()).toBe("foo()");
+
+      let isTall = (
+          <CallExpression name="isTall">
+            <Literal value={193}/>
+            <Identifier name="isMale"/>
+          </CallExpression>
+      ) as CallExpression
+
+      expect(isTall.format()).toBe("isTall(193, isMale)");
+
+      let toString = (
+          <CallExpression name="toString">
+            {isTall}
+          </CallExpression>
+      ) as CallExpression
+
+      expect(toString.format()).toBe("toString(isTall(193, isMale))");
     });
 
 });

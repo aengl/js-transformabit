@@ -8,7 +8,6 @@ declare module 'ast-types' {
     import * as estree from 'estree';
 
     type Node = estree.Node;
-    type Assignable = (Literal | Identifier);
 
     type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
 

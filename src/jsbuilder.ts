@@ -45,18 +45,6 @@ export class JsBuilder {
   }
 
 
-  /*========================================================================
-                              Call Expression
-  =========================================================================*/
-
-  callExpression(funcName: string, args?: ast.Assignable[]): ast.CallExpression {
-    if (!args) {
-      args = new Array<ast.Assignable>();
-    }
-    return <ast.CallExpression>ast.builders["callExpression"](this.identifier(funcName), args);
-  }
-
-
     /*========================================================================
                                 Function Declaration
     =========================================================================*/

@@ -144,3 +144,42 @@ export class Identifier extends JsNode<ast.Identifier> {
     this._node = <ast.Identifier>ast.builders["identifier"](props.name);
   }
 }
+
+
+/*========================================================================
+                            Call Expression
+=========================================================================*/
+
+export type CallExpressionProps = {
+  name: string
+}
+
+export class CallExpression extends JsNode<ast.CallExpression> {
+
+  props: CallExpressionProps;
+  constructor(props: CallExpressionProps, children: GenericJsNode[]) {
+    super();
+    let identifier = new Identifier({name: props.name}).getNode();
+    let args = this.getArgs(children);
+    this._node = <ast.CallExpression>ast.builders["callExpression"](identifier, args);
+  }
+
+  private getArgs(children: GenericJsNode[]): ast.Node[] {
+    let args = new Array<ast.Node>();
+    for (let index in children) {
+      if (!(children[index] instanceof JsNode)) {
+        throw new Error("All Children must be of JsNode, if you are trying to pass in a variable that is a JsNode, write {variableNameHere}");
+      }
+      if (children[index].check(ast.namedTypes.Literal)) {
+        args.push(children[index].getNode());
+      } else if (children[index].check(ast.namedTypes.Identifier)) {
+        args.push(children[index].getNode());
+      } else if (children[index].check(ast.namedTypes.CallExpression)) {
+        args.push(children[index].getNode());
+      } else {
+        throw new Error("argument if specified must be either a Literal, Identifier, or a CallExpression");
+      }
+    }
+    return args;
+  }
+}
