@@ -7,13 +7,13 @@
 /// <reference path="jscodeshift-collection.d.ts" />
 
 declare module 'jscodeshift' {
-    import { Collection, ConvertibleToCollection } from 'jscodeshift-collection';
+  import { Collection, ConvertibleToCollection } from 'jscodeshift-collection';
 
-    interface Core {
-        (obj: ConvertibleToCollection, options?: Object): Collection;
-    }
+  interface Core {
+    (obj: ConvertibleToCollection, options?: Object): Collection;
+  }
 
-    var core: Core;
+  var core: Core;
 
-    export = core;
+  export = core;
 }
