@@ -254,6 +254,31 @@ export class BlockStatement extends JsNode<ast.BlockStatement> {
   }
 }
 
+/*========================================================================
+              Utility for Expression Statement and Return Statement
+=========================================================================*/
+
+function getSingleExpression(children: GenericJsNode[], allowNull: boolean, statement: string): ast.Node {
+  if (children.length == 0) {
+    if (!allowNull) {
+      throw new Error("Expression statement must contain 1 statement");
+    }
+    return null;
+  }
+
+  if (children.length > 1) {
+    throw new Error("Expression statement can not contain more than 1 statement");
+  }
+
+  switch (children[0].getType()) {
+    case "Identifier":
+    case "Literal":
+    case "CallExpression":
+      return children[0].getNode();
+    default:
+      throw new Error("The expression in an " + statement + " must be either an Identifier, CallExpression, or a Literal");
+  }
+}
 
 /*========================================================================
                             Expression Statement
@@ -268,25 +293,25 @@ export class ExpressionStatement extends JsNode<ast.ExpressionStatement> {
   props: ExpressionStatementProps;
   constructor(props: ExpressionStatementProps, children: GenericJsNode[]) {
     super();
-    if (children.length > 1) {
-      throw new Error("Expression statement can not contain more than 1 statement");
-    }
-    if (children.length == 0) {
-      throw new Error("Expression statement must contain 1 statement");
-    }
-
-    switch (children[0].getType()) {
-      case "Identifier":
-      case "CallExpression":
-        this.setNode(children[0].getNode());
-        break;
-      default:
-        throw new Error("The expression in an ExpressionStatement must either be an Identifier or CallExpression")
-    }
-
+    this._node = <ast.ExpressionStatement>ast.builders["expressionStatement"](getSingleExpression(children, false, "ExpressionStatement"));
   }
 
-  private setNode(node: ast.Node) {
-    this._node = <ast.ExpressionStatement>ast.builders["expressionStatement"](node);
+}
+
+/*========================================================================
+                            Expression Statement
+=========================================================================*/
+
+export type ReturnStatementProps = {
+
+}
+
+export class ReturnStatement extends JsNode<ast.ReturnStatement> {
+
+  props: ReturnStatementProps;
+  constructor(props: ReturnStatementProps, children: GenericJsNode[]) {
+    super();
+    this._node = <ast.ReturnStatement>ast.builders["returnStatement"](getSingleExpression(children, true, "ReturnStatement"));
   }
+
 }

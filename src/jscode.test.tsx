@@ -9,6 +9,7 @@ import {
   BlockStatement,
   FunctionDeclaration,
   ExpressionStatement,
+  ReturnStatement,
   JsCode
 } from './jscode'
 
@@ -154,6 +155,29 @@ describe('jscode', () => {
         </ExpressionStatement>
       ) as ExpressionStatement
       expect(identifier.format()).toBe("mevar;");
+    });
+
+    it('ReturnStatement', () => {
+      let bol = (
+          <ReturnStatement>
+            <Literal value={true}/>
+          </ReturnStatement>
+      ) as ReturnStatement
+      expect(bol.format()).toBe("return true;");
+
+      let func = (
+        <ReturnStatement>
+          <CallExpression name="toInt">
+            <Identifier name="approx"/>
+          </CallExpression>
+        </ReturnStatement>
+      ) as ReturnStatement
+      expect(func.format()).toBe("return toInt(approx);");
+
+      let nothing = (
+        <ReturnStatement/>
+      ) as ReturnStatement
+      expect(nothing.format()).toBe("return;");
     });
 
 });
