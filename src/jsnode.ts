@@ -128,7 +128,7 @@ export class JsNode<NodeType extends Node> {
      * https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
      */
     getType(): string {
-        return this.getPath().value.type;
+        return this._node.type;
     }
 
     /**

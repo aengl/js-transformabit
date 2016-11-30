@@ -1,21 +1,33 @@
-import {VariableDeclaration, Literal, Identifier} from './jscode'
-
-import {GenericJsNode} from './jsnode';
-import * as ast from 'ast-types';
-import { JsBuilder , VariableKind} from './jsbuilder';
-
-class React {
-
-  static createElement(...args: any[]): GenericJsNode {
-    let [func, props, ...children] = args;
-    return new args[0](args[1], children);
-  }
-}
+import {VariableDeclaration, VariableDeclarator, VariableKind, Literal, React} from './jscode'
 
 
-describe('jsnodex', () => {
-    it('test', () => {
-      let foo = <VariableDeclaration name="foobar"><Literal value="3"/><Identifier value="3"/></VariableDeclaration> as VariableDeclaration
+
+describe('jscode', () => {
+    it('VariableDeclaration', () => {
+      let foo = <VariableDeclaration name="foo" kind={VariableKind.Let}></VariableDeclaration> as VariableDeclaration
+      expect(foo.format()).toBe("let foo;");
+
+      let bar = new VariableDeclaration({name: "bar"}, []);
+      expect(bar.format()).toBe("var bar;");
+
+      let letbar = new VariableDeclaration({name: "bar", kind: VariableKind.Let}, []);
+      expect(letbar.format()).toBe("let bar;");
+
+      let foobar = (
+        <VariableDeclaration kind={VariableKind.Let}>
+          <VariableDeclarator name="foo"/>
+          <VariableDeclarator name="bar"/>
+        </VariableDeclaration>
+      ) as VariableDeclaration
+
+      expect(foobar.format()).toBe("let foo, bar;");
+
     });
+
+      it('Literal', () => {
+        let int = new Literal({value: 8});
+        let bol = new Literal({value: true});
+        let str = new Literal({value: "Hello"});
+      });
 
   });
