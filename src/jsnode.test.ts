@@ -55,4 +55,11 @@ describe('node', () => {
         node = new JsNode(code).descend(node => node.check(t.Literal));
         expect(node.format()).toBe('42');
     });
+
+    it('ascend', () => {
+        let code = 'let foo = 42;';
+        let node = new JsNode(code).findFirstChildOfType(t.Literal);
+        expect(node.ascend().format()).toBe('foo = 42');
+        expect(node.ascend(node => node.check(t.Program)).format()).toBe(code);
+    });
 });

@@ -174,4 +174,21 @@ export class JsNode {
         });
         return new JsNode(result);
     }
+
+    /**
+     * Ascends the AST and returns the first parent node that satisfies the
+     * acceptCallback callback.
+     */
+    ascend(acceptCallback?: (node: JsNode) => boolean): JsNode {
+        console.assert(this._path);
+        let currentPath = this._path.parentPath;
+        if (acceptCallback) {
+            while (currentPath && !acceptCallback(new JsNode(currentPath))) {
+                currentPath = currentPath.parentPath;
+            }
+        }
+        if (currentPath) {
+            return new JsNode(currentPath);
+        }
+    }
 }
