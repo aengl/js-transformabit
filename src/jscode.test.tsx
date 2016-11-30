@@ -1,12 +1,12 @@
 import {VariableDeclaration, Literal, Identifier} from './jscode'
 
-import {JsNode} from './jsnode';
+import {GenericJsNode} from './jsnode';
 import * as ast from 'ast-types';
 import { JsBuilder , VariableKind} from './jsbuilder';
 
 class React {
 
-  static createElement(...args: any[]): JsNode {
+  static createElement(...args: any[]): GenericJsNode {
     let [func, props, ...children] = args;
     return new args[0](args[1], children);
   }

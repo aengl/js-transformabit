@@ -4,7 +4,7 @@ import * as ast from 'ast-types';
 
 export type Props = {[name: string]: any}
 
-export class VariableDeclaration extends JsNode {
+export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
   constructor(props: Props, children: Object[]) {
     super();
     let builder = new JsBuilder();
@@ -17,13 +17,13 @@ export class VariableDeclaration extends JsNode {
 }
 
 
-export class Literal extends JsNode {
+export class Literal extends JsNode<ast.Literal> {
   constructor() {
     super();
   }
 }
 
-export class Identifier extends JsNode {
+export class Identifier extends JsNode<ast.Identifier> {
   constructor() {
     super();
   }
