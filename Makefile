@@ -8,5 +8,5 @@ setup:
 clean:
 	rm -rf dist
 
-test: build
+test: clean build
 	npm test

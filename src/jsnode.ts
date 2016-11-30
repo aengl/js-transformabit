@@ -85,6 +85,10 @@ export class JsNode {
         return node;
     }
 
+    constructor() {
+
+    }
+
     hasParent(): boolean {
         return !!this._path;
     }
