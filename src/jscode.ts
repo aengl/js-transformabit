@@ -1,4 +1,4 @@
-import {JsBuilder} from './jsbuilder';
+
 import {JsNode, GenericJsNode} from './jsnode';
 import * as ast from 'ast-types';
 
