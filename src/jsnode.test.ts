@@ -62,4 +62,13 @@ describe('node', () => {
         expect(node.ascend().format()).toBe('foo = 42');
         expect(node.ascend(node => node.check(t.Program)).format()).toBe(code);
     });
+
+    it('replace', () => {
+        let code = 'let foo = 42;';
+        let node = new JsNode(code);
+        node
+            .findFirstChildOfType(t.Literal)
+            .replace(ast.builders['literal'](23));
+        expect(node.format()).toBe(code.replace('42', '23'));
+    });
 });

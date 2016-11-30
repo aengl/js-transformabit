@@ -191,4 +191,20 @@ export class JsNode {
             return new JsNode(currentPath);
         }
     }
+
+    /**
+     * Replaces the current node with another.
+     *
+     * Side-effects are immediately applied to the current AST and all other
+     * ASTs that reference this AST.
+     */
+    replace(node: (JsNode | Node)): JsNode {
+        console.assert(this._path);
+        if (node instanceof JsNode) {
+            this._path.replace(node._node);
+        } else {
+            this._path.replace(node);
+        }
+        return this;
+    }
 }

@@ -74,10 +74,10 @@ declare module 'ast-types' {
         unshift(...nodes: Array<Path>): void;
         push(...nodes: Array<Path>): void;
         pop(): Path;
-        insertAt(index: number, node: Path): Path;
-        insertBefore(node: Path): Path;
-        insertAfter(node: Path): Path;
-        replace(replacement: Path): Array<Path>;
+        insertAt(index: number, node: Node): Path;
+        insertBefore(node: Node): Path;
+        insertAfter(node: Node): Path;
+        replace(replacement: Node): Array<Path>;
     }
 
     var builtInTypes: {
