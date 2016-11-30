@@ -6,7 +6,7 @@ const t = ast.namedTypes;
 describe('node', () => {
     it('create & print', () => {
         let code = 'const foo = 42;';
-        expect(new JsNode(code).format()).toBe(code);
+        expect(JsNode.fromModuleCode(code).format()).toBe(code);
     });
 
     it('create from module', () => {
@@ -23,7 +23,7 @@ describe('node', () => {
 
     it('find child', () => {
         let code = 'let foo, bar = 42;';
-        let node = new JsNode(code);
+        let node = JsNode.fromModuleCode(code);
         let identifiers = node.findChildrenOfType(t.Identifier);
         expect(identifiers.size()).toBe(2);
         expect(identifiers.at(0).format()).toBe('foo');
@@ -32,7 +32,7 @@ describe('node', () => {
 
     it('find closest parent', () => {
         let code = 'let foo = 42;';
-        let node = new JsNode(code);
+        let node = JsNode.fromModuleCode(code);
         let identifier = node.findFirstChildOfType(t.Identifier);
         expect(identifier.format()).toBe('foo');
         let declaration = identifier.findClosestParentOfType(t.Declaration);
@@ -41,7 +41,7 @@ describe('node', () => {
 
     it('find closest scope', () => {
         let code = 'function foo() { let foo = 42; }';
-        let node = new JsNode(code)
+        let node = JsNode.fromModuleCode(code)
             .findFirstChildOfType(t.VariableDeclaration)
             .findClosestScope();
         expect(node.getType()).toBe(t.FunctionDeclaration.toString());
@@ -52,20 +52,20 @@ describe('node', () => {
         let code = 'let foo = 42;';
         let node = JsNode.fromCode(code).at(0).descend();
         expect(node.format()).toBe('foo = 42');
-        node = new JsNode(code).descend(node => node.check(t.Literal));
+        node = JsNode.fromModuleCode(code).descend(node => node.check(t.Literal));
         expect(node.format()).toBe('42');
     });
 
     it('ascend', () => {
         let code = 'let foo = 42;';
-        let node = new JsNode(code).findFirstChildOfType(t.Literal);
+        let node = JsNode.fromModuleCode(code).findFirstChildOfType(t.Literal);
         expect(node.ascend().format()).toBe('foo = 42');
         expect(node.ascend(node => node.check(t.Program)).format()).toBe(code);
     });
 
     it('replace', () => {
         let code = 'let foo = 42;';
-        let node = new JsNode(code);
+        let node = JsNode.fromModuleCode(code);
         node
             .findFirstChildOfType(t.Literal)
             .replace(ast.builders['literal'](23));

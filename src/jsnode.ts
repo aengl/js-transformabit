@@ -41,7 +41,7 @@ export class JsNodeCollection {
         if (index >= this._paths.length) {
             throw new Error('Index out of bounds');
         }
-        return new JsNode(this._paths[index]);
+        return JsNode.fromPath(this._paths[index]);
     }
 }
 
@@ -53,35 +53,40 @@ export class JsNode {
     _path: Path;
 
     static fromModuleCode(code: string, args?: Object): JsNode {
-        return new JsNode(code, args);
+        return JsNode.fromCollection(js(code, args));
     }
 
     static fromCode(code: string, args?: Object): JsNodeCollection {
-        let program = <Program>new JsNode(code, args).findFirstChildOfType(t.Program).getNode();
+        let program = <Program>JsNode
+            .fromCollection(js(code, args))
+            .findFirstChildOfType(t.Program)
+            .getNode();
         return new JsNodeCollection(program.body);
     }
 
-    constructor(obj: (string | Collection | Path | Node), args?: Object) {
-        if (typeof(obj) === 'string') {
-            let collection = js(obj, args);
-            this._node = collection.nodes()[0];
-            this._path = collection.get();
-        } else if (isCollection(obj)) {
-            this._node = obj.nodes()[0];
-            this._path = obj.get();
-        } else if (isPath(obj)) {
-            this._node = obj.value;
-            this._path = obj;
-        } else {
-            this._node = obj;
-            this._path = undefined;
-        }
-        if (this._node instanceof Array && this._node.length === 1) {
-            this._node = this._node[0];
-        }
-        if (this._path instanceof Array && this._path.length === 1) {
-            this._path = this._path[0];
-        }
+    static fromCollection(collection: Collection): JsNode {
+        let node = new JsNode();
+        node._node = collection.nodes()[0];
+        node._path = collection.get();
+        return node;
+    }
+
+    static fromPath(path: Path): JsNode {
+        let node = new JsNode();
+        node._node = path.value;
+        node._path = path;
+        return node;
+    }
+
+    static fromNode(astNode: Node): JsNode {
+        let node = new JsNode();
+        node._node = astNode;
+        node._path = null;
+        return node;
+    }
+
+    hasParent(): boolean {
+        return !!this._path;
     }
 
     /**
@@ -130,7 +135,7 @@ export class JsNode {
 
     findFirstChildOfType(type: TypeIdentifier, attr?: {}): JsNode {
         let collection = js(this._node).find(type, attr);
-        return new JsNode(collection.get());
+        return JsNode.fromPath(collection.get());
     }
 
     findChildrenOfType(type: TypeIdentifier, attr?: {}): JsNodeCollection {
@@ -140,12 +145,12 @@ export class JsNode {
 
     findClosestParentOfType(type: TypeIdentifier, attr?: {}): JsNode {
         console.assert(this._path);
-        return new JsNode(js(this._path).closest(type, attr));
+        return JsNode.fromCollection(js(this._path).closest(type, attr));
     }
 
     findClosestScope(): JsNode {
         console.assert(this._path);
-        return new JsNode(js(this._path).closestScope());
+        return JsNode.fromCollection(js(this._path).closestScope());
     }
 
     /**
@@ -162,7 +167,7 @@ export class JsNode {
                     skip = false;
                     this.traverse(p);
                 } else {
-                    let node = new JsNode(p);
+                    let node = JsNode.fromPath(p);
                     if (acceptCallback === undefined || acceptCallback(node)) {
                         result = p;
                         return false;
@@ -172,7 +177,7 @@ export class JsNode {
                 }
             }
         });
-        return new JsNode(result);
+        return JsNode.fromPath(result);
     }
 
     /**
@@ -183,12 +188,12 @@ export class JsNode {
         console.assert(this._path);
         let currentPath = this._path.parentPath;
         if (acceptCallback) {
-            while (currentPath && !acceptCallback(new JsNode(currentPath))) {
+            while (currentPath && !acceptCallback(JsNode.fromPath(currentPath))) {
                 currentPath = currentPath.parentPath;
             }
         }
         if (currentPath) {
-            return new JsNode(currentPath);
+            return JsNode.fromPath(currentPath);
         }
     }
 
