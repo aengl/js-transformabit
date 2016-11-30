@@ -1,8 +1,10 @@
-import {VariableDeclaration, VariableDeclarator, VariableKind, Literal, React} from './jscode'
+
+import {VariableDeclaration, VariableDeclarator, VariableKind, Literal, JsCode} from './jscode'
 
 
 
 describe('jscode', () => {
+
     it('VariableDeclaration', () => {
       let foo = <VariableDeclaration name="foo" kind={VariableKind.Let}></VariableDeclaration> as VariableDeclaration
       expect(foo.format()).toBe("let foo;");
@@ -24,10 +26,10 @@ describe('jscode', () => {
 
     });
 
-      it('Literal', () => {
-        let int = new Literal({value: 8});
-        let bol = new Literal({value: true});
-        let str = new Literal({value: "Hello"});
-      });
+    it('Literal', () => {
+      let int = new Literal({value: 8});
+      let bol = new Literal({value: true});
+      let str = new Literal({value: "Hello"});
+    });
 
-  });
+});

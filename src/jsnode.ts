@@ -86,8 +86,9 @@ export class JsNode<NodeType extends Node> {
         return node;
     }
 
-    constructor() {
-
+    constructor(node?: NodeType, path?: Path) {
+        this._node = node;
+        this._path = path;
     }
 
     hasParent(): boolean {
