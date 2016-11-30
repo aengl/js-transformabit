@@ -1,6 +1,6 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import { Node, Path, Type, Program, namedTypes as t } from 'ast-types';
+import { Node, Path, Type, namedTypes as t } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 
 import ast = require('ast-types');
@@ -58,7 +58,7 @@ export class JsNode<NodeType extends Node> {
   }
 
   static fromCode(code: string, args?: Object): JsNodeCollection {
-    let program = <Program>JsNode
+    let program = <ast.Program>JsNode
       .fromCollection(js(code, args))
       .findFirstChildOfType(t.Program)
       .getNode();

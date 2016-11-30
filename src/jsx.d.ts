@@ -1,6 +1,9 @@
+// import { JsNode } from './jsnode';
+
 declare namespace JSX {
+  // interface Element extends JsNode<any> {}
   interface Element {
-    [name: string]: any;
+    format(): string;
   }
 
   interface IntrinsicElements {

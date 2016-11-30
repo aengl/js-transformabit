@@ -2,490 +2,805 @@
  * Type declarations for ast-types.
  *
  * https://github.com/benjamn/ast-types
+ *
+ * A large part of this file is taken from the estree type definitions:
+ * https://github.com/DefinitelyTyped/DefinitelyTyped
  */
 
-declare module 'ast-types' {
-  import * as estree from 'estree';
+interface BaseNode {
+  // Every leaf interface that extends BaseNode must specify a type property.
+  // The type property should be a string literal. For example, Identifier
+  // has: `type: "Identifier"`
 
-  type Node = estree.Node;
-
-
-  type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
-
-  function defineMethod(name: string, func: Function): Function;
-  function getFieldNames(object: Node): string[];
-  function getFieldValue(object: Node, fieldName: string): any;
-  function eachField(object: Node, callback: (name: string, value: any) => void, context?: Object): void;
-  function someField(object: Node, callback: (name: string, value: any) => void, context?: Object): string[];
-  function getSupertypeNames(typeName: string): string;
-  function astNodesAreEquivalent(): void;
-  function finalize(): void;
-  function use(plugin: any): any;
-  function visit(node: Node, methods: Object): void; // TODO: return PathVisitor
-
-  class Type {
-    static or(...args: Array<ConvertibleToType>): Type;
-    static fromArray(arr: Array<ConvertibleToType>): Type;
-    static fromObject(obj: Node): Type;
-    static def(typeName: string): Type;
-
-    name: string;
-
-    constructor(check: Function, name: (Function | string));
-    check(value: any, deep?: boolean): boolean;
-    assert(value: any, deep?: boolean): boolean;
-    toString(): string;
-    arrayOf(): Type;
-  }
-
-  class Field {
-    constructor(name: string, type: ConvertibleToType, defaultFn: Function, hidden?: Boolean);
-    toString(): string;
-    getValue(obj: Node): any;
-  }
-
-  class Def {
-    static fromValue(value: Node): (Def | void);
-
-    constructor(typeName: string);
-    isSupertypeOf(that: Def): boolean;
-    checkAllFields(value: Node, deep: boolean): boolean;
-    check(value: Node, deep?: boolean): boolean;
-    bases(): Def;
-    build(...args: any[]): Def;
-    getBuilderName(typeName: string): string;
-    getStatementBuilderName(typeName: string): string;
-    field(name: string, type: any, defaultFn: Function, hidden?: boolean): Def;
-    finalize(): void;
-  }
-
-  class Path {
-    value: Node;
-    parentPath: Path;
-    name: string;
-
-    constructor(value: Path, parentPath?: Path, name?: string);
-    getValueProperty(name: string): string;
-    get(name: string): string;
-    each(callback: (childPath: Path) => void, context?: Path): void;
-    map(callback: (childPath: Path) => Path, context?: Path): Array<Path>;
-    filter(callback: (childPath: Path) => boolean, context?: Path): Array<Path>;
-    shift(): void;
-    unshift(...nodes: Array<Path>): void;
-    push(...nodes: Array<Path>): void;
-    pop(): Path;
-    insertAt(index: number, node: Node): Path;
-    insertBefore(node: Node): Path;
-    insertAfter(node: Node): Path;
-    replace(replacement: Node): Array<Path>;
-  }
-
-  var builtInTypes: {
-    string: Type,
-    function: Type,
-    array: Type,
-    object: Type,
-    RegExp: Type,
-    Date: Type,
-    number: Type,
-    boolean: Type,
-    null: Type,
-    undefined: Type
-  };
-
-  var namedTypes: {
-    Printable: Type,
-    SourceLocation: Type,
-    Node: Type,
-    Comment: Type,
-    Position: Type,
-    File: Type,
-    Program: Type,
-    Statement: Type,
-    Function: Type,
-    Pattern: Type,
-    Expression: Type,
-    Identifier: Type,
-    BlockStatement: Type,
-    EmptyStatement: Type,
-    ExpressionStatement: Type,
-    IfStatement: Type,
-    LabeledStatement: Type,
-    BreakStatement: Type,
-    ContinueStatement: Type,
-    WithStatement: Type,
-    SwitchStatement: Type,
-    SwitchCase: Type,
-    ReturnStatement: Type,
-    ThrowStatement: Type,
-    TryStatement: Type,
-    CatchClause: Type,
-    WhileStatement: Type,
-    DoWhileStatement: Type,
-    ForStatement: Type,
-    Declaration: Type,
-    VariableDeclaration: Type,
-    ForInStatement: Type,
-    DebuggerStatement: Type,
-    FunctionDeclaration: Type,
-    FunctionExpression: Type,
-    VariableDeclarator: Type,
-    ThisExpression: Type,
-    ArrayExpression: Type,
-    ObjectExpression: Type,
-    Property: Type,
-    Literal: Type,
-    SequenceExpression: Type,
-    UnaryExpression: Type,
-    BinaryExpression: Type,
-    AssignmentExpression: Type,
-    UpdateExpression: Type,
-    LogicalExpression: Type,
-    ConditionalExpression: Type,
-    NewExpression: Type,
-    CallExpression: Type,
-    MemberExpression: Type,
-    RestElement: Type,
-    SpreadElementPattern: Type,
-    ArrowFunctionExpression: Type,
-    YieldExpression: Type,
-    GeneratorExpression: Type,
-    ComprehensionBlock: Type,
-    ComprehensionExpression: Type,
-    PropertyPattern: Type,
-    ObjectPattern: Type,
-    ArrayPattern: Type,
-    MethodDefinition: Type,
-    SpreadElement: Type,
-    AssignmentPattern: Type,
-    ClassPropertyDefinition: Type,
-    ClassProperty: Type,
-    ClassBody: Type,
-    ClassDeclaration: Type,
-    ClassExpression: Type,
-    ClassImplements: Type,
-    Specifier: Type,
-    ModuleSpecifier: Type,
-    TaggedTemplateExpression: Type,
-    TemplateLiteral: Type,
-    TemplateElement: Type,
-    SpreadProperty: Type,
-    SpreadPropertyPattern: Type,
-    AwaitExpression: Type,
-    ForOfStatement: Type,
-    LetStatement: Type,
-    LetExpression: Type,
-    GraphExpression: Type,
-    GraphIndexExpression: Type,
-    XMLDefaultDeclaration: Type,
-    XMLAnyName: Type,
-    XMLQualifiedIdentifier: Type,
-    XMLFunctionQualifiedIdentifier: Type,
-    XMLAttributeSelector: Type,
-    XMLFilterExpression: Type,
-    XML: Type,
-    XMLElement: Type,
-    XMLList: Type,
-    XMLEscape: Type,
-    XMLText: Type,
-    XMLStartTag: Type,
-    XMLEndTag: Type,
-    XMLPointTag: Type,
-    XMLName: Type,
-    XMLAttribute: Type,
-    XMLCdata: Type,
-    XMLComment: Type,
-    XMLProcessingInstruction: Type,
-    JSXAttribute: Type,
-    JSXIdentifier: Type,
-    JSXNamespacedName: Type,
-    JSXExpressionContainer: Type,
-    JSXMemberExpression: Type,
-    JSXSpreadAttribute: Type,
-    JSXElement: Type,
-    JSXOpeningElement: Type,
-    JSXClosingElement: Type,
-    JSXText: Type,
-    JSXEmptyExpression: Type,
-    Type: Type,
-    AnyTypeAnnotation: Type,
-    EmptyTypeAnnotation: Type,
-    MixedTypeAnnotation: Type,
-    VoidTypeAnnotation: Type,
-    NumberTypeAnnotation: Type,
-    NumberLiteralTypeAnnotation: Type,
-    StringTypeAnnotation: Type,
-    StringLiteralTypeAnnotation: Type,
-    BooleanTypeAnnotation: Type,
-    BooleanLiteralTypeAnnotation: Type,
-    TypeAnnotation: Type,
-    NullableTypeAnnotation: Type,
-    NullLiteralTypeAnnotation: Type,
-    NullTypeAnnotation: Type,
-    ThisTypeAnnotation: Type,
-    ExistsTypeAnnotation: Type,
-    ExistentialTypeParam: Type,
-    FunctionTypeAnnotation: Type,
-    FunctionTypeParam: Type,
-    TypeParameterDeclaration: Type,
-    ArrayTypeAnnotation: Type,
-    ObjectTypeAnnotation: Type,
-    ObjectTypeProperty: Type,
-    ObjectTypeIndexer: Type,
-    ObjectTypeCallProperty: Type,
-    QualifiedTypeIdentifier: Type,
-    GenericTypeAnnotation: Type,
-    TypeParameterInstantiation: Type,
-    MemberTypeAnnotation: Type,
-    UnionTypeAnnotation: Type,
-    IntersectionTypeAnnotation: Type,
-    TypeofTypeAnnotation: Type,
-    TypeParameter: Type,
-    InterfaceDeclaration: Type,
-    InterfaceExtends: Type,
-    DeclareInterface: Type,
-    TypeAlias: Type,
-    DeclareTypeAlias: Type,
-    TypeCastExpression: Type,
-    TupleTypeAnnotation: Type,
-    DeclareVariable: Type,
-    DeclareFunction: Type,
-    DeclareClass: Type,
-    DeclareModule: Type,
-    DeclareModuleExports: Type,
-    DeclareExportDeclaration: Type,
-    ExportSpecifier: Type,
-    ExportBatchSpecifier: Type,
-    ImportSpecifier: Type,
-    ImportNamespaceSpecifier: Type,
-    ImportDefaultSpecifier: Type,
-    ExportDeclaration: Type,
-    ImportDeclaration: Type,
-    Block: Type,
-    Line: Type,
-    Noop: Type,
-    DoExpression: Type,
-    Super: Type,
-    BindExpression: Type,
-    Decorator: Type,
-    MetaProperty: Type,
-    ParenthesizedExpression: Type,
-    ExportDefaultDeclaration: Type,
-    ExportNamedDeclaration: Type,
-    ExportNamespaceSpecifier: Type,
-    ExportDefaultSpecifier: Type,
-    ExportAllDeclaration: Type,
-    CommentBlock: Type,
-    CommentLine: Type,
-    Directive: Type,
-    DirectiveLiteral: Type,
-    StringLiteral: Type,
-    NumericLiteral: Type,
-    NullLiteral: Type,
-    BooleanLiteral: Type,
-    RegExpLiteral: Type,
-    ObjectMethod: Type,
-    ObjectProperty: Type,
-    ClassMethod: Type,
-    RestProperty: Type,
-    ForAwaitStatement: Type
-  };
-
-  var builders: { [name: string]: (...args: Array<any>) => Node };
-
-  // type Printable = estree.Printable;
-  type SourceLocation = estree.SourceLocation;
-  // type Node = Node;
-  type Comment = estree.Comment;
-  type Position = estree.Position;
-  // type File = estree.File;
-  type Program = estree.Program;
-  type Statement = estree.Statement;
-  type Function = estree.Function;
-  type Pattern = estree.Pattern;
-  type Expression = estree.Expression;
-  type Identifier = estree.Identifier;
-  type BlockStatement = estree.BlockStatement;
-  type EmptyStatement = estree.EmptyStatement;
-  type ExpressionStatement = estree.ExpressionStatement;
-  type IfStatement = estree.IfStatement;
-  type LabeledStatement = estree.LabeledStatement;
-  type BreakStatement = estree.BreakStatement;
-  type ContinueStatement = estree.ContinueStatement;
-  type WithStatement = estree.WithStatement;
-  type SwitchStatement = estree.SwitchStatement;
-  type SwitchCase = estree.SwitchCase;
-  type ReturnStatement = estree.ReturnStatement;
-  type ThrowStatement = estree.ThrowStatement;
-  type TryStatement = estree.TryStatement;
-  type CatchClause = estree.CatchClause;
-  type WhileStatement = estree.WhileStatement;
-  type DoWhileStatement = estree.DoWhileStatement;
-  type ForStatement = estree.ForStatement;
-  type Declaration = estree.Declaration;
-  type VariableDeclaration = estree.VariableDeclaration;
-  type ForInStatement = estree.ForInStatement;
-  type DebuggerStatement = estree.DebuggerStatement;
-  type FunctionDeclaration = estree.FunctionDeclaration;
-  type FunctionExpression = estree.FunctionExpression;
-  type VariableDeclarator = estree.VariableDeclarator;
-  type ThisExpression = estree.ThisExpression;
-  type ArrayExpression = estree.ArrayExpression;
-  type ObjectExpression = estree.ObjectExpression;
-  type Property = estree.Property;
-  type Literal = estree.Literal;
-  type SequenceExpression = estree.SequenceExpression;
-  type UnaryExpression = estree.UnaryExpression;
-  type BinaryExpression = estree.BinaryExpression;
-  type AssignmentExpression = estree.AssignmentExpression;
-  type UpdateExpression = estree.UpdateExpression;
-  type LogicalExpression = estree.LogicalExpression;
-  type ConditionalExpression = estree.ConditionalExpression;
-  type NewExpression = estree.NewExpression;
-  type CallExpression = estree.CallExpression;
-  type MemberExpression = estree.MemberExpression;
-  type RestElement = estree.RestElement;
-  // type SpreadElementPattern = estree.SpreadElementPattern;
-  type ArrowFunctionExpression = estree.ArrowFunctionExpression;
-  type YieldExpression = estree.YieldExpression;
-  // type GeneratorExpression = estree.GeneratorExpression;
-  // type ComprehensionBlock = estree.ComprehensionBlock;
-  // type ComprehensionExpression = estree.ComprehensionExpression;
-  // type PropertyPattern = estree.PropertyPattern;
-  type ObjectPattern = estree.ObjectPattern;
-  type ArrayPattern = estree.ArrayPattern;
-  type MethodDefinition = estree.MethodDefinition;
-  type SpreadElement = estree.SpreadElement;
-  type AssignmentPattern = estree.AssignmentPattern;
-  // type ClassPropertyDefinition = estree.ClassPropertyDefinition;
-  // type ClassProperty = estree.ClassProperty;
-  type ClassBody = estree.ClassBody;
-  type ClassDeclaration = estree.ClassDeclaration;
-  type ClassExpression = estree.ClassExpression;
-  // type ClassImplements = estree.ClassImplements;
-  // type Specifier = estree.Specifier;
-  type ModuleSpecifier = estree.ModuleSpecifier;
-  type TaggedTemplateExpression = estree.TaggedTemplateExpression;
-  type TemplateLiteral = estree.TemplateLiteral;
-  type TemplateElement = estree.TemplateElement;
-  // type SpreadProperty = estree.SpreadProperty;
-  // type SpreadPropertyPattern = estree.SpreadPropertyPattern;
-  type AwaitExpression = estree.AwaitExpression;
-  type ForOfStatement = estree.ForOfStatement;
-  // type LetStatement = estree.LetStatement;
-  // type LetExpression = estree.LetExpression;
-  // type GraphExpression = estree.GraphExpression;
-  // type GraphIndexExpression = estree.GraphIndexExpression;
-  // type XMLDefaultDeclaration = estree.XMLDefaultDeclaration;
-  // type XMLAnyName = estree.XMLAnyName;
-  // type XMLQualifiedIdentifier = estree.XMLQualifiedIdentifier;
-  // type XMLFunctionQualifiedIdentifier = estree.XMLFunctionQualifiedIdentifier;
-  // type XMLAttributeSelector = estree.XMLAttributeSelector;
-  // type XMLFilterExpression = estree.XMLFilterExpression;
-  // type XML = estree.XML;
-  // type XMLElement = estree.XMLElement;
-  // type XMLList = estree.XMLList;
-  // type XMLEscape = estree.XMLEscape;
-  // type XMLText = estree.XMLText;
-  // type XMLStartTag = estree.XMLStartTag;
-  // type XMLEndTag = estree.XMLEndTag;
-  // type XMLPointTag = estree.XMLPointTag;
-  // type XMLName = estree.XMLName;
-  // type XMLAttribute = estree.XMLAttribute;
-  // type XMLCdata = estree.XMLCdata;
-  // type XMLComment = estree.XMLComment;
-  // type XMLProcessingInstruction = estree.XMLProcessingInstruction;
-  // type JSXAttribute = estree.JSXAttribute;
-  // type JSXIdentifier = estree.JSXIdentifier;
-  // type JSXNamespacedName = estree.JSXNamespacedName;
-  // type JSXExpressionContainer = estree.JSXExpressionContainer;
-  // type JSXMemberExpression = estree.JSXMemberExpression;
-  // type JSXSpreadAttribute = estree.JSXSpreadAttribute;
-  // type JSXElement = estree.JSXElement;
-  // type JSXOpeningElement = estree.JSXOpeningElement;
-  // type JSXClosingElement = estree.JSXClosingElement;
-  // type JSXText = estree.JSXText;
-  // type JSXEmptyExpression = estree.JSXEmptyExpression;
-  // type Type = estree.Type;
-  // type AnyTypeAnnotation = estree.AnyTypeAnnotation;
-  // type EmptyTypeAnnotation = estree.EmptyTypeAnnotation;
-  // type MixedTypeAnnotation = estree.MixedTypeAnnotation;
-  // type VoidTypeAnnotation = estree.VoidTypeAnnotation;
-  // type NumberTypeAnnotation = estree.NumberTypeAnnotation;
-  // type NumberLiteralTypeAnnotation = estree.NumberLiteralTypeAnnotation;
-  // type StringTypeAnnotation = estree.StringTypeAnnotation;
-  // type StringLiteralTypeAnnotation = estree.StringLiteralTypeAnnotation;
-  // type BooleanTypeAnnotation = estree.BooleanTypeAnnotation;
-  // type BooleanLiteralTypeAnnotation = estree.BooleanLiteralTypeAnnotation;
-  // type TypeAnnotation = estree.TypeAnnotation;
-  // type NullableTypeAnnotation = estree.NullableTypeAnnotation;
-  // type NullLiteralTypeAnnotation = estree.NullLiteralTypeAnnotation;
-  // type NullTypeAnnotation = estree.NullTypeAnnotation;
-  // type ThisTypeAnnotation = estree.ThisTypeAnnotation;
-  // type ExistsTypeAnnotation = estree.ExistsTypeAnnotation;
-  // type ExistentialTypeParam = estree.ExistentialTypeParam;
-  // type FunctionTypeAnnotation = estree.FunctionTypeAnnotation;
-  // type FunctionTypeParam = estree.FunctionTypeParam;
-  // type TypeParameterDeclaration = estree.TypeParameterDeclaration;
-  // type ArrayTypeAnnotation = estree.ArrayTypeAnnotation;
-  // type ObjectTypeAnnotation = estree.ObjectTypeAnnotation;
-  // type ObjectTypeProperty = estree.ObjectTypeProperty;
-  // type ObjectTypeIndexer = estree.ObjectTypeIndexer;
-  // type ObjectTypeCallProperty = estree.ObjectTypeCallProperty;
-  // type QualifiedTypeIdentifier = estree.QualifiedTypeIdentifier;
-  // type GenericTypeAnnotation = estree.GenericTypeAnnotation;
-  // type TypeParameterInstantiation = estree.TypeParameterInstantiation;
-  // type MemberTypeAnnotation = estree.MemberTypeAnnotation;
-  // type UnionTypeAnnotation = estree.UnionTypeAnnotation;
-  // type IntersectionTypeAnnotation = estree.IntersectionTypeAnnotation;
-  // type TypeofTypeAnnotation = estree.TypeofTypeAnnotation;
-  // type TypeParameter = estree.TypeParameter;
-  // type InterfaceDeclaration = estree.InterfaceDeclaration;
-  // type InterfaceExtends = estree.InterfaceExtends;
-  // type DeclareInterface = estree.DeclareInterface;
-  // type TypeAlias = estree.TypeAlias;
-  // type DeclareTypeAlias = estree.DeclareTypeAlias;
-  // type TypeCastExpression = estree.TypeCastExpression;
-  // type TupleTypeAnnotation = estree.TupleTypeAnnotation;
-  // type DeclareVariable = estree.DeclareVariable;
-  // type DeclareFunction = estree.DeclareFunction;
-  // type DeclareClass = estree.DeclareClass;
-  // type DeclareModule = estree.DeclareModule;
-  // type DeclareModuleExports = estree.DeclareModuleExports;
-  // type DeclareExportDeclaration = estree.DeclareExportDeclaration;
-  type ExportSpecifier = estree.ExportSpecifier;
-  // type ExportBatchSpecifier = estree.ExportBatchSpecifier;
-  type ImportSpecifier = estree.ImportSpecifier;
-  type ImportNamespaceSpecifier = estree.ImportNamespaceSpecifier;
-  type ImportDefaultSpecifier = estree.ImportDefaultSpecifier;
-  // type ExportDeclaration = estree.ExportDeclaration;
-  type ImportDeclaration = estree.ImportDeclaration;
-  // type Block = estree.Block;
-  // type Line = estree.Line;
-  // type Noop = estree.Noop;
-  // type DoExpression = estree.DoExpression;
-  type Super = estree.Super;
-  // type BindExpression = estree.BindExpression;
-  // type Decorator = estree.Decorator;
-  type MetaProperty = estree.MetaProperty;
-  // type ParenthesizedExpression = estree.ParenthesizedExpression;
-  type ExportDefaultDeclaration = estree.ExportDefaultDeclaration;
-  type ExportNamedDeclaration = estree.ExportNamedDeclaration;
-  // type ExportNamespaceSpecifier = estree.ExportNamespaceSpecifier;
-  // type ExportDefaultSpecifier = estree.ExportDefaultSpecifier;
-  type ExportAllDeclaration = estree.ExportAllDeclaration;
-  // type CommentBlock = estree.CommentBlock;
-  // type CommentLine = estree.CommentLine;
-  // type Directive = estree.Directive;
-  // type DirectiveLiteral = estree.DirectiveLiteral;
-  // type StringLiteral = estree.StringLiteral;
-  // type NumericLiteral = estree.NumericLiteral;
-  // type NullLiteral = estree.NullLiteral;
-  // type BooleanLiteral = estree.BooleanLiteral;
-  // type RegExpLiteral = estree.RegExpLiteral;
-  // type ObjectMethod = estree.ObjectMethod;
-  // type ObjectProperty = estree.ObjectProperty;
-  // type ClassMethod = estree.ClassMethod;
-  // type RestProperty = estree.RestProperty;
-  // type ForAwaitStatement = estree.ForAwaitStatement;
+  leadingComments?: Array<Comment>;
+  trailingComments?: Array<Comment>;
+  loc?: SourceLocation;
+  range?: [number, number];
 }
+
+export type Node =
+  Identifier | Literal | Program | Function | SwitchCase | CatchClause |
+  VariableDeclarator | Statement | Expression | Property |
+  AssignmentProperty | Super | TemplateElement | SpreadElement | Pattern |
+  ClassBody | Class | MethodDefinition | ModuleDeclaration | ModuleSpecifier;
+
+export interface Comment {
+  value: string;
+}
+
+interface SourceLocation {
+  source?: string;
+  start: Position;
+  end: Position;
+}
+
+export interface Position {
+  /** >= 1 */
+  line: number;
+  /** >= 0 */
+  column: number;
+}
+
+export interface Program extends BaseNode {
+  type: "Program";
+  sourceType: "script" | "module";
+  body: Array<Statement | ModuleDeclaration>;
+}
+
+interface BaseFunction extends BaseNode {
+  params: Array<Pattern>;
+  generator?: boolean;
+  async?: boolean;
+  // The body is either BlockStatement or Expression because arrow functions
+  // can have a body that's either. FunctionDeclarations and
+  // FunctionExpressions have only BlockStatement bodies.
+  body: BlockStatement | Expression;
+}
+
+export type Function =
+  FunctionDeclaration | FunctionExpression | ArrowFunctionExpression;
+
+
+export type Statement =
+  ExpressionStatement | BlockStatement | EmptyStatement |
+  DebuggerStatement | WithStatement | ReturnStatement | LabeledStatement |
+  BreakStatement | ContinueStatement | IfStatement | SwitchStatement |
+  ThrowStatement | TryStatement | WhileStatement | DoWhileStatement |
+  ForStatement | ForInStatement | ForOfStatement | Declaration;
+interface BaseStatement extends BaseNode { }
+
+export interface EmptyStatement extends BaseStatement {
+  type: "EmptyStatement";
+}
+
+export interface BlockStatement extends BaseStatement {
+  type: "BlockStatement";
+  body: Array<Statement>;
+}
+
+export interface ExpressionStatement extends BaseStatement {
+  type: "ExpressionStatement";
+  expression: Expression;
+}
+
+export interface IfStatement extends BaseStatement {
+  type: "IfStatement";
+  test: Expression;
+  consequent: Statement;
+  alternate?: Statement;
+}
+
+export interface LabeledStatement extends BaseStatement {
+  type: "LabeledStatement";
+  label: Identifier;
+  body: Statement;
+}
+
+export interface BreakStatement extends BaseStatement {
+  type: "BreakStatement";
+  label?: Identifier;
+}
+
+export interface ContinueStatement extends BaseStatement {
+  type: "ContinueStatement";
+  label?: Identifier;
+}
+
+export interface WithStatement extends BaseStatement {
+  type: "WithStatement";
+  object: Expression;
+  body: Statement;
+}
+
+export interface SwitchStatement extends BaseStatement {
+  type: "SwitchStatement";
+  discriminant: Expression;
+  cases: Array<SwitchCase>;
+}
+
+export interface ReturnStatement extends BaseStatement {
+  type: "ReturnStatement";
+  argument?: Expression;
+}
+
+export interface ThrowStatement extends BaseStatement {
+  type: "ThrowStatement";
+  argument: Expression;
+}
+
+export interface TryStatement extends BaseStatement {
+  type: "TryStatement";
+  block: BlockStatement;
+  handler?: CatchClause;
+  finalizer?: BlockStatement;
+}
+
+export interface WhileStatement extends BaseStatement {
+  type: "WhileStatement";
+  test: Expression;
+  body: Statement;
+}
+
+export interface DoWhileStatement extends BaseStatement {
+  type: "DoWhileStatement";
+  body: Statement;
+  test: Expression;
+}
+
+export interface ForStatement extends BaseStatement {
+  type: "ForStatement";
+  init?: VariableDeclaration | Expression;
+  test?: Expression;
+  update?: Expression;
+  body: Statement;
+}
+
+interface BaseForXStatement extends BaseStatement {
+  left: VariableDeclaration | Expression;
+  right: Expression;
+  body: Statement;
+}
+
+export interface ForInStatement extends BaseForXStatement {
+  type: "ForInStatement";
+}
+
+export interface DebuggerStatement extends BaseStatement {
+  type: "DebuggerStatement";
+}
+
+export type Declaration =
+  FunctionDeclaration | VariableDeclaration | ClassDeclaration;
+interface BaseDeclaration extends BaseStatement { }
+
+export interface FunctionDeclaration extends BaseFunction, BaseDeclaration {
+  type: "FunctionDeclaration";
+  id: Identifier;
+  body: BlockStatement;
+}
+
+export interface VariableDeclaration extends BaseDeclaration {
+  type: "VariableDeclaration";
+  declarations: Array<VariableDeclarator>;
+  kind: "var" | "let" | "const";
+}
+
+export interface VariableDeclarator extends BaseNode {
+  type: "VariableDeclarator";
+  id: Pattern;
+  init?: Expression;
+}
+
+type Expression =
+  ThisExpression | ArrayExpression | ObjectExpression | FunctionExpression |
+  ArrowFunctionExpression | YieldExpression | Literal | UnaryExpression |
+  UpdateExpression | BinaryExpression | AssignmentExpression |
+  LogicalExpression | MemberExpression | ConditionalExpression |
+  CallExpression | NewExpression | SequenceExpression | TemplateLiteral |
+  TaggedTemplateExpression | ClassExpression | MetaProperty | Identifier |
+  AwaitExpression;
+export interface BaseExpression extends BaseNode { }
+
+export interface ThisExpression extends BaseExpression {
+  type: "ThisExpression";
+}
+
+export interface ArrayExpression extends BaseExpression {
+  type: "ArrayExpression";
+  elements: Array<Expression | SpreadElement>;
+}
+
+export interface ObjectExpression extends BaseExpression {
+  type: "ObjectExpression";
+  properties: Array<Property>;
+}
+
+export interface Property extends BaseNode {
+  type: "Property";
+  key: Expression;
+  value: Expression | Pattern; // Could be an AssignmentProperty
+  kind: "init" | "get" | "set";
+  method: boolean;
+  shorthand: boolean;
+  computed: boolean;
+}
+
+export interface FunctionExpression extends BaseFunction, BaseExpression {
+  id?: Identifier;
+  type: "FunctionExpression";
+  body: BlockStatement;
+}
+
+export interface SequenceExpression extends BaseExpression {
+  type: "SequenceExpression";
+  expressions: Array<Expression>;
+}
+
+export interface UnaryExpression extends BaseExpression {
+  type: "UnaryExpression";
+  operator: UnaryOperator;
+  prefix: boolean;
+  argument: Expression;
+}
+
+export interface BinaryExpression extends BaseExpression {
+  type: "BinaryExpression";
+  operator: BinaryOperator;
+  left: Expression;
+  right: Expression;
+}
+
+export interface AssignmentExpression extends BaseExpression {
+  type: "AssignmentExpression";
+  operator: AssignmentOperator;
+  left: Pattern | MemberExpression;
+  right: Expression;
+}
+
+export interface UpdateExpression extends BaseExpression {
+  type: "UpdateExpression";
+  operator: UpdateOperator;
+  argument: Expression;
+  prefix: boolean;
+}
+
+export interface LogicalExpression extends BaseExpression {
+  type: "LogicalExpression";
+  operator: LogicalOperator;
+  left: Expression;
+  right: Expression;
+}
+
+export interface ConditionalExpression extends BaseExpression {
+  type: "ConditionalExpression";
+  test: Expression;
+  alternate: Expression;
+  consequent: Expression;
+}
+
+interface BaseCallExpression extends BaseExpression {
+  callee: Expression | Super;
+  arguments: Array<Expression | SpreadElement>;
+}
+export type CallExpression = SimpleCallExpression | NewExpression;
+
+export interface SimpleCallExpression extends BaseCallExpression {
+  type: "CallExpression";
+}
+
+export interface NewExpression extends BaseCallExpression {
+  type: "NewExpression";
+}
+
+export interface MemberExpression extends BaseExpression, BasePattern {
+  type: "MemberExpression";
+  object: Expression | Super;
+  property: Expression;
+  computed: boolean;
+}
+
+export type Pattern =
+  Identifier | ObjectPattern | ArrayPattern | RestElement |
+  AssignmentPattern | MemberExpression;
+interface BasePattern extends BaseNode { }
+
+export interface SwitchCase extends BaseNode {
+  type: "SwitchCase";
+  test?: Expression;
+  consequent: Array<Statement>;
+}
+
+export interface CatchClause extends BaseNode {
+  type: "CatchClause";
+  param: Pattern;
+  body: BlockStatement;
+}
+
+export interface Identifier extends BaseNode, BaseExpression, BasePattern {
+  type: "Identifier";
+  name: string;
+}
+
+export type Literal = SimpleLiteral | RegExpLiteral;
+
+export interface SimpleLiteral extends BaseNode, BaseExpression {
+  type: "Literal";
+  value: string | boolean | number | null;
+  raw: string;
+}
+
+export interface RegExpLiteral extends BaseNode, BaseExpression {
+  type: "Literal";
+  value: RegExp;
+  regex: {
+    pattern: string;
+    flags: string;
+  };
+  raw: string;
+}
+
+export type UnaryOperator =
+  "-" | "+" | "!" | "~" | "typeof" | "void" | "delete";
+
+export type BinaryOperator =
+  "==" | "!=" | "===" | "!==" | "<" | "<=" | ">" | ">=" | "<<" |
+  ">>" | ">>>" | "+" | "-" | "*" | "/" | "%" | "**" | "|" | "^" | "&" | "in" |
+  "instanceof";
+
+export type LogicalOperator = "||" | "&&";
+
+export type AssignmentOperator =
+  "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "**=" | "<<=" | ">>=" | ">>>=" |
+  "|=" | "^=" | "&=";
+
+export type UpdateOperator = "++" | "--";
+
+export interface ForOfStatement extends BaseForXStatement {
+  type: "ForOfStatement";
+}
+
+export interface Super extends BaseNode {
+  type: "Super";
+}
+
+export interface SpreadElement extends BaseNode {
+  type: "SpreadElement";
+  argument: Expression;
+}
+
+export interface ArrowFunctionExpression extends BaseExpression, BaseFunction {
+  type: "ArrowFunctionExpression";
+  expression: boolean;
+  body: BlockStatement | Expression;
+}
+
+export interface YieldExpression extends BaseExpression {
+  type: "YieldExpression";
+  argument?: Expression;
+  delegate: boolean;
+}
+
+export interface TemplateLiteral extends BaseExpression {
+  type: "TemplateLiteral";
+  quasis: Array<TemplateElement>;
+  expressions: Array<Expression>;
+}
+
+export interface TaggedTemplateExpression extends BaseExpression {
+  type: "TaggedTemplateExpression";
+  tag: Expression;
+  quasi: TemplateLiteral;
+}
+
+export interface TemplateElement extends BaseNode {
+  type: "TemplateElement";
+  tail: boolean;
+  value: {
+    cooked: string;
+    raw: string;
+  };
+}
+
+export interface AssignmentProperty extends Property {
+  value: Pattern;
+  kind: "init";
+  method: boolean; // false
+}
+
+export interface ObjectPattern extends BasePattern {
+  type: "ObjectPattern";
+  properties: Array<AssignmentProperty>;
+}
+
+export interface ArrayPattern extends BasePattern {
+  type: "ArrayPattern";
+  elements: Array<Pattern>;
+}
+
+export interface RestElement extends BasePattern {
+  type: "RestElement";
+  argument: Pattern;
+}
+
+export interface AssignmentPattern extends BasePattern {
+  type: "AssignmentPattern";
+  left: Pattern;
+  right: Expression;
+}
+
+export type Class = ClassDeclaration | ClassExpression;
+interface BaseClass extends BaseNode {
+  superClass?: Expression;
+  body: ClassBody;
+}
+
+export interface ClassBody extends BaseNode {
+  type: "ClassBody";
+  body: Array<MethodDefinition>;
+}
+
+export interface MethodDefinition extends BaseNode {
+  type: "MethodDefinition";
+  key: Expression;
+  value: FunctionExpression;
+  kind: "constructor" | "method" | "get" | "set";
+  computed: boolean;
+  static: boolean;
+}
+
+export interface ClassDeclaration extends BaseClass, BaseDeclaration {
+  type: "ClassDeclaration";
+  id: Identifier;
+}
+
+export interface ClassExpression extends BaseClass, BaseExpression {
+  type: "ClassExpression";
+  id?: Identifier;
+}
+
+export interface MetaProperty extends BaseExpression {
+  type: "MetaProperty";
+  meta: Identifier;
+  property: Identifier;
+}
+
+export type ModuleDeclaration =
+  ImportDeclaration | ExportNamedDeclaration | ExportDefaultDeclaration |
+  ExportAllDeclaration;
+interface BaseModuleDeclaration extends BaseNode { }
+
+export type ModuleSpecifier =
+  ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier |
+  ExportSpecifier;
+interface BaseModuleSpecifier extends BaseNode {
+  local: Identifier;
+}
+
+export interface ImportDeclaration extends BaseModuleDeclaration {
+  type: "ImportDeclaration";
+  specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>;
+  source: Literal;
+}
+
+export interface ImportSpecifier extends BaseModuleSpecifier {
+  type: "ImportSpecifier";
+  imported: Identifier;
+}
+
+export interface ImportDefaultSpecifier extends BaseModuleSpecifier {
+  type: "ImportDefaultSpecifier";
+}
+
+export interface ImportNamespaceSpecifier extends BaseModuleSpecifier {
+  type: "ImportNamespaceSpecifier";
+}
+
+export interface ExportNamedDeclaration extends BaseModuleDeclaration {
+  type: "ExportNamedDeclaration";
+  declaration?: Declaration;
+  specifiers: Array<ExportSpecifier>;
+  source?: Literal;
+}
+
+export interface ExportSpecifier extends BaseModuleSpecifier {
+  type: "ExportSpecifier";
+  exported: Identifier;
+}
+
+export interface ExportDefaultDeclaration extends BaseModuleDeclaration {
+  type: "ExportDefaultDeclaration";
+  declaration: Declaration | Expression;
+}
+
+export interface ExportAllDeclaration extends BaseModuleDeclaration {
+  type: "ExportAllDeclaration";
+  source: Literal;
+}
+
+export interface AwaitExpression extends BaseExpression {
+  type: "AwaitExpression";
+  argument: Expression;
+}
+
+type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
+
+export function defineMethod(name: string, func: Function): Function;
+export function getFieldNames(object: Node): string[];
+export function getFieldValue(object: Node, fieldName: string): any;
+export function eachField(object: Node, callback: (name: string, value: any) => void, context?: Object): void;
+export function someField(object: Node, callback: (name: string, value: any) => void, context?: Object): string[];
+export function getSupertypeNames(typeName: string): string;
+export function astNodesAreEquivalent(): void;
+export function finalize(): void;
+export function use(plugin: any): any;
+export function visit(node: Node, methods: Object): void; // TODO: return PathVisitor
+
+export class Type {
+  static or(...args: Array<ConvertibleToType>): Type;
+  static fromArray(arr: Array<ConvertibleToType>): Type;
+  static fromObject(obj: Node): Type;
+  static def(typeName: string): Type;
+
+  name: string;
+
+  constructor(check: Function, name: (Function | string));
+  check(value: any, deep?: boolean): boolean;
+  assert(value: any, deep?: boolean): boolean;
+  toString(): string;
+  arrayOf(): Type;
+}
+
+export class Field {
+  constructor(name: string, type: ConvertibleToType, defaultFn: Function, hidden?: Boolean);
+  toString(): string;
+  getValue(obj: Node): any;
+}
+
+export class Def {
+  static fromValue(value: Node): (Def | void);
+
+  constructor(typeName: string);
+  isSupertypeOf(that: Def): boolean;
+  checkAllFields(value: Node, deep: boolean): boolean;
+  check(value: Node, deep?: boolean): boolean;
+  bases(): Def;
+  build(...args: any[]): Def;
+  getBuilderName(typeName: string): string;
+  getStatementBuilderName(typeName: string): string;
+  field(name: string, type: any, defaultFn: Function, hidden?: boolean): Def;
+  finalize(): void;
+}
+
+export class Path {
+  value: Node;
+  parentPath: Path;
+  name: string;
+
+  constructor(value: Path, parentPath?: Path, name?: string);
+  getValueProperty(name: string): string;
+  get(name: string): string;
+  each(callback: (childPath: Path) => void, context?: Path): void;
+  map(callback: (childPath: Path) => Path, context?: Path): Array<Path>;
+  filter(callback: (childPath: Path) => boolean, context?: Path): Array<Path>;
+  shift(): void;
+  unshift(...nodes: Array<Path>): void;
+  push(...nodes: Array<Path>): void;
+  pop(): Path;
+  insertAt(index: number, node: Node): Path;
+  insertBefore(node: Node): Path;
+  insertAfter(node: Node): Path;
+  replace(replacement: Node): Array<Path>;
+}
+
+export var builtInTypes: {
+  string: Type,
+  function: Type,
+  array: Type,
+  object: Type,
+  RegExp: Type,
+  Date: Type,
+  number: Type,
+  boolean: Type,
+  null: Type,
+  undefined: Type
+};
+
+export var namedTypes: {
+  Printable: Type,
+  SourceLocation: Type,
+  Node: Type,
+  Comment: Type,
+  Position: Type,
+  File: Type,
+  Program: Type,
+  Statement: Type,
+  Function: Type,
+  Pattern: Type,
+  Expression: Type,
+  Identifier: Type,
+  BlockStatement: Type,
+  EmptyStatement: Type,
+  ExpressionStatement: Type,
+  IfStatement: Type,
+  LabeledStatement: Type,
+  BreakStatement: Type,
+  ContinueStatement: Type,
+  WithStatement: Type,
+  SwitchStatement: Type,
+  SwitchCase: Type,
+  ReturnStatement: Type,
+  ThrowStatement: Type,
+  TryStatement: Type,
+  CatchClause: Type,
+  WhileStatement: Type,
+  DoWhileStatement: Type,
+  ForStatement: Type,
+  Declaration: Type,
+  VariableDeclaration: Type,
+  ForInStatement: Type,
+  DebuggerStatement: Type,
+  FunctionDeclaration: Type,
+  FunctionExpression: Type,
+  VariableDeclarator: Type,
+  ThisExpression: Type,
+  ArrayExpression: Type,
+  ObjectExpression: Type,
+  Property: Type,
+  Literal: Type,
+  SequenceExpression: Type,
+  UnaryExpression: Type,
+  BinaryExpression: Type,
+  AssignmentExpression: Type,
+  UpdateExpression: Type,
+  LogicalExpression: Type,
+  ConditionalExpression: Type,
+  NewExpression: Type,
+  CallExpression: Type,
+  MemberExpression: Type,
+  RestElement: Type,
+  SpreadElementPattern: Type,
+  ArrowFunctionExpression: Type,
+  YieldExpression: Type,
+  GeneratorExpression: Type,
+  ComprehensionBlock: Type,
+  ComprehensionExpression: Type,
+  PropertyPattern: Type,
+  ObjectPattern: Type,
+  ArrayPattern: Type,
+  MethodDefinition: Type,
+  SpreadElement: Type,
+  AssignmentPattern: Type,
+  ClassPropertyDefinition: Type,
+  ClassProperty: Type,
+  ClassBody: Type,
+  ClassDeclaration: Type,
+  ClassExpression: Type,
+  ClassImplements: Type,
+  Specifier: Type,
+  ModuleSpecifier: Type,
+  TaggedTemplateExpression: Type,
+  TemplateLiteral: Type,
+  TemplateElement: Type,
+  SpreadProperty: Type,
+  SpreadPropertyPattern: Type,
+  AwaitExpression: Type,
+  ForOfStatement: Type,
+  LetStatement: Type,
+  LetExpression: Type,
+  GraphExpression: Type,
+  GraphIndexExpression: Type,
+  XMLDefaultDeclaration: Type,
+  XMLAnyName: Type,
+  XMLQualifiedIdentifier: Type,
+  XMLFunctionQualifiedIdentifier: Type,
+  XMLAttributeSelector: Type,
+  XMLFilterExpression: Type,
+  XML: Type,
+  XMLElement: Type,
+  XMLList: Type,
+  XMLEscape: Type,
+  XMLText: Type,
+  XMLStartTag: Type,
+  XMLEndTag: Type,
+  XMLPointTag: Type,
+  XMLName: Type,
+  XMLAttribute: Type,
+  XMLCdata: Type,
+  XMLComment: Type,
+  XMLProcessingInstruction: Type,
+  JSXAttribute: Type,
+  JSXIdentifier: Type,
+  JSXNamespacedName: Type,
+  JSXExpressionContainer: Type,
+  JSXMemberExpression: Type,
+  JSXSpreadAttribute: Type,
+  JSXElement: Type,
+  JSXOpeningElement: Type,
+  JSXClosingElement: Type,
+  JSXText: Type,
+  JSXEmptyExpression: Type,
+  Type: Type,
+  AnyTypeAnnotation: Type,
+  EmptyTypeAnnotation: Type,
+  MixedTypeAnnotation: Type,
+  VoidTypeAnnotation: Type,
+  NumberTypeAnnotation: Type,
+  NumberLiteralTypeAnnotation: Type,
+  StringTypeAnnotation: Type,
+  StringLiteralTypeAnnotation: Type,
+  BooleanTypeAnnotation: Type,
+  BooleanLiteralTypeAnnotation: Type,
+  TypeAnnotation: Type,
+  NullableTypeAnnotation: Type,
+  NullLiteralTypeAnnotation: Type,
+  NullTypeAnnotation: Type,
+  ThisTypeAnnotation: Type,
+  ExistsTypeAnnotation: Type,
+  ExistentialTypeParam: Type,
+  FunctionTypeAnnotation: Type,
+  FunctionTypeParam: Type,
+  TypeParameterDeclaration: Type,
+  ArrayTypeAnnotation: Type,
+  ObjectTypeAnnotation: Type,
+  ObjectTypeProperty: Type,
+  ObjectTypeIndexer: Type,
+  ObjectTypeCallProperty: Type,
+  QualifiedTypeIdentifier: Type,
+  GenericTypeAnnotation: Type,
+  TypeParameterInstantiation: Type,
+  MemberTypeAnnotation: Type,
+  UnionTypeAnnotation: Type,
+  IntersectionTypeAnnotation: Type,
+  TypeofTypeAnnotation: Type,
+  TypeParameter: Type,
+  InterfaceDeclaration: Type,
+  InterfaceExtends: Type,
+  DeclareInterface: Type,
+  TypeAlias: Type,
+  DeclareTypeAlias: Type,
+  TypeCastExpression: Type,
+  TupleTypeAnnotation: Type,
+  DeclareVariable: Type,
+  DeclareFunction: Type,
+  DeclareClass: Type,
+  DeclareModule: Type,
+  DeclareModuleExports: Type,
+  DeclareExportDeclaration: Type,
+  ExportSpecifier: Type,
+  ExportBatchSpecifier: Type,
+  ImportSpecifier: Type,
+  ImportNamespaceSpecifier: Type,
+  ImportDefaultSpecifier: Type,
+  ExportDeclaration: Type,
+  ImportDeclaration: Type,
+  Block: Type,
+  Line: Type,
+  Noop: Type,
+  DoExpression: Type,
+  Super: Type,
+  BindExpression: Type,
+  Decorator: Type,
+  MetaProperty: Type,
+  ParenthesizedExpression: Type,
+  ExportDefaultDeclaration: Type,
+  ExportNamedDeclaration: Type,
+  ExportNamespaceSpecifier: Type,
+  ExportDefaultSpecifier: Type,
+  ExportAllDeclaration: Type,
+  CommentBlock: Type,
+  CommentLine: Type,
+  Directive: Type,
+  DirectiveLiteral: Type,
+  StringLiteral: Type,
+  NumericLiteral: Type,
+  NullLiteral: Type,
+  BooleanLiteral: Type,
+  RegExpLiteral: Type,
+  ObjectMethod: Type,
+  ObjectProperty: Type,
+  ClassMethod: Type,
+  RestProperty: Type,
+  ForAwaitStatement: Type
+};
+
+export var builders: { [name: string]: (...args: Array<any>) => Node };
