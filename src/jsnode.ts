@@ -1,6 +1,6 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import { Node, Path, Type, Program, namedTypes as t } from 'ast-types';
+import { Node, Path, Type, namedTypes as t } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 
 import ast = require('ast-types');
@@ -49,7 +49,7 @@ export class JsNodeCollection {
 /**
  * Represents a node in the AST tree.
  */
-export class JsNode<NodeType extends Node> {
+export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   _node: NodeType;
   _path: Path;
 
@@ -58,7 +58,7 @@ export class JsNode<NodeType extends Node> {
   }
 
   static fromCode(code: string, args?: Object): JsNodeCollection {
-    let program = <Program>JsNode
+    let program = <ast.Program>JsNode
       .fromCollection(js(code, args))
       .findFirstChildOfType(t.Program)
       .getNode();
@@ -92,14 +92,14 @@ export class JsNode<NodeType extends Node> {
   }
 
   hasParent(): boolean {
-    return !!this._path;
+    return !!this._path && !!this._path.parentPath;
   }
 
   /**
    * Returns the source code for the
    */
   format(): string {
-    return js(this._node).toSource();
+    return js(this._node).toSource().replace(/\r/g, '');
   }
 
   /**
@@ -151,12 +151,18 @@ export class JsNode<NodeType extends Node> {
 
   findClosestParentOfType(type: TypeIdentifier, attr?: {}): GenericJsNode {
     console.assert(this._path);
-    return JsNode.fromCollection(js(this._path).closest(type, attr));
+    let closest = js(this._path).closest(type, attr);
+    if (closest.size() > 0) {
+      return JsNode.fromCollection(closest);
+    }
   }
 
   findClosestScope(): GenericJsNode {
     console.assert(this._path);
-    return JsNode.fromCollection(js(this._path).closestScope());
+    let closest = js(this._path).closestScope();
+    if (closest.size() > 0) {
+      return JsNode.fromCollection(closest);
+    }
   }
 
   /**
@@ -209,12 +215,14 @@ export class JsNode<NodeType extends Node> {
    * Side-effects are immediately applied to the current AST and all other
    * ASTs that reference this AST.
    */
-  replace(node: (GenericJsNode | Node)): GenericJsNode {
+  replace(node: (transformabit.JsNode | Node)): GenericJsNode {
     console.assert(this._path);
     if (node instanceof JsNode) {
       this._path.replace(node._node);
+      this._node = <NodeType>node._node;
     } else {
-      this._path.replace(node);
+      this._path.replace(<NodeType>node);
+      this._node = <NodeType>node;
     }
     return this;
   }

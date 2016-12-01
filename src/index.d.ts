@@ -1,7 +1,9 @@
+declare namespace transformabit {
+  interface JsNode {}
+}
+
 declare namespace JSX {
-  interface Element {
-    [name: string]: any;
-  }
+  interface Element extends transformabit.JsNode {}
 
   interface IntrinsicElements {
     // [name: string]: any;

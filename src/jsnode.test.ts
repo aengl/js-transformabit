@@ -30,6 +30,15 @@ describe('node', () => {
     expect(identifiers.at(1).format()).toBe('bar');
   });
 
+  it('chain find calls', () => {
+    let code = 'class Foo { bar() {} };';
+    let node = JsNode.fromModuleCode(code);
+    let method = node.findFirstChildOfType(t.MethodDefinition);
+    expect(method.format()).toBe('bar() {}');
+    let block = method.findFirstChildOfType(t.BlockStatement);
+    expect(block.format()).toBe('{}');
+  });
+
   it('find closest parent', () => {
     let code = 'let foo = 42;';
     let node = JsNode.fromModuleCode(code);
@@ -37,6 +46,15 @@ describe('node', () => {
     expect(identifier.format()).toBe('foo');
     let declaration = identifier.findClosestParentOfType(t.Declaration);
     expect(declaration.format()).toBe(code);
+  });
+
+  it('find closest parent #2', () => {
+    let code = 'class Foo { bar() {} }';
+    let node = JsNode.fromModuleCode(code);
+    let method = node.findFirstChildOfType(t.MethodDefinition);
+    expect(method.format()).toBe('bar() {}');
+    let program = method.findClosestParentOfType(t.Program);
+    expect(program.format()).toBe(code);
   });
 
   it('find closest scope', () => {

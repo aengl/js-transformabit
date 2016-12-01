@@ -4,13 +4,13 @@
   "description": "A collection of utilities for writing JS editors for Atomist.",
   "main": "index.js",
   "scripts": {
+    "install-typings": "install-typings",
     "build": "tsc",
     "build-watch": "tsc -w",
     "test": "jest",
     "test-watch": "jest --watch"
   },
   "devDependencies": {
-    "@types/estree": "0.0.34",
     "@types/jest": "^16.0.0",
     "@types/node": "^6.0.51",
     "jest": "^17.0.3",
