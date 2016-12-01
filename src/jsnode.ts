@@ -99,7 +99,7 @@ export class JsNode<NodeType extends Node> {
    * Returns the source code for the
    */
   format(): string {
-    return js(this._node).toSource();
+    return js(this._node).toSource().replace(/\r/g, '');
   }
 
   /**
