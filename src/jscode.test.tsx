@@ -196,6 +196,12 @@ describe('jscode', () => {
 
       let noThis = <MemberExpression property={new Identifier({name: "bar"})}/> as ThisExpression
       expect(noThis.format()).toBe("this.bar");
+
+      //this.prototype.func.foo
+      let thisprototype = new MemberExpression({property: new Identifier({name: "prototype"})}, []);
+      let prototypefunc = new MemberExpression({object: thisprototype, property: new Identifier({name: "func"})}, []);
+      let funcfoo = new MemberExpression({object: prototypefunc, property: new Identifier({name: "foo"})}, []);
+      expect(funcfoo.format()).toBe("this.prototype.func.foo");
     });
 
 });

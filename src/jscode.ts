@@ -338,7 +338,7 @@ export class ThisExpression extends JsNode<ast.ThisExpression> {
 =========================================================================*/
 
 export type MemberExpressionProps = {
-  object?: ThisExpression,
+  object?: ThisExpression | MemberExpression,
   property: Identifier
 }
 
