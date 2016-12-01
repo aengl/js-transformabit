@@ -92,7 +92,7 @@ export class JsNode<NodeType extends Node> {
   }
 
   hasParent(): boolean {
-    return !!this._path;
+    return !!this._path && !!this._path.parentPath;
   }
 
   /**
@@ -151,12 +151,18 @@ export class JsNode<NodeType extends Node> {
 
   findClosestParentOfType(type: TypeIdentifier, attr?: {}): GenericJsNode {
     console.assert(this._path);
-    return JsNode.fromCollection(js(this._path).closest(type, attr));
+    let closest = js(this._path).closest(type, attr);
+    if (closest.size() > 0) {
+      return JsNode.fromCollection(closest);
+    }
   }
 
   findClosestScope(): GenericJsNode {
     console.assert(this._path);
-    return JsNode.fromCollection(js(this._path).closestScope());
+    let closest = js(this._path).closestScope();
+    if (closest.size() > 0) {
+      return JsNode.fromCollection(closest);
+    }
   }
 
   /**
@@ -213,8 +219,10 @@ export class JsNode<NodeType extends Node> {
     console.assert(this._path);
     if (node instanceof JsNode) {
       this._path.replace(node._node);
+      this._node = <NodeType>node._node;
     } else {
       this._path.replace(node);
+      this._node = <NodeType>node;
     }
     return this;
   }

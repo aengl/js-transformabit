@@ -26,7 +26,8 @@ describe('demo', () => {
     let baz = 42;
   }
 }`;
-    let transformedCode = JsNode.fromModuleCode(code)
+    let node = JsNode.fromModuleCode(code);
+    node
       .findFirstChildOfType(t.MethodDefinition)
       .findFirstChildOfType(t.BlockStatement)
       .replace(
@@ -35,8 +36,7 @@ describe('demo', () => {
             <Literal value={42}/>
           </VariableDeclaration>
         </BlockStatement> as BlockStatement
-      )
-      .format();
-    expect(transformedCode).toBe(expectedCode);
+      );
+    expect(node.format()).toBe(expectedCode);
   });
 });
