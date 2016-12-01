@@ -14,6 +14,7 @@ import {
   MemberExpression,
   AssignmentExpression,
   AssignmentOperator,
+  ClassDeclaration,
   JsCode
 } from './jscode'
 
@@ -252,6 +253,17 @@ describe('jscode', () => {
         />
       ) as AssignmentExpression
       expect(memberAndIdentifier.format()).toBe("this.level = level");
+    });
+
+
+    it('ClassDeclaration', () => {
+      let empty = (
+        <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+
+        </ClassDeclaration>
+      ) as ClassDeclaration
+      expect(empty.format()).toBe("class Foo extends Bar {}");
+
     });
 
 });

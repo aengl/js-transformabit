@@ -400,3 +400,58 @@ export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
     }
   }
 }
+
+/*========================================================================
+                            Class Declaration
+=========================================================================*/
+
+export type ClassDeclarationProps = {
+  id: string | Identifier,
+  superClass?: string | Identifier
+}
+
+export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
+
+  props: ClassDeclarationProps;
+  constructor(props: ClassDeclarationProps, children: GenericJsNode[]) {
+    super();
+    let id = this.getId(props.id);
+    let superClass = this.getSuperClass(props);
+    let body = new ClassBody({}, []).getNode();
+    this._node = <ast.ClassDeclaration>ast.builders["classDeclaration"](id, body, superClass);
+  }
+
+  private getId(value: string | Identifier): ast.Node {
+    if (value.constructor.name === "String") {
+      return new Identifier({name: <string>value}).getNode();
+    }
+    return  (value as Identifier).getNode();
+  }
+
+  private getSuperClass(props: ClassDeclarationProps): ast.Node {
+    if (!props.superClass) {
+      return null;
+    }
+    if (props.superClass.constructor.name === "String") {
+      return new Identifier({name: <string>props.superClass}).getNode();
+    }
+    return (props.superClass as Identifier).getNode();
+  }
+}
+
+/*========================================================================
+                            Class Body
+=========================================================================*/
+
+export type ClassBodyProps = {
+
+}
+
+export class ClassBody extends JsNode<ast.ClassBody> {
+
+  props: ClassBodyProps;
+  constructor(props: ClassBodyProps, children: GenericJsNode[]) {
+    super();
+    this._node = <ast.ClassBody>ast.builders["classBody"]([]);
+  }
+}
