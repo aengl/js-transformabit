@@ -4,8 +4,6 @@
  * https://github.com/facebook/jscodeshift
  */
 
-/// <reference path="ast-types.d.ts" />
-
 declare module 'jscodeshift-collection' {
   import { Node, Path } from 'ast-types';
 
