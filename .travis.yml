@@ -2,7 +2,6 @@ language: node_js
 node_js:
   - "node"
 before_script:
-  - npm install -g typescript
+  - make setup
 script:
-  - tsc
-  - npm test
+  - make test

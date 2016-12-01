@@ -1,4 +1,5 @@
 build:
+	./install-typings.sh
 	tsc
 
 setup:
