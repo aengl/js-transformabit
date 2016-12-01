@@ -151,7 +151,7 @@ export class Identifier extends JsNode<ast.Identifier> {
 =========================================================================*/
 
 export type CallExpressionProps = {
-  name: string
+  callee: Identifier | MemberExpression
 }
 
 export class CallExpression extends JsNode<ast.CallExpression> {
@@ -159,9 +159,9 @@ export class CallExpression extends JsNode<ast.CallExpression> {
   props: CallExpressionProps;
   constructor(props: CallExpressionProps, children: GenericJsNode[]) {
     super();
-    let identifier = new Identifier({name: props.name}).getNode();
+    let callee = props.callee.getNode();
     let args = this.getArgs(children);
-    this._node = <ast.CallExpression>ast.builders["callExpression"](identifier, args);
+    this._node = <ast.CallExpression>ast.builders["callExpression"](callee, args);
   }
 
   private getArgs(children: GenericJsNode[]): ast.Node[] {
@@ -354,5 +354,49 @@ export class MemberExpression extends JsNode<ast.MemberExpression> {
       object = props.object.getNode();
     }
     this._node = <ast.MemberExpression>ast.builders["memberExpression"](object, props.property.getNode());
+  }
+}
+
+/*========================================================================
+                            Assignment Expression
+=========================================================================*/
+
+export enum AssignmentOperator {
+  Equals,
+  PlusEquals,
+  MinusEquals,
+  MultiplyEquals,
+  DivideEquals,
+  ModularEquals,
+  ShiftLeftEquals,
+  ShiftRightEquals
+}
+
+export type AssignmentExpressionProps = {
+  operator: AssignmentOperator,
+  left: Identifier | MemberExpression,
+  right: Identifier | Literal | CallExpression
+}
+
+export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
+
+  props: AssignmentExpressionProps;
+  constructor(props: AssignmentExpressionProps, children: GenericJsNode[]) {
+    super();
+    let operator = this.getOperatorString(props);
+    this._node = <ast.AssignmentExpression>ast.builders["assignmentExpression"](operator, props.left.getNode(), props.right.getNode());
+  }
+
+  private getOperatorString(props: AssignmentExpressionProps): string {
+    switch (props.operator) {
+      case AssignmentOperator.Equals: return "="
+      case AssignmentOperator.PlusEquals: return "+="
+      case AssignmentOperator.MinusEquals: return "-="
+      case AssignmentOperator.MultiplyEquals: return "*="
+      case AssignmentOperator.DivideEquals: return "/="
+      case AssignmentOperator.ModularEquals: return "%="
+      case AssignmentOperator.ShiftLeftEquals: return "<<="
+      case AssignmentOperator.ShiftRightEquals: return ">>="
+    }
   }
 }

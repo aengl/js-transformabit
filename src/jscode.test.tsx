@@ -12,6 +12,8 @@ import {
   ReturnStatement,
   ThisExpression,
   MemberExpression,
+  AssignmentExpression,
+  AssignmentOperator,
   JsCode
 } from './jscode'
 
@@ -66,11 +68,11 @@ describe('jscode', () => {
 
 
     it('CallExpression', () => {
-      let foo = <CallExpression name="foo"/> as CallExpression
+      let foo = <CallExpression callee={new Identifier({name: "foo"})}/> as CallExpression
       expect(foo.format()).toBe("foo()");
 
       let isTall = (
-          <CallExpression name="isTall">
+          <CallExpression callee={new Identifier({name: "isTall"})}>
             <Literal value={193}/>
             <Identifier name="isMale"/>
           </CallExpression>
@@ -79,12 +81,21 @@ describe('jscode', () => {
       expect(isTall.format()).toBe("isTall(193, isMale)");
 
       let toString = (
-          <CallExpression name="toString">
+          <CallExpression callee={new Identifier({name: "toString"})}>
             {isTall}
           </CallExpression>
       ) as CallExpression
-
       expect(toString.format()).toBe("toString(isTall(193, isMale))");
+
+      let thisFoo = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({name: "foo"})}/> as MemberExpression
+      expect(thisFoo.format()).toBe("this.foo");
+      let memberCall = (
+        <CallExpression callee={thisFoo}>
+          <Identifier name="bar"/>
+        </CallExpression>
+      ) as CallExpression
+      expect(memberCall.format()).toBe("this.foo(bar)");
+
     });
 
     it('BlockStatement', () => {
@@ -146,7 +157,7 @@ describe('jscode', () => {
     it('ExpressionStatement', () => {
       let call = (
         <ExpressionStatement>
-          <CallExpression name="foo"/>
+          <CallExpression callee={new Identifier({name: "foo"})}/>
         </ExpressionStatement>
       ) as ExpressionStatement
       expect(call.format()).toBe("foo();")
@@ -169,7 +180,7 @@ describe('jscode', () => {
 
       let func = (
         <ReturnStatement>
-          <CallExpression name="toInt">
+          <CallExpression callee={new Identifier({name: "toInt"})}>
             <Identifier name="approx"/>
           </CallExpression>
         </ReturnStatement>
@@ -202,6 +213,45 @@ describe('jscode', () => {
       let prototypefunc = new MemberExpression({object: thisprototype, property: new Identifier({name: "func"})}, []);
       let funcfoo = new MemberExpression({object: prototypefunc, property: new Identifier({name: "foo"})}, []);
       expect(funcfoo.format()).toBe("this.prototype.func.foo");
+    });
+
+
+    it('AssignmentExpression', () => {
+      let variable = (
+        <AssignmentExpression
+        operator={AssignmentOperator.Equals}
+        left={new Identifier({name: "foo"})}
+        right={new Literal({value:"foo"})}
+        />
+      ) as AssignmentExpression
+      expect(variable.format()).toBe("foo = \"foo\"");
+
+      let limitFunc = (
+          <CallExpression callee={new Identifier({name: "limit"})}>
+            <Literal value={4}/>
+          </CallExpression>
+      ) as CallExpression
+
+      let fromFunc = (
+        <AssignmentExpression
+          operator={AssignmentOperator.MultiplyEquals}
+          left={new Identifier({name: "foo"})}
+          right={limitFunc}
+        />
+      ) as AssignmentExpression
+      expect(fromFunc.format()).toBe("foo *= limit(4)");
+
+
+      //this.level = level
+      let thisLevel = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({name: "level"})}/> as MemberExpression
+      let memberAndIdentifier = (
+        <AssignmentExpression
+          operator={AssignmentOperator.Equals}
+          left={thisLevel}
+          right={new Identifier({name: "level"})}
+        />
+      ) as AssignmentExpression
+      expect(memberAndIdentifier.format()).toBe("this.level = level");
     });
 
 });
