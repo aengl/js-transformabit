@@ -210,6 +210,17 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   /**
+   * Returns the node at the root of the current AST.
+   */
+  getRoot() {
+    let path = this._path;
+    while (path.parentPath) {
+      path = path.parentPath;
+    }
+    return JsNode.fromPath(path);
+  }
+
+  /**
    * Replaces the current node with another.
    *
    * Side-effects are immediately applied to the current AST and all other

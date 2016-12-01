@@ -40,15 +40,6 @@ describe('node', () => {
   });
 
   it('find closest parent', () => {
-    let code = 'let foo = 42;';
-    let node = JsNode.fromModuleCode(code);
-    let identifier = node.findFirstChildOfType(t.Identifier);
-    expect(identifier.format()).toBe('foo');
-    let declaration = identifier.findClosestParentOfType(t.Declaration);
-    expect(declaration.format()).toBe(code);
-  });
-
-  it('find closest parent #2', () => {
     let code = 'class Foo { bar() {} }';
     let node = JsNode.fromModuleCode(code);
     let method = node.findFirstChildOfType(t.MethodDefinition);
@@ -79,6 +70,14 @@ describe('node', () => {
     let node = JsNode.fromModuleCode(code).findFirstChildOfType(t.Literal);
     expect(node.ascend().format()).toBe('foo = 42');
     expect(node.ascend(node => node.check(t.Program)).format()).toBe(code);
+  });
+
+  it('get root', () => {
+    let code = 'const foo = 42;';
+    let node = JsNode.fromModuleCode(code);
+    let literal = node.findFirstChildOfType(t.Literal);
+    expect(literal.format()).toBe('42');
+    expect(literal.getRoot().format()).toBe(code);
   });
 
   it('replace', () => {
