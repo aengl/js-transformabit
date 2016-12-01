@@ -35,7 +35,7 @@ describe('demo', () => {
           <VariableDeclaration name='baz' kind={VariableKind.Let}>
             <Literal value={42}/>
           </VariableDeclaration>
-        </BlockStatement> as BlockStatement
+        </BlockStatement>
       );
     expect(node.format()).toBe(expectedCode);
   });

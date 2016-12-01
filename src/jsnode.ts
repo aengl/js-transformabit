@@ -49,7 +49,7 @@ export class JsNodeCollection {
 /**
  * Represents a node in the AST tree.
  */
-export class JsNode<NodeType extends Node> {
+export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   _node: NodeType;
   _path: Path;
 
@@ -215,13 +215,13 @@ export class JsNode<NodeType extends Node> {
    * Side-effects are immediately applied to the current AST and all other
    * ASTs that reference this AST.
    */
-  replace(node: (GenericJsNode | Node)): GenericJsNode {
+  replace(node: (transformabit.JsNode | Node)): GenericJsNode {
     console.assert(this._path);
     if (node instanceof JsNode) {
       this._path.replace(node._node);
       this._node = <NodeType>node._node;
     } else {
-      this._path.replace(node);
+      this._path.replace(<NodeType>node);
       this._node = <NodeType>node;
     }
     return this;
