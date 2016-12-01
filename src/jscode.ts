@@ -299,7 +299,7 @@ export class ExpressionStatement extends JsNode<ast.ExpressionStatement> {
 }
 
 /*========================================================================
-                            Expression Statement
+                            Return Statement
 =========================================================================*/
 
 export type ReturnStatementProps = {
@@ -314,4 +314,45 @@ export class ReturnStatement extends JsNode<ast.ReturnStatement> {
     this._node = <ast.ReturnStatement>ast.builders["returnStatement"](getSingleExpression(children, true, "ReturnStatement"));
   }
 
+}
+
+/*========================================================================
+                            This Expression
+=========================================================================*/
+
+export type ThisExpressionProps = {
+
+}
+
+export class ThisExpression extends JsNode<ast.ThisExpression> {
+
+  props: ThisExpressionProps;
+  constructor(props: ThisExpressionProps, children: GenericJsNode[]) {
+    super();
+    this._node = <ast.ThisExpression>ast.builders["thisExpression"]();
+  }
+}
+
+/*========================================================================
+                            Member Expression
+=========================================================================*/
+
+export type MemberExpressionProps = {
+  object?: ThisExpression,
+  property: Identifier
+}
+
+export class MemberExpression extends JsNode<ast.MemberExpression> {
+
+  props: MemberExpressionProps;
+  constructor(props: MemberExpressionProps, children: GenericJsNode[]) {
+    super();
+    let object: ast.Node;
+    if (!props.object) {
+      object = new ThisExpression({}, []).getNode();
+    } else {
+      object = props.object.getNode();
+    }
+    this._node = <ast.MemberExpression>ast.builders["memberExpression"](object, props.property.getNode());
+  }
 }

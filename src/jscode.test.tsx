@@ -10,6 +10,8 @@ import {
   FunctionDeclaration,
   ExpressionStatement,
   ReturnStatement,
+  ThisExpression,
+  MemberExpression,
   JsCode
 } from './jscode'
 
@@ -178,6 +180,22 @@ describe('jscode', () => {
         <ReturnStatement/>
       ) as ReturnStatement
       expect(nothing.format()).toBe("return;");
+    });
+
+    it('ThisExpression', () => {
+      let ths = <ThisExpression/> as ThisExpression
+      expect(ths.format()).toBe("this");
+      let thss = new ThisExpression({},[]);
+      expect(thss.format()).toBe("this");
+    });
+
+
+    it('MemberExpression', () => {
+      let thisFoo = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({name: "foo"})}/> as ThisExpression
+      expect(thisFoo.format()).toBe("this.foo");
+
+      let noThis = <MemberExpression property={new Identifier({name: "bar"})}/> as ThisExpression
+      expect(noThis.format()).toBe("this.bar");
     });
 
 });
