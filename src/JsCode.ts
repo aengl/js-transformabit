@@ -1,5 +1,5 @@
 
-import {JsNode, GenericJsNode} from './jsnode';
+import { JsNode, GenericJsNode } from './jsnode';
 import * as ast from 'ast-types';
 
 export class JsCode {
@@ -23,7 +23,7 @@ export enum VariableKind {
 export type VariableDeclarationProps = {
   name?: string,
   kind?: VariableKind
-}
+};
 
 export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
 
@@ -55,7 +55,7 @@ export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
   private getDeclarators(props: VariableDeclarationProps, children: GenericJsNode[]): ast.Node[] {
     let nodes = new Array<ast.Node>();
     if (props.name) {
-      nodes.push(new VariableDeclarator({name: props.name}, children).getNode());
+      nodes.push(new VariableDeclarator({ name: props.name }, children).getNode());
       return nodes;
     }
     for (let index in children) {
@@ -77,14 +77,14 @@ export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
 
 export type VariableDeclaratorProps = {
   name: string
-}
+};
 
 export class VariableDeclarator extends JsNode<ast.VariableDeclarator> {
 
   props: VariableDeclaratorProps;
   constructor(props: VariableDeclaratorProps, children: GenericJsNode[]) {
     super();
-    let identifier = new Identifier({name: props.name}).getNode();
+    let identifier = new Identifier({ name: props.name }).getNode();
     let init = this.getInit(children);
     this._node = <ast.VariableDeclarator>ast.builders["variableDeclarator"](identifier, init);
   }
@@ -116,14 +116,13 @@ export class VariableDeclarator extends JsNode<ast.VariableDeclarator> {
 
 export type LiteralProps = {
   value: string | number | boolean | null
-}
+};
 
 export class Literal extends JsNode<ast.Literal> {
 
   props: LiteralProps;
   constructor(props: LiteralProps) {
-    super();
-    this._node = <ast.Literal>ast.builders["literal"](props.value, props.value);
+    super(<ast.Literal>ast.builders["literal"](props.value, props.value));
   }
 }
 
@@ -134,14 +133,13 @@ export class Literal extends JsNode<ast.Literal> {
 
 export type IdentifierProps = {
   name: string
-}
+};
 
 export class Identifier extends JsNode<ast.Identifier> {
 
   props: IdentifierProps;
   constructor(props: IdentifierProps) {
-    super();
-    this._node = <ast.Identifier>ast.builders["identifier"](props.name);
+    super(<ast.Identifier>ast.builders["identifier"](props.name));
   }
 }
 
@@ -152,7 +150,7 @@ export class Identifier extends JsNode<ast.Identifier> {
 
 export type CallExpressionProps = {
   callee: Identifier | MemberExpression
-}
+};
 
 export class CallExpression extends JsNode<ast.CallExpression> {
 
@@ -192,7 +190,7 @@ export class CallExpression extends JsNode<ast.CallExpression> {
 
 export type FunctionDeclarationProps = {
   name: string
-}
+};
 
 export class FunctionDeclaration extends JsNode<ast.FunctionDeclaration> {
 
@@ -200,7 +198,7 @@ export class FunctionDeclaration extends JsNode<ast.FunctionDeclaration> {
   constructor(props: FunctionDeclarationProps, children: GenericJsNode[]) {
     super();
 
-    let identifier = new Identifier({name: props.name}).getNode();
+    let identifier = new Identifier({ name: props.name }).getNode();
     let params = this.getParameters(children);
     let body = this.getBody(children);
 
@@ -239,7 +237,7 @@ export class FunctionDeclaration extends JsNode<ast.FunctionDeclaration> {
 
 export type BlockStatementProps = {
 
-}
+};
 
 export class BlockStatement extends JsNode<ast.BlockStatement> {
 
@@ -259,7 +257,7 @@ export class BlockStatement extends JsNode<ast.BlockStatement> {
 =========================================================================*/
 
 function getSingleExpression(children: GenericJsNode[], allowNull: boolean, statement: string): ast.Node {
-  if (children.length == 0) {
+  if (children.length === 0) {
     if (!allowNull) {
       throw new Error("Expression statement must contain 1 statement");
     }
@@ -286,14 +284,14 @@ function getSingleExpression(children: GenericJsNode[], allowNull: boolean, stat
 
 export type ExpressionStatementProps = {
 
-}
+};
 
 export class ExpressionStatement extends JsNode<ast.ExpressionStatement> {
 
   props: ExpressionStatementProps;
   constructor(props: ExpressionStatementProps, children: GenericJsNode[]) {
-    super();
-    this._node = <ast.ExpressionStatement>ast.builders["expressionStatement"](getSingleExpression(children, false, "ExpressionStatement"));
+    super(<ast.ExpressionStatement>ast.builders["expressionStatement"](
+      getSingleExpression(children, false, "ExpressionStatement")));
   }
 
 }
@@ -304,14 +302,14 @@ export class ExpressionStatement extends JsNode<ast.ExpressionStatement> {
 
 export type ReturnStatementProps = {
 
-}
+};
 
 export class ReturnStatement extends JsNode<ast.ReturnStatement> {
 
   props: ReturnStatementProps;
   constructor(props: ReturnStatementProps, children: GenericJsNode[]) {
-    super();
-    this._node = <ast.ReturnStatement>ast.builders["returnStatement"](getSingleExpression(children, true, "ReturnStatement"));
+    super(<ast.ReturnStatement>ast.builders["returnStatement"](
+      getSingleExpression(children, true, "ReturnStatement")));
   }
 
 }
@@ -322,14 +320,13 @@ export class ReturnStatement extends JsNode<ast.ReturnStatement> {
 
 export type ThisExpressionProps = {
 
-}
+};
 
 export class ThisExpression extends JsNode<ast.ThisExpression> {
 
   props: ThisExpressionProps;
   constructor(props: ThisExpressionProps, children: GenericJsNode[]) {
-    super();
-    this._node = <ast.ThisExpression>ast.builders["thisExpression"]();
+    super(<ast.ThisExpression>ast.builders["thisExpression"]());
   }
 }
 
@@ -340,7 +337,7 @@ export class ThisExpression extends JsNode<ast.ThisExpression> {
 export type MemberExpressionProps = {
   object?: ThisExpression | MemberExpression,
   property: Identifier
-}
+};
 
 export class MemberExpression extends JsNode<ast.MemberExpression> {
 
@@ -376,7 +373,7 @@ export type AssignmentExpressionProps = {
   operator: AssignmentOperator,
   left: Identifier | MemberExpression,
   right: Identifier | Literal | CallExpression
-}
+};
 
 export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
 
@@ -389,14 +386,14 @@ export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
 
   private getOperatorString(props: AssignmentExpressionProps): string {
     switch (props.operator) {
-      case AssignmentOperator.Equals: return "="
-      case AssignmentOperator.PlusEquals: return "+="
-      case AssignmentOperator.MinusEquals: return "-="
-      case AssignmentOperator.MultiplyEquals: return "*="
-      case AssignmentOperator.DivideEquals: return "/="
-      case AssignmentOperator.ModularEquals: return "%="
-      case AssignmentOperator.ShiftLeftEquals: return "<<="
-      case AssignmentOperator.ShiftRightEquals: return ">>="
+      case AssignmentOperator.Equals: return "=";
+      case AssignmentOperator.PlusEquals: return "+=";
+      case AssignmentOperator.MinusEquals: return "-=";
+      case AssignmentOperator.MultiplyEquals: return "*=";
+      case AssignmentOperator.DivideEquals: return "/=";
+      case AssignmentOperator.ModularEquals: return "%=";
+      case AssignmentOperator.ShiftLeftEquals: return "<<=";
+      case AssignmentOperator.ShiftRightEquals: return ">>=";
     }
   }
 }
@@ -408,7 +405,7 @@ export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
 export type ClassDeclarationProps = {
   id: string | Identifier,
   superClass?: string | Identifier
-}
+};
 
 export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
 
@@ -423,9 +420,9 @@ export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
 
   private getId(value: string | Identifier): ast.Node {
     if (value.constructor.name === "String") {
-      return new Identifier({name: <string>value}).getNode();
+      return new Identifier({ name: <string>value }).getNode();
     }
-    return  (value as Identifier).getNode();
+    return (value as Identifier).getNode();
   }
 
   private getSuperClass(props: ClassDeclarationProps): ast.Node {
@@ -433,7 +430,7 @@ export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
       return null;
     }
     if (props.superClass.constructor.name === "String") {
-      return new Identifier({name: <string>props.superClass}).getNode();
+      return new Identifier({ name: <string>props.superClass }).getNode();
     }
     return (props.superClass as Identifier).getNode();
   }
@@ -445,13 +442,12 @@ export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
 
 export type ClassBodyProps = {
 
-}
+};
 
 export class ClassBody extends JsNode<ast.ClassBody> {
 
   props: ClassBodyProps;
   constructor(props: ClassBodyProps, children: GenericJsNode[]) {
-    super();
-    this._node = <ast.ClassBody>ast.builders["classBody"]([]);
+    super(<ast.ClassBody>ast.builders["classBody"]([]));
   }
 }

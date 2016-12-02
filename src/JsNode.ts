@@ -89,20 +89,20 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
-    return new JsNode(collection.get());
+    return new JsNode(null, collection.get());
   }
 
   static fromPath(path: Path): GenericJsNode {
-    return new JsNode(path);
+    return new JsNode(null, path);
   }
 
   static fromNode(astNode: Node): GenericJsNode {
-    return new JsNode(null, astNode);
+    return new JsNode(astNode);
   }
 
-  constructor(path?: Path, node?: NodeType) {
+  constructor(node?: NodeType, path?: Path) {
+    this._node = node || (path ? <NodeType>path.value : null);
     this._path = path;
-    this._node = node || <NodeType>path.value;
   }
 
   hasParent(): boolean {
@@ -110,7 +110,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   /**
-   * Returns the source code for the
+   * Returns the source code for the AST.
    */
   format(): string {
     return js(this._node).toSource().replace(/\r/g, '');
