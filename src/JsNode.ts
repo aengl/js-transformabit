@@ -1,20 +1,20 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import { Node, Path, Type, namedTypes as t } from 'ast-types';
+import { Node, Path, Type, Program, namedTypes as t, builders, visit } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
-
-import ast = require('ast-types');
 import js = require('jscodeshift');
 
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNode = JsNode<Node>;
+export const NamedTypes = t;
+export const Builders = builders;
 
 const isCollection = (obj: any): obj is Collection => obj.constructor.name === 'Collection';
 const isPath = (obj: any): obj is Path => obj instanceof Path;
 // const isNode = (obj: any): obj is Node => !!obj.type;
 
 /**
- * Represents a collection of nodes. These nodes can be anywhere in the
+ * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
 export class JsNodeCollection {
   _paths: Path[];
@@ -38,11 +38,19 @@ export class JsNodeCollection {
    * If the node represents a collection of nodes, this method will pick the
    * node at a specified index.
    */
-  at(index: number): GenericJsNode {
+  at<T extends Node>(index: number): JsNode<T> {
     if (index >= this._paths.length) {
       throw new Error('Index out of bounds');
     }
-    return JsNode.fromPath(this._paths[index]);
+    return <JsNode<T>>JsNode.fromPath(this._paths[index]);
+  }
+
+  map<T extends Node>(func: (node: JsNode<T>, index?: number) => any): any[] {
+    return this._paths.map((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
+  }
+
+  forEach<T extends Node>(func: (node: JsNode<T>, index?: number) => any): void {
+    this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 }
 
@@ -58,7 +66,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   static fromCode(code: string, args?: Object): JsNodeCollection {
-    let program = <ast.Program>JsNode
+    const program = <Program>JsNode
       .fromCollection(js(code, args))
       .findFirstChildOfType(t.Program)
       .getNode();
@@ -66,21 +74,21 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
-    let node = new JsNode();
+    const node = new JsNode();
     node._node = collection.nodes()[0];
     node._path = collection.get();
     return node;
   }
 
   static fromPath(path: Path): GenericJsNode {
-    let node = new JsNode();
+    const node = new JsNode();
     node._node = path.value;
     node._path = path;
     return node;
   }
 
   static fromNode(astNode: Node): GenericJsNode {
-    let node = new JsNode();
+    const node = new JsNode();
     node._node = astNode;
     node._path = null;
     return node;
@@ -118,7 +126,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  getNode(): Node {
+  getNode(): NodeType {
     return this._node;
   }
 
@@ -140,18 +148,18 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   findFirstChildOfType(type: TypeIdentifier, attr?: {}): GenericJsNode {
-    let collection = js(this._node).find(type, attr);
+    const collection = js(this._node).find(type, attr);
     return JsNode.fromPath(collection.get());
   }
 
   findChildrenOfType(type: TypeIdentifier, attr?: {}): JsNodeCollection {
-    let collection = js(this._node).find(type, attr);
+    const collection = js(this._node).find(type, attr);
     return new JsNodeCollection(collection);
   }
 
   findClosestParentOfType(type: TypeIdentifier, attr?: {}): GenericJsNode {
     console.assert(this._path);
-    let closest = js(this._path).closest(type, attr);
+    const closest = js(this._path).closest(type, attr);
     if (closest.size() > 0) {
       return JsNode.fromCollection(closest);
     }
@@ -159,7 +167,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
 
   findClosestScope(): GenericJsNode {
     console.assert(this._path);
-    let closest = js(this._path).closestScope();
+    const closest = js(this._path).closestScope();
     if (closest.size() > 0) {
       return JsNode.fromCollection(closest);
     }
@@ -172,14 +180,14 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   descend(acceptCallback?: (node: GenericJsNode) => boolean): GenericJsNode {
     let skip = true;
     let result: Path;
-    ast.visit(this._node, {
+    visit(this._node, {
       visitNode: function (p: Path) {
         if (skip) {
           // This skips the node itself (just traverses children)
           skip = false;
           this.traverse(p);
         } else {
-          let node = JsNode.fromPath(p);
+          const node = JsNode.fromPath(p);
           if (acceptCallback === undefined || acceptCallback(node)) {
             result = p;
             return false;
@@ -207,6 +215,17 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
     if (currentPath) {
       return JsNode.fromPath(currentPath);
     }
+  }
+
+  /**
+   * Returns the node at the root of the current AST.
+   */
+  getRoot() {
+    let path = this._path;
+    while (path.parentPath) {
+      path = path.parentPath;
+    }
+    return JsNode.fromPath(path);
   }
 
   /**
