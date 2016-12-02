@@ -53,6 +53,10 @@ export class JsNodeCollection {
     this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 
+  /**
+   * Returns true if the predicate evaluates to true for any node in the
+   * collection.
+   */
   has<T extends Node>(func: (node: JsNode<T>, index?: number) => any): boolean {
     let i = 0;
     for (let path of this._paths) {

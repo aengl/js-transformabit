@@ -8,6 +8,7 @@ import {
   BlockStatement,
   FunctionDeclaration,
   ExpressionStatement,
+  ReturnStatement,
   JsCode
 } from './jscode';
 
@@ -24,6 +25,7 @@ describe('demo', () => {
 `class Foo {
   bar() {
     let baz = 42;
+    return baz;
   }
 }`;
     let node = JsNode.fromModuleCode(code);
@@ -35,6 +37,9 @@ describe('demo', () => {
           <VariableDeclaration name='baz' kind={VariableKind.Let}>
             <Literal value={42}/>
           </VariableDeclaration>
+          <ReturnStatement>
+            <Identifier name='baz' />
+          </ReturnStatement>
         </BlockStatement>
       );
     expect(node.format()).toBe(expectedCode);
