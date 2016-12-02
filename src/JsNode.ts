@@ -89,29 +89,20 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
-    const node = new JsNode();
-    node._node = collection.nodes()[0];
-    node._path = collection.get();
-    return node;
+    return new JsNode(collection.get());
   }
 
   static fromPath(path: Path): GenericJsNode {
-    const node = new JsNode();
-    node._node = path.value;
-    node._path = path;
-    return node;
+    return new JsNode(path);
   }
 
   static fromNode(astNode: Node): GenericJsNode {
-    const node = new JsNode();
-    node._node = astNode;
-    node._path = null;
-    return node;
+    return new JsNode(null, astNode);
   }
 
-  constructor(node?: NodeType, path?: Path) {
-    this._node = node;
+  constructor(path?: Path, node?: NodeType) {
     this._path = path;
+    this._node = node || <NodeType>path.value;
   }
 
   hasParent(): boolean {
