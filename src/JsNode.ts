@@ -52,6 +52,17 @@ export class JsNodeCollection {
   forEach<T extends Node>(func: (node: JsNode<T>, index?: number) => any): void {
     this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
   }
+
+  has<T extends Node>(func: (node: JsNode<T>, index?: number) => any): boolean {
+    let i = 0;
+    for (let path of this._paths) {
+      if (func(<JsNode<T>>JsNode.fromPath(path), i)) {
+        return true;
+      }
+      i++;
+    }
+    return false;
+  }
 }
 
 /**
