@@ -1,0 +1,11 @@
+input1.js:
+  expect: "output1.js"
+  config:
+    - "bar"
+    - "foo"
+
+input2.js:
+  expect: false
+  config:
+    - "bar"
+    - "foo"
