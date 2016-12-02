@@ -1,6 +1,6 @@
 import {Transformation} from './Transformation';
-import {GenericJsNode} from './jsnode';
-import {namedTypes as t, Identifier, Path}  from 'ast-types';
+import {GenericJsNode, NamedTypes as t} from './jsnode';
+import {Identifier}  from 'ast-types';
 import {Project} from './Project';
 
 export class RenameVariable implements Transformation {
