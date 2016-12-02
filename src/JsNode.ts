@@ -45,12 +45,12 @@ export class JsNodeCollection {
     return <JsNode<T>>JsNode.fromPath(this._paths[index]);
   }
 
-  map(func: (node: GenericJsNode, index?: number) => any): any[] {
-    return this._paths.map((value, index, array) => func(JsNode.fromPath(value), index));
+  map<T extends Node>(func: (node: JsNode<T>, index?: number) => any): any[] {
+    return this._paths.map((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 
-  forEach(func: (node: GenericJsNode, index?: number) => any): void {
-    this._paths.forEach((value, index, array) => func(JsNode.fromPath(value), index));
+  forEach<T extends Node>(func: (node: JsNode<T>, index?: number) => any): void {
+    this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 }
 

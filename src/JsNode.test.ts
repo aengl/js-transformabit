@@ -9,6 +9,24 @@ describe('JsNodeCollection', () => {
     expect(identifiers.size()).toBe(3);
     expect(identifiers.at<Identifier>(2).getNode().name).toBe('baz');
   });
+
+  it('map', () => {
+    const code = 'let foo, bar; let baz;';
+    const identifiers = JsNode.fromModuleCode(code)
+      .findChildrenOfType(t.Identifier)
+      .map<Identifier>(n => n.getNode().name)
+      .join();
+    expect(identifiers).toBe('foo,bar,baz');
+  });
+
+  it('forEach', () => {
+    const code = 'let foo, bar; let baz;';
+    const node = JsNode.fromModuleCode(code);
+    node
+      .findChildrenOfType(t.Identifier)
+      .forEach<Identifier>(n => n.getNode().name = n.getNode().name.split('').reverse().join(''));
+    expect(node.format()).toBe('let oof, rab; let zab;');
+  });
 });
 
 describe('JsNode', () => {
