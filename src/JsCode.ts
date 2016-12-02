@@ -1,5 +1,5 @@
 
-import { JsNode, GenericJsNode } from './jsnode';
+import { JsNode, GenericJsNode } from './JsNode';
 import * as ast from 'ast-types';
 
 export class JsCode {

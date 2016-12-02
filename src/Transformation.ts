@@ -1,4 +1,4 @@
-import {GenericJsNode} from './jsnode';
+import {GenericJsNode} from './JsNode';
 import {Project} from './Project'
 
 export interface Transformation {

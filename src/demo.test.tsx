@@ -12,7 +12,7 @@ import {
   JsCode
 } from './JsCode';
 
-import { JsNode } from './jsnode';
+import { JsNode } from './JsNode';
 import { namedTypes as t } from 'ast-types';
 
 describe('demo', () => {

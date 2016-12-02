@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { JsNode, GenericJsNode } from './jsnode';
+import { JsNode, GenericJsNode } from './JsNode';
 import {Transformation} from './Transformation';
 import {RenameVariable} from './RenameVariable';
 import * as yaml from "js-yaml";
