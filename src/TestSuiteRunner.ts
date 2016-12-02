@@ -29,29 +29,33 @@ export class TestSuiteRunner {
 
   testTransformation(transformation: Transformation): void {
     const config = yaml.safeLoad(fs.readFileSync(`./tests/${transformation.constructor.name}/test.yml`).toString());
-    const inputs = fs.readdirSync(inputRoot);
-    inputs.forEach(inputFile => this.testInput(transformation, inputFile, config));
+
+    for (let testCase in config) {
+      this.testInput(transformation, testCase, config[testCase]);
+    }
 
   }
 
-  testInput(transformation: Transformation, inputFile: string, config: any): void {
-    const node = JsNode.fromModuleCode(fs.readFileSync(path.join(inputRoot, inputFile)).toString());
+  testInput(transformation: Transformation, testCaseName: string, config: any): void {
+    const node = JsNode.fromModuleCode(fs.readFileSync(path.join(inputRoot, config.input)).toString());
 
-    transformation.configure(config[inputFile].config);
+    transformation.configure(config.params);
     const checkWasTrue = transformation.check(node, null);
 
-    if (!config[inputFile].expect && checkWasTrue) {
-      throw new Error(`Transformation should not have approved of ${inputFile}`);
+    if (config.output !== false && !checkWasTrue) {
+      throw new Error(`Transformation '${transformation.constructor.name}' is not applicable to test case '${testCaseName}', but is expected to be`);
+    } else if (config.output === false && checkWasTrue) {
+      throw new Error(`Transformation '${transformation.constructor.name}' applied to '${testCaseName}', but is not expected to be`);
     }
 
     if (!checkWasTrue) {
       return;
     }
 
-    const output: string = fs.readFileSync(`./tests/${transformation.constructor.name}/${config[inputFile].expect}`).toString();
+    const output: string = fs.readFileSync(`./tests/${transformation.constructor.name}/${config.output}`).toString();
     const result = transformation.apply(node, null).format();
     if (result !== output) {
-      throw new Error(`Output did not match, expecting:\n${output}\nreceived:\n${result}\n`);
+      throw new Error(`Test case '${testCaseName}' failed for transformation '${transformation.constructor.name}', expecting:\n${output}\nreceived:\n${result}\n`);
     }
   }
 

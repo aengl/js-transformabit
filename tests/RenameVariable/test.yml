@@ -1,11 +1,13 @@
-input1.js:
-  expect: "output1.js"
-  config:
+var_name:
+  input: "input1.js"
+  output: "output1.js"
+  params:
     - "bar"
     - "foo"
 
-input2.js:
-  expect: false
-  config:
+func_name:
+  input: "input2.js"
+  output: false
+  params:
     - "bar"
     - "foo"
