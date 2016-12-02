@@ -16,7 +16,7 @@ import {
   AssignmentOperator,
   ClassDeclaration,
   JsCode
-} from './jscode'
+} from './JsCode'
 
 
 

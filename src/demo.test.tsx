@@ -10,7 +10,7 @@ import {
   ExpressionStatement,
   ReturnStatement,
   JsCode
-} from './jscode';
+} from './JsCode';
 
 import { JsNode } from './jsnode';
 import { namedTypes as t } from 'ast-types';
