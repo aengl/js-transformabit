@@ -27,6 +27,14 @@ describe('JsNodeCollection', () => {
       .forEach<Identifier>(n => n.getNode().name = n.getNode().name.split('').reverse().join(''));
     expect(node.format()).toBe('let oof, rab; let zab;');
   });
+
+  it('has', () => {
+    const code = 'let foo, bar; let baz;';
+    const nodes = JsNode.fromModuleCode(code)
+      .findChildrenOfType(t.Identifier);
+    expect(nodes.has<Identifier>(n => n.getNode().name === 'baz')).toBe(true);
+    expect(nodes.has<Identifier>(n => n.getNode().name === 'qux')).toBe(false);
+  });
 });
 
 describe('JsNode', () => {
