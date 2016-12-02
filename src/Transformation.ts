@@ -1,5 +1,5 @@
-import {GenericJsNode} from './JsNode';
-import {Project} from './Project'
+import { GenericJsNode } from './JsNode';
+import { Project } from './Project';
 
 export interface Transformation {
   configure(...args: any[]): void;

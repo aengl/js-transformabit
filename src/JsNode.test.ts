@@ -122,4 +122,13 @@ describe('JsNode', () => {
       .replace(Builders['literal'](23));
     expect(node.format()).toBe(code.replace('42', '23'));
   });
+
+  it('remove', () => {
+    const code = 'const foo = 42;';
+    const node = JsNode.fromModuleCode(code);
+    node
+      .findFirstChildOfType(t.Literal)
+      .remove();
+    expect(node.format()).toBe('const foo;');
+  });
 });

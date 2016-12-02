@@ -592,6 +592,34 @@ export class Path {
   replace(replacement: Node): Array<Path>;
 }
 
+export class NodePath {
+  node: Node;
+  parent: Path;
+  scope: Scope;
+
+  constructor(value: Path, parentPath?: Path, name?: string);
+
+  replace(): Path;
+  prune(): NodePath;
+  getValueProperty(name: string): any;
+  needsParens(assumeExpressionContext: boolean): boolean;
+  canBeFirstInStatement(): boolean;
+  firstInStatement(): boolean;
+}
+
+export class Scope {
+  declares(name: string): boolean;
+  declaresType(name: string): boolean;
+  declareTemporary(name: string): Identifier;
+  injectTemporary(identifier: string, init: any): Identifier;
+  scan(force: boolean): void;
+  getBindings(): Object;
+  getTypes(): Object;
+  lookup(name: string): Scope;
+  lookupType(name: string): Scope;
+  getGlobalScope(): Scope;
+}
+
 export var builtInTypes: {
   string: Type,
   function: Type,

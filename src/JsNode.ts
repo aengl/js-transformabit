@@ -240,7 +240,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    * Side-effects are immediately applied to the current AST and all other
    * ASTs that reference this AST.
    */
-  replace(node: (transformabit.JsNode | Node)): GenericJsNode {
+  replace(node: (transformabit.JsNode | Node)): JsNode<NodeType> {
     console.assert(this._path);
     if (node instanceof JsNode) {
       this._path.replace(node._node);
@@ -250,5 +250,13 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
       this._node = <NodeType>node;
     }
     return this;
+  }
+
+  /**
+   * Removes the sub-tree from the AST that has this node at the root.
+   */
+  remove(): void {
+    console.assert(this._path);
+    js(this._path).remove();
   }
 }
