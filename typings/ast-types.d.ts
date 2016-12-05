@@ -191,6 +191,7 @@ export interface VariableDeclarator extends BaseNode {
   init?: Expression;
 }
 
+
 type Expression =
   ThisExpression | ArrayExpression | ObjectExpression | FunctionExpression |
   ArrowFunctionExpression | YieldExpression | Literal | UnaryExpression |
@@ -522,6 +523,20 @@ export interface AwaitExpression extends BaseExpression {
   argument: Expression;
 }
 
+export interface ClassProperty extends BaseNode {
+  type: "ClassProperty";
+  key: Literal | Identifier | Expression;
+  computed: boolean;
+}
+
+type ClassBodyElement =
+  MethodDefinition | VariableDeclarator | ClassPropertyDefinition | ClassProperty;
+
+export interface ClassPropertyDefinition extends BaseNode {
+  type: "ClassProperty";
+  definition: ClassBodyElement;
+}
+
 type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
 
 export function defineMethod(name: string, func: Function): Function;
@@ -830,4 +845,20 @@ export var namedTypes: {
   ForAwaitStatement: Type
 };
 
-export var builders: { [name: string]: (...args: Array<any>) => Node };
+export var builders: {
+  assignmentExpression: (operator: string, left: Pattern, right: Expression) => AssignmentExpression,
+  blockStatement: (body: Statement[]) => BlockStatement,
+  callExpression: (callee: Expression, args: Expression[]) => CallExpression,
+  classBody: (body: ClassBodyElement[]) => ClassBody,
+  classDeclaration: (id: Identifier, body: ClassBody, superClass?: Expression) => ClassDeclaration,
+  expressionStatement: (expression: Expression) => ExpressionStatement,
+  functionDeclaration: (id: Identifier, params: Pattern[], body: (BlockStatement | Expression)) => FunctionDeclaration,
+  literal: (value: (String | Boolean | Number | RegExp), regex?: any) => Literal,
+  memberExpression: (object: Expression, property: (Identifier | Expression), computed?: Boolean) => MemberExpression,
+  identifier: (name: string) => Identifier,
+  returnStatement: (argument: Expression) => ReturnStatement,
+  thisExpression: () => ThisExpression,
+  variableDeclaration: (kind: string, declarations: VariableDeclarator[]) => VariableDeclaration,
+  variableDeclarator: (id: Pattern, init: Expression) => VariableDeclarator,
+  [name: string]: (...args: Array<any>) => Node
+};

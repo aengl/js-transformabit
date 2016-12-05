@@ -149,7 +149,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   /**
    * Returns true if the node type matches the specified type.
    */
-  check(type: TypeIdentifier) {
+  check<T>(type: TypeIdentifier): this is JsNode<T> {
     return this.type() === type.toString();
   }
 
