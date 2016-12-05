@@ -3,7 +3,9 @@ declare namespace transformabit {
 }
 
 declare namespace JSX {
-  interface Element extends transformabit.JsNode {}
+  interface Element extends transformabit.JsNode {
+    format(): string;
+  }
 
   interface IntrinsicElements {
     // [name: string]: any;

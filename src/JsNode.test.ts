@@ -7,14 +7,14 @@ describe('JsNodeCollection', () => {
     const node = JsNode.fromModuleCode(code);
     const identifiers = node.findChildrenOfType(t.Identifier);
     expect(identifiers.size()).toBe(3);
-    expect(identifiers.at<Identifier>(2).getNode().name).toBe('baz');
+    expect(identifiers.at<Identifier>(2).node().name).toBe('baz');
   });
 
   it('map', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
       .findChildrenOfType(t.Identifier)
-      .map<Identifier>(n => n.getNode().name)
+      .map<Identifier>(n => n.node().name)
       .join();
     expect(identifiers).toBe('foo,bar,baz');
   });
@@ -24,7 +24,7 @@ describe('JsNodeCollection', () => {
     const node = JsNode.fromModuleCode(code);
     node
       .findChildrenOfType(t.Identifier)
-      .forEach<Identifier>(n => n.getNode().name = n.getNode().name.split('').reverse().join(''));
+      .forEach<Identifier>(n => n.node().name = n.node().name.split('').reverse().join(''));
     expect(node.format()).toBe('let oof, rab; let zab;');
   });
 
@@ -32,8 +32,8 @@ describe('JsNodeCollection', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
       .findChildrenOfType(t.Identifier);
-    expect(nodes.has<Identifier>(n => n.getNode().name === 'baz')).toBe(true);
-    expect(nodes.has<Identifier>(n => n.getNode().name === 'qux')).toBe(false);
+    expect(nodes.has<Identifier>(n => n.node().name === 'baz')).toBe(true);
+    expect(nodes.has<Identifier>(n => n.node().name === 'qux')).toBe(false);
   });
 });
 
@@ -87,7 +87,7 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code)
       .findFirstChildOfType(t.VariableDeclaration)
       .findClosestScope();
-    expect(node.getType()).toBe(t.FunctionDeclaration.toString());
+    expect(node.type()).toBe(t.FunctionDeclaration.toString());
     expect(node.format()).toBe(code);
   });
 

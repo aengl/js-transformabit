@@ -18,15 +18,15 @@ export class RenameVariable implements Transformation {
   check(root: GenericJsNode, project: Project): boolean {
     return root
       .findChildrenOfType(t.Identifier)
-      .has<Identifier>(n => n.getNode().name === this.oldName);
+      .has<Identifier>(n => n.node().name === this.oldName);
   }
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
     root
       .findChildrenOfType(t.Identifier)
       .forEach<Identifier>(n => {
-        if (n.getNode().name === this.oldName) {
-          n.getNode().name = this.newName;
+        if (n.node().name === this.oldName) {
+          n.node().name = this.newName;
         }
       });
     return root;

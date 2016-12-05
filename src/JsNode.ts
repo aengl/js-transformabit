@@ -84,7 +84,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
     const program = <Program>JsNode
       .fromCollection(js(code, args))
       .findFirstChildOfType(t.Program)
-      .getNode();
+      .node();
     return new JsNodeCollection(program.body);
   }
 
@@ -122,7 +122,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  getPath(): NodePath {
+  path(): NodePath {
     return this._path;
   }
 
@@ -132,7 +132,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  getNode(): NodeType {
+  node(): NodeType {
     return this._node;
   }
 
@@ -142,7 +142,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    *
    * https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
    */
-  getType(): string {
+  type(): string {
     return this._node.type;
   }
 
@@ -150,7 +150,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    * Returns true if the node type matches the specified type.
    */
   check(type: TypeIdentifier) {
-    return this.getType() === type.toString();
+    return this.type() === type.toString();
   }
 
   findFirstChildOfType(type: TypeIdentifier, attr?: {}): GenericJsNode {
