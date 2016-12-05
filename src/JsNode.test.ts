@@ -13,8 +13,8 @@ describe('JsNodeCollection', () => {
   it('map', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
-      .findChildrenOfType(t.Identifier)
-      .map<Identifier>(n => n.node().name)
+      .findChildrenOfType<Identifier>(t.Identifier)
+      .map(n => n.node().name)
       .join();
     expect(identifiers).toBe('foo,bar,baz');
   });
@@ -23,17 +23,17 @@ describe('JsNodeCollection', () => {
     const code = 'let foo, bar; let baz;';
     const node = JsNode.fromModuleCode(code);
     node
-      .findChildrenOfType(t.Identifier)
-      .forEach<Identifier>(n => n.node().name = n.node().name.split('').reverse().join(''));
+      .findChildrenOfType<Identifier>(t.Identifier)
+      .forEach(n => n.node().name = n.node().name.split('').reverse().join(''));
     expect(node.format()).toBe('let oof, rab; let zab;');
   });
 
   it('has', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType(t.Identifier);
-    expect(nodes.has<Identifier>(n => n.node().name === 'baz')).toBe(true);
-    expect(nodes.has<Identifier>(n => n.node().name === 'qux')).toBe(false);
+      .findChildrenOfType<Identifier>(t.Identifier);
+    expect(nodes.has(n => n.node().name === 'baz')).toBe(true);
+    expect(nodes.has(n => n.node().name === 'qux')).toBe(false);
   });
 });
 
