@@ -592,14 +592,13 @@ export class Path {
   replace(replacement: Node): Array<Path>;
 }
 
-export class NodePath {
+export class NodePath extends Path {
   node: Node;
-  parent: Path;
+  parent: NodePath;
   scope: Scope;
 
   constructor(value: Path, parentPath?: Path, name?: string);
 
-  replace(): Path;
   prune(): NodePath;
   getValueProperty(name: string): any;
   needsParens(assumeExpressionContext: boolean): boolean;

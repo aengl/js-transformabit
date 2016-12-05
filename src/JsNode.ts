@@ -1,6 +1,6 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import { Node, Path, Type, Program, namedTypes as t, builders, visit } from 'ast-types';
+import { Node, NodePath, Type, Program, namedTypes as t, builders, visit } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 import js = require('jscodeshift');
 
@@ -10,14 +10,14 @@ export const NamedTypes = t;
 export const Builders = builders;
 
 const isCollection = (obj: any): obj is Collection => obj.constructor.name === 'Collection';
-const isPath = (obj: any): obj is Path => obj instanceof Path;
+const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
 // const isNode = (obj: any): obj is Node => !!obj.type;
 
 /**
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
 export class JsNodeCollection {
-  _paths: Path[];
+  _paths: NodePath[];
 
   constructor(obj: any) {
     if (obj instanceof Array) {
@@ -74,7 +74,7 @@ export class JsNodeCollection {
  */
 export class JsNode<NodeType extends Node> implements transformabit.JsNode {
   _node: NodeType;
-  _path: Path;
+  _path: NodePath;
 
   static fromModuleCode(code: string, args?: Object): GenericJsNode {
     return JsNode.fromCollection(js(code, args));
@@ -92,7 +92,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
     return new JsNode(null, collection.get());
   }
 
-  static fromPath(path: Path): GenericJsNode {
+  static fromPath(path: NodePath): GenericJsNode {
     return new JsNode(null, path);
   }
 
@@ -100,7 +100,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
     return new JsNode(astNode);
   }
 
-  constructor(node?: NodeType, path?: Path) {
+  constructor(node?: NodeType, path?: NodePath) {
     this._node = node || (path ? <NodeType>path.value : null);
     this._path = path;
   }
@@ -122,7 +122,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  getPath(): Path {
+  getPath(): NodePath {
     return this._path;
   }
 
@@ -185,9 +185,9 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    */
   descend(acceptCallback?: (node: GenericJsNode) => boolean): GenericJsNode {
     let skip = true;
-    let result: Path;
+    let result: NodePath;
     visit(this._node, {
-      visitNode: function (p: Path) {
+      visitNode: function(p: NodePath) {
         if (skip) {
           // This skips the node itself (just traverses children)
           skip = false;
@@ -212,10 +212,10 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    */
   ascend(acceptCallback?: (node: GenericJsNode) => boolean): GenericJsNode {
     console.assert(this._path);
-    let currentPath = this._path.parentPath;
+    let currentPath = this._path.parent;
     if (acceptCallback) {
       while (currentPath && !acceptCallback(JsNode.fromPath(currentPath))) {
-        currentPath = currentPath.parentPath;
+        currentPath = currentPath.parent;
       }
     }
     if (currentPath) {
@@ -228,8 +228,8 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    */
   getRoot() {
     let path = this._path;
-    while (path.parentPath) {
-      path = path.parentPath;
+    while (path.parent) {
+      path = path.parent;
     }
     return JsNode.fromPath(path);
   }

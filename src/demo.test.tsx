@@ -35,7 +35,7 @@ describe('demo', () => {
       .replace(
         <BlockStatement>
           <VariableDeclaration name='baz' kind={VariableKind.Let}>
-            <Literal value={42}/>
+            <Literal value={42} />
           </VariableDeclaration>
           <ReturnStatement>
             <Identifier name='baz' />
