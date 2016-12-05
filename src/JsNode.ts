@@ -181,9 +181,9 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
 
   /**
    * Descends the AST and returns the next node that satisfies the
-   * acceptCallback callback.
+   * predicate callback.
    */
-  descend(acceptCallback?: (node: GenericJsNode) => boolean): GenericJsNode {
+  descend(predicate?: (node: GenericJsNode) => boolean): GenericJsNode {
     let skip = true;
     let result: NodePath;
     visit(this._node, {
@@ -194,7 +194,7 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
           this.traverse(p);
         } else {
           const node = JsNode.fromPath(p);
-          if (acceptCallback === undefined || acceptCallback(node)) {
+          if (predicate === undefined || predicate(node)) {
             result = p;
             return false;
           } else {
@@ -208,13 +208,13 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
 
   /**
    * Ascends the AST and returns the first parent node that satisfies the
-   * acceptCallback callback.
+   * predicate callback.
    */
-  ascend(acceptCallback?: (node: GenericJsNode) => boolean): GenericJsNode {
+  ascend(predicate?: (node: GenericJsNode) => boolean): GenericJsNode {
     console.assert(this._path);
     let currentPath = this._path.parent;
-    if (acceptCallback) {
-      while (currentPath && !acceptCallback(JsNode.fromPath(currentPath))) {
+    if (predicate) {
+      while (currentPath && !predicate(JsNode.fromPath(currentPath))) {
         currentPath = currentPath.parent;
       }
     }
@@ -236,9 +236,6 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
 
   /**
    * Replaces the current node with another.
-   *
-   * Side-effects are immediately applied to the current AST and all other
-   * ASTs that reference this AST.
    */
   replace(node: (transformabit.JsNode | Node)): JsNode<NodeType> {
     console.assert(this._path);
@@ -257,6 +254,39 @@ export class JsNode<NodeType extends Node> implements transformabit.JsNode {
    */
   remove(): void {
     console.assert(this._path);
-    js(this._path).remove();
+    this._path.prune();
+  }
+
+  /**
+   * Removes child nodes.
+   */
+  removeChildren(predicate?: (node: GenericJsNode) => boolean): void {
+    let self = this._path.node;
+    visit(this._node, {
+      visitNode: function(p: NodePath) {
+        if (p.parent && p.parent.node === self) {
+          const node = JsNode.fromPath(p);
+          if (predicate === undefined || predicate(node)) {
+            p.prune();
+          }
+        }
+        this.traverse(p);
+      }
+    });
+  }
+
+  /**
+   * Removes all child matching descendants.
+   */
+  removeDescendants(predicate: (node: GenericJsNode) => boolean): void {
+    visit(this._node, {
+      visitNode: function(p: NodePath) {
+        const node = JsNode.fromPath(p);
+        if (predicate(node)) {
+          p.prune();
+        }
+        this.traverse(p);
+      }
+    });
   }
 }

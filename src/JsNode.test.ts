@@ -131,4 +131,20 @@ describe('JsNode', () => {
       .remove();
     expect(node.format()).toBe('const foo;');
   });
+
+  it('remove children', () => {
+    const code = 'class Foo { bar() { return 23; } baz() { return 42; } }';
+    const node = JsNode.fromModuleCode(code);
+    node
+      .findFirstChildOfType(t.ClassBody)
+      .removeChildren();
+    expect(node.format()).toBe('class Foo {}');
+  });
+
+  it('remove ancestors', () => {
+    const code = 'class Foo { bar() { return 23; } baz() { return 42; } }';
+    const node = JsNode.fromModuleCode(code);
+    node.removeDescendants(node => node.check(t.ReturnStatement));
+    expect(node.format()).toBe('class Foo { bar() {} baz() {} }');
+  });
 });
