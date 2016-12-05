@@ -1,5 +1,5 @@
 
-import { JsNode, GenericJsNode } from './JsNode';
+import { JsNode, GenericJsNode, NamedTypes as t } from './JsNode';
 import * as ast from 'ast-types';
 
 export class JsCode {
@@ -14,10 +14,14 @@ export class JsCode {
                             Variable Delcaration
 =========================================================================*/
 
+/**
+ * Right now, string enums are a bit of a hack but will become properly
+ * supported in the future: https://github.com/Microsoft/TypeScript/issues/1206
+ */
 export enum VariableKind {
-  Let = 1,
-  Const,
-  Var
+  Let = <any>'let',
+  Const = <any>'const',
+  Var = <any>'var'
 }
 
 export type VariableDeclarationProps = {
@@ -30,26 +34,10 @@ export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
   props: VariableDeclarationProps;
   constructor(props: VariableDeclarationProps, children: GenericJsNode[]) {
     super();
-    let kindString = this.getKindString(props);
+    let kindString = props.kind || VariableKind.Var;
     let declarators = this.getDeclarators(props, children);
 
     this._node = <ast.VariableDeclaration>ast.builders['variableDeclaration'](kindString, declarators);
-  }
-
-  private getKindString(props: VariableDeclarationProps): string {
-    if (!props.kind) {
-      return "var";
-    }
-
-    if (props.kind === VariableKind.Let) {
-      return "let";
-    } else if (props.kind === VariableKind.Var) {
-      return "var";
-    } else if (props.kind === VariableKind.Const) {
-      return "const";
-    } else {
-      throw new Error("VariableKind if set must be either Let, Const, Var");
-    }
   }
 
   private getDeclarators(props: VariableDeclarationProps, children: GenericJsNode[]): ast.Node[] {
@@ -59,7 +47,7 @@ export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
       return nodes;
     }
     for (let index in children) {
-      if (children[index].check("VariableDeclarator")) {
+      if (children[index].check(t.VariableDeclarator)) {
         nodes.push(children[index].node());
       }
     }
@@ -291,7 +279,7 @@ export class ExpressionStatement extends JsNode<ast.ExpressionStatement> {
   props: ExpressionStatementProps;
   constructor(props: ExpressionStatementProps, children: GenericJsNode[]) {
     super(<ast.ExpressionStatement>ast.builders["expressionStatement"](
-      getSingleExpression(children, false, "ExpressionStatement")));
+      getSingleExpression(children, false, t.ExpressionStatement.toString())));
   }
 
 }
@@ -309,7 +297,7 @@ export class ReturnStatement extends JsNode<ast.ReturnStatement> {
   props: ReturnStatementProps;
   constructor(props: ReturnStatementProps, children: GenericJsNode[]) {
     super(<ast.ReturnStatement>ast.builders["returnStatement"](
-      getSingleExpression(children, true, "ReturnStatement")));
+      getSingleExpression(children, true, t.ReturnStatement.toString())));
   }
 
 }
@@ -359,14 +347,14 @@ export class MemberExpression extends JsNode<ast.MemberExpression> {
 =========================================================================*/
 
 export enum AssignmentOperator {
-  Equals,
-  PlusEquals,
-  MinusEquals,
-  MultiplyEquals,
-  DivideEquals,
-  ModularEquals,
-  ShiftLeftEquals,
-  ShiftRightEquals
+  Equals = <any>'=',
+  PlusEquals = <any>'+=',
+  MinusEquals = <any>'-=',
+  MultiplyEquals = <any>'*=',
+  DivideEquals = <any>'/=',
+  ModularEquals = <any>'%=',
+  ShiftLeftEquals = <any>'<<=',
+  ShiftRightEquals = <any>'>>='
 }
 
 export type AssignmentExpressionProps = {
@@ -380,21 +368,8 @@ export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
   props: AssignmentExpressionProps;
   constructor(props: AssignmentExpressionProps, children: GenericJsNode[]) {
     super();
-    let operator = this.getOperatorString(props);
+    let operator = props.operator;
     this._node = <ast.AssignmentExpression>ast.builders["assignmentExpression"](operator, props.left.node(), props.right.node());
-  }
-
-  private getOperatorString(props: AssignmentExpressionProps): string {
-    switch (props.operator) {
-      case AssignmentOperator.Equals: return "=";
-      case AssignmentOperator.PlusEquals: return "+=";
-      case AssignmentOperator.MinusEquals: return "-=";
-      case AssignmentOperator.MultiplyEquals: return "*=";
-      case AssignmentOperator.DivideEquals: return "/=";
-      case AssignmentOperator.ModularEquals: return "%=";
-      case AssignmentOperator.ShiftLeftEquals: return "<<=";
-      case AssignmentOperator.ShiftRightEquals: return ">>=";
-    }
   }
 }
 
@@ -429,7 +404,7 @@ export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
     if (!props.superClass) {
       return null;
     }
-    if (props.superClass.constructor.name === "String") {
+    if (typeof(props.superClass) === "string") {
       return new Identifier({ name: <string>props.superClass }).node();
     }
     return (props.superClass as Identifier).node();
