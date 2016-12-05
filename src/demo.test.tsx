@@ -44,4 +44,26 @@ describe('demo', () => {
       );
     expect(node.format()).toBe(expectedCode);
   });
+
+  it('create function', () => {
+    let node = (
+      <FunctionDeclaration name='foo'>
+        <BlockStatement>
+          <VariableDeclaration name='bar' kind={VariableKind.Const}>
+            <Literal value={42} />
+          </VariableDeclaration>
+          <ReturnStatement>
+            <Identifier name='bar' />
+          </ReturnStatement>
+        </BlockStatement>
+      </FunctionDeclaration>
+
+    );
+    expect(node.format()).toBe(
+`function foo() {
+    const bar = 42;
+    return bar;
+}`
+    );
+  });
 });
