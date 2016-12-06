@@ -4,7 +4,7 @@ build:
 
 setup:
 	npm install
-	npm install -g typescript
+	npm install -g typescript@2.1.1
 
 clean:
 	rm -rf dist
