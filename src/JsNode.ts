@@ -53,6 +53,10 @@ export class JsNodeCollection {
     this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 
+  filter<T extends Node>(func: (node: JsNode<T>) => boolean): any[] {
+    return this._paths.filter(value => func(<JsNode<T>>JsNode.fromPath(value)));
+  }
+
   /**
    * Returns true if the predicate evaluates to true for any node in the
    * collection.

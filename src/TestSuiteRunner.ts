@@ -3,6 +3,7 @@ import * as path from "path";
 import { JsNode, GenericJsNode } from './JsNode';
 import {Transformation} from './Transformation';
 import {RenameVariable} from './RenameVariable';
+import {CreateClassToComponent} from './CreateClassToComponent';
 import * as yaml from "js-yaml";
 
 const inputRoot = path.join(__dirname, "../tests/inputs");
@@ -23,6 +24,7 @@ export class TestSuiteRunner {
 
 
   getTransformations(): Transformation[] {
+  //  return [new RenameVariable(), new CreateClassToComponent()];
     return [new RenameVariable()];
   }
 

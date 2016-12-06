@@ -1,0 +1,5 @@
+simple_component:
+  input: "input3.js"
+  output: "output3.js"
+  params:
+    - null
