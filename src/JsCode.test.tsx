@@ -14,6 +14,7 @@ import {
   AssignmentExpression,
   AssignmentOperator,
   ClassDeclaration,
+  ReactClassComponent,
   JsCode
 } from './JsCode';
 
@@ -239,9 +240,9 @@ describe('jscode', () => {
     );
     expect(fromFunc.format()).toBe("foo *= limit(4)");
 
-
-    // this.level = level
-    let thisLevel = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({ name: "level" })} />;
+    let thisLevel = <MemberExpression
+      object={new ThisExpression({}, [])}
+      property={new Identifier({ name: "level" })} />;
     let memberAndIdentifier = (
       <AssignmentExpression
         operator={AssignmentOperator.Equals}
@@ -258,7 +259,16 @@ describe('jscode', () => {
       <ClassDeclaration id="Foo" superClass={new Identifier({ name: "Bar" })} />
     );
     expect(empty.format()).toBe("class Foo extends Bar {}");
-
   });
 
+
+  it('ReactClassComponent', () => {
+    let empty = (
+      <ReactClassComponent name="Foo" />
+    );
+    expect(empty.format()).toBe(
+`class Foo extends React.Component {
+    render() {}
+}`);
+  });
 });

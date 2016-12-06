@@ -412,3 +412,38 @@ export class ClassBody extends JsNode<ast.ClassBody> {
     super(<ast.ClassBody>b.classBody([]));
   }
 }
+
+/*========================================================================
+                         React ClassComponent
+=========================================================================*/
+
+export type ReactClassComponentProps = {
+  name: string;
+};
+
+export class ReactClassComponent extends JsNode<ast.ClassDeclaration> {
+  props: ReactClassComponentProps;
+
+  constructor(props: ReactClassComponentProps) {
+    super(
+      b.classDeclaration(
+        b.identifier(props.name),
+        b.classBody([
+          b.methodDefinition(
+            'method',
+            b.identifier('render'),
+            b.functionExpression(
+              null,
+              [],
+              b.blockStatement([])
+            )
+          )
+        ]),
+        b.memberExpression(
+          b.identifier('React'),
+          b.identifier('Component')
+        )
+      )
+    );
+  }
+}
