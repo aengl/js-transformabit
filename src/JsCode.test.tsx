@@ -16,9 +16,12 @@ import {
   AssignmentExpression,
   AssignmentOperator,
   ClassDeclaration,
+  ClassBody,
   Property,
   PropertyKind,
   ObjectExpression,
+  MethodDefinition,
+  MethodKind,
   JsCode
 } from './JsCode'
 
@@ -118,7 +121,7 @@ describe('jscode', () => {
         </BlockStatement>
       ) as BlockStatement
 
-      expect(simpleBlock.format().replace(/\n/g, "")).toBe("{    let num = 3;}");
+      expect(simpleBlock.format().replace(/\n([\s]*)/g, "")).toBe("{let num = 3;}");
     });
 
     it('FunctionExpression', () => {
@@ -138,7 +141,7 @@ describe('jscode', () => {
           </BlockStatement>
         </FunctionExpression>
       ) as FunctionExpression
-      expect(blockWithNoParams.format().replace(/\n/g, "")).toBe("function() {    let num = 3;}")
+      expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}")
     });
 
 
@@ -198,7 +201,7 @@ describe('jscode', () => {
           </BlockStatement>
         </FunctionDeclaration>
       ) as FunctionDeclaration
-      expect(blockWithNoParams.format().replace(/\n/g, "")).toBe("function foo() {    let num = 3;}")
+      expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function foo() {let num = 3;}")
 
       let withParamsAndBody = (
         <FunctionDeclaration name="foo">
@@ -211,7 +214,7 @@ describe('jscode', () => {
           </BlockStatement>
         </FunctionDeclaration>
       ) as FunctionDeclaration
-      expect(withParamsAndBody.format().replace(/\n/g, "")).toBe("function foo(bar, baz) {    let num = 3;}")
+      expect(withParamsAndBody.format().replace(/\n([\s]*)/g, "")).toBe("function foo(bar, baz) {let num = 3;}")
     });
 
     it('ExpressionStatement', () => {
@@ -275,6 +278,26 @@ describe('jscode', () => {
       expect(funcfoo.format()).toBe("this.prototype.func.foo");
     });
 
+    it('MethodDefinition', () => {
+      let empty = (
+        <MethodDefinition key="bar" kind={MethodKind.Method}>
+        </MethodDefinition>
+      ) as MethodDefinition
+      expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
+
+      let notEmpty = (
+        <MethodDefinition key="foo" kind={MethodKind.Method}>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true}/>
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+        </MethodDefinition>
+      ) as MethodDefinition;
+      expect(notEmpty.format().replace(/\n([\s]*)/g, "")).toBe("foo() {return true;}");
+    });
 
     it('AssignmentExpression', () => {
       let variable = (
@@ -318,10 +341,52 @@ describe('jscode', () => {
     it('ClassDeclaration', () => {
       let empty = (
         <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
-
         </ClassDeclaration>
       ) as ClassDeclaration
       expect(empty.format()).toBe("class Foo extends Bar {}");
+
+      let withMethod = (
+      <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+
+        <MethodDefinition key="foo" kind={MethodKind.Method}>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true}/>
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+        </MethodDefinition>
+
+      </ClassDeclaration>
+      ) as ClassDeclaration;
+      expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
+
+      let withTwoMethods = (
+        <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+        <MethodDefinition key="bar" kind={MethodKind.Method}>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true}/>
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+          </MethodDefinition>
+          <MethodDefinition key="foo" kind={MethodKind.Method}>
+            <FunctionExpression>
+              <BlockStatement>
+                <ReturnStatement>
+                  <Literal value={true}/>
+                </ReturnStatement>
+              </BlockStatement>
+            </FunctionExpression>
+          </MethodDefinition>
+
+        </ClassDeclaration>
+      ) as ClassDeclaration;
+      expect(withTwoMethods.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
+
 
     });
 

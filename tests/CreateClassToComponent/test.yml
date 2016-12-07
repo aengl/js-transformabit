@@ -1,5 +1,11 @@
 simple_component:
-  input: "input3.js"
-  output: "output3.js"
+  input: "simple_createClass_component.js"
+  output: "simple_component.js"
+  params:
+    - null
+
+component_with_a_few_methods:
+  input: "createClass_component_many_methods.js"
+  output: "createClass_component_many_methods.js"
   params:
     - null

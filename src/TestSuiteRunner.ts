@@ -24,8 +24,8 @@ export class TestSuiteRunner {
 
 
   getTransformations(): Transformation[] {
-  //  return [new RenameVariable(), new CreateClassToComponent()];
-    return [new RenameVariable()];
+    return [new RenameVariable(), new CreateClassToComponent()];
+    //return [new RenameVariable()];
   }
 
 
@@ -57,7 +57,7 @@ export class TestSuiteRunner {
     const output: string = fs.readFileSync(`./tests/${transformation.constructor.name}/${config.output}`).toString();
     const result = transformation.apply(node, null).format();
     if (result !== output) {
-      throw new Error(`Test case '${testCaseName}' failed for transformation '${transformation.constructor.name}', expecting:\n${output}\nreceived:\n${result}\n`);
+      throw new Error(`Test case ${testCaseName} failed for transformation '${transformation.constructor.name}', expecting:\n'${output}'\nreceived:\n'${result}'\n`);
     }
   }
 

@@ -596,7 +596,7 @@ export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
     super();
     let id = this.getId(props.id);
     let superClass = this.getSuperClass(props);
-    let body = new ClassBody({}, []).getNode();
+    let body = new ClassBody({}, children).getNode();
     this._node = <ast.ClassDeclaration>ast.builders["classDeclaration"](id, body, superClass);
   }
 
@@ -630,6 +630,83 @@ export class ClassBody extends JsNode<ast.ClassBody> {
 
   props: ClassBodyProps;
   constructor(props: ClassBodyProps, children: GenericJsNode[]) {
-    super(<ast.ClassBody>ast.builders["classBody"]([]));
+    super();
+    this._node = <ast.ClassBody>ast.builders["classBody"](this.asNodeArray(children));
+  }
+
+  private asNodeArray(children: GenericJsNode[]): ast.Node[] {
+    if (children.length < 1) {
+      return [];
+    }
+    let nodes = Array<ast.Node>();
+    for (let n of children) {
+      nodes.push(n.getNode());
+    }
+    return nodes;
+  }
+}
+
+/*========================================================================
+                            Method Definition
+=========================================================================*/
+
+export enum MethodKind {
+  Method = 1,
+  Get,
+  Set
+}
+
+export type MethodDefinitionProps = {
+  key: Identifier | string,
+  kind: MethodKind,
+  computed?: boolean,
+  staticMethod?: boolean,
+  expression?: FunctionExpression
+}
+
+export class MethodDefinition extends JsNode<ast.MethodDefinition> {
+
+  props: MethodDefinitionProps;
+  constructor(props: MethodDefinitionProps, children: GenericJsNode[]) {
+    super();
+    this._node = <ast.MethodDefinition>ast.builders["methodDefinition"](
+      this.kindString(props.kind),
+      this.getKey(props),
+      this.getFunction(props, children),
+      this.getBool(props.staticMethod),
+      this.getBool(props.computed)
+    );
+  }
+
+  private kindString(kind: MethodKind): string {
+    switch (kind) {
+      case MethodKind.Method: return "method";
+      case MethodKind.Get: return "get";
+      case MethodKind.Set: return "set";
+    }
+  }
+
+  private getBool(val?: boolean): boolean {
+    if (typeof val === "undefined") {
+      return false;
+    }
+    return val;
+  }
+
+  private getKey(props: MethodDefinitionProps): ast.Node {
+    if (props.key.constructor.name === "String") {
+      return new Identifier({name: <string>props.key}).getNode();
+    }
+    return (props.key as GenericJsNode).getNode();
+  }
+
+  private getFunction(props: MethodDefinitionProps, children: GenericJsNode[]): ast.Node {
+    if (props.expression) {
+      return props.expression.getNode();
+    }
+    if (children.length === 0) {
+      return new FunctionExpression({}, []).getNode();
+    }
+    return children[0].getNode();
   }
 }
