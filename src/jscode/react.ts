@@ -1,32 +1,6 @@
 import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
 import * as ast from 'ast-types';
 
-export type ReactStatelessComponentProps = {
-  name: string;
-};
-
-export class ReactStatelessComponent extends JsNode<ast.VariableDeclaration> {
-  props: ReactStatelessComponentProps;
-
-  constructor(props: ReactStatelessComponentProps) {
-    let prop = b.property('init', b.identifier('render'),
-      b.functionExpression(null, [], b.blockStatement([]))
-    );
-    prop.method = true;
-    super(
-      b.variableDeclaration('const', [
-        b.variableDeclarator(
-          b.identifier(props.name),
-          b.arrowFunctionExpression(
-            [b.identifier('props')],
-            b.blockStatement([])
-          )
-        )
-      ])
-    );
-  }
-}
-
 class ReactComponentCommon<T extends ast.Node> extends JsNode<T> {
   protected getRenderBodyFromChildren(children: GenericJsNode[]): JsNode<ast.Expression> {
     for (let child of children) {
@@ -34,6 +8,28 @@ class ReactComponentCommon<T extends ast.Node> extends JsNode<T> {
         return child;
       }
     }
+  }
+}
+
+export type ReactStatelessComponentProps = {
+  name: string;
+};
+
+export class ReactStatelessComponent extends ReactComponentCommon<ast.VariableDeclaration> {
+  props: ReactStatelessComponentProps;
+
+  constructor(props: ReactStatelessComponentProps, children: GenericJsNode[]) {
+    super();
+    let body = this.getRenderBodyFromChildren(children);
+    this._node = b.variableDeclaration('const', [
+      b.variableDeclarator(
+        b.identifier(props.name),
+        b.arrowFunctionExpression(
+          [b.identifier('props')],
+          body ? body.node() : null
+        )
+      )
+    ]);
   }
 }
 
