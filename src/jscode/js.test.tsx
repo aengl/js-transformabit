@@ -18,9 +18,9 @@ import {
   ReactComponent,
   ReactStatelessComponent,
   JsCode
-} from './JsCode';
+} from '../JsCode';
 
-describe('jscode', () => {
+describe('jscode/js', () => {
 
   it('VariableDeclaration', () => {
     let foo = <VariableDeclaration name="foo" kind={VariableKind.Let}></VariableDeclaration>;
@@ -261,36 +261,5 @@ describe('jscode', () => {
       <ClassDeclaration id="Foo" superClass={new Identifier({ name: "Bar" })} />
     );
     expect(empty.format()).toBe("class Foo extends Bar {}");
-  });
-
-
-  it('ReactStatelessComponent', () => {
-    let empty = (
-      <ReactStatelessComponent name="Foo" />
-    );
-    expect(empty.format()).toBe(
-`const Foo = props => {};`);
-  });
-
-
-  it('ReactComponent', () => {
-    let empty = (
-      <ReactComponent name="Foo" />
-    );
-    expect(empty.format()).toBe(
-`const Foo = React.createClass({
-    render() {}
-});`);
-  });
-
-
-  it('ReactClassComponent', () => {
-    let empty = (
-      <ReactClassComponent name="Foo" />
-    );
-    expect(empty.format()).toBe(
-`class Foo extends React.Component {
-    render() {}
-}`);
   });
 });
