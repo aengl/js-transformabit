@@ -99,6 +99,13 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
     return new JsNode(astNode);
   }
 
+  static fromExpressionStatement(code: string, args?: Object): GenericJsNode {
+    return JsNode
+      .fromCollection(js(`() => ${code}`, args))
+      .findFirstChildOfType(t.ArrowFunctionExpression)
+      .descend();
+  }
+
   constructor(node?: T, path?: NodePath) {
     this._node = node || (path ? <T>path.value : null);
     this._path = path;

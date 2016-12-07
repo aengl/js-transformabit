@@ -55,6 +55,12 @@ describe('JsNode', () => {
     expect(node.check(t.VariableDeclaration)).toBe(true);
   });
 
+  it('create from expression statement', () => {
+    const code = '<div>foo!</div>';
+    const node = JsNode.fromExpressionStatement(code);
+    expect(node.format()).toBe(code);
+  });
+
   it('find child', () => {
     const code = 'const foo = 42, bar = 23;';
     const node = JsNode.fromModuleCode(code);

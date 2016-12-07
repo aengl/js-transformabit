@@ -2,13 +2,14 @@ import {
   ReactClassComponent,
   ReactComponent,
   ReactStatelessComponent,
+  ReactComponentRender,
   JsCode
 } from '../JsCode';
 
 describe('jscode/react', () => {
   it('ReactStatelessComponent', () => {
     let empty = (
-      <ReactStatelessComponent name="Foo" />
+      <ReactStatelessComponent name='Foo' />
     );
     expect(empty.format()).toBe(
 `const Foo = props => {};`);
@@ -16,21 +17,33 @@ describe('jscode/react', () => {
 
   it('ReactComponent', () => {
     let empty = (
-      <ReactComponent name="Foo" />
+      <ReactComponent name='Foo'>
+        <ReactComponentRender>
+          {'<div>bar!</div>'}
+        </ReactComponentRender>
+      </ReactComponent>
     );
     expect(empty.format()).toBe(
 `const Foo = React.createClass({
-    render() {}
+    render() {
+        return <div>bar!</div>;
+    }
 });`);
   });
 
   it('ReactClassComponent', () => {
     let empty = (
-      <ReactClassComponent name="Foo" />
+      <ReactClassComponent name='Foo'>
+        <ReactComponentRender>
+          {'<div>bar!</div>'}
+        </ReactComponentRender>
+      </ReactClassComponent>
     );
     expect(empty.format()).toBe(
 `class Foo extends React.Component {
-    render() {}
+    render() {
+        return <div>bar!</div>;
+    }
 }`);
   });
 });
