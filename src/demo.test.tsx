@@ -57,7 +57,6 @@ describe('demo', () => {
           </ReturnStatement>
         </BlockStatement>
       </FunctionDeclaration>
-
     );
     expect(node.format()).toBe(
 `function foo() {

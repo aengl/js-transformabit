@@ -15,6 +15,8 @@ import {
   AssignmentOperator,
   ClassDeclaration,
   ReactClassComponent,
+  ReactComponent,
+  ReactStatelessComponent,
   JsCode
 } from './JsCode';
 
@@ -259,6 +261,26 @@ describe('jscode', () => {
       <ClassDeclaration id="Foo" superClass={new Identifier({ name: "Bar" })} />
     );
     expect(empty.format()).toBe("class Foo extends Bar {}");
+  });
+
+
+  it('ReactStatelessComponent', () => {
+    let empty = (
+      <ReactStatelessComponent name="Foo" />
+    );
+    expect(empty.format()).toBe(
+`const Foo = props => {};`);
+  });
+
+
+  it('ReactComponent', () => {
+    let empty = (
+      <ReactComponent name="Foo" />
+    );
+    expect(empty.format()).toBe(
+`const Foo = React.createClass({
+    render() {}
+});`);
   });
 
 
