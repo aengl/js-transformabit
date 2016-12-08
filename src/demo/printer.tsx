@@ -1,9 +1,12 @@
 import {
   JsCode,
+  ReturnStatement,
+  Literal,
   ReactComponent,
   ReactClassComponent,
   ReactStatelessComponent,
-  ReactComponentRender
+  ReactComponentRender,
+  ReactComponentEventHandler
 } from '../JsCode';
 
 import { JsNode, GenericJsNode } from '../JsNode';
@@ -13,6 +16,9 @@ let node = (
     <ReactComponentRender>
       {'<h1>Trifork ftw!</h1>'}
     </ReactComponentRender>
+    <ReactComponentEventHandler name='handleLife'>
+      {JsNode.fromFunctionBody('return 42;').at(0)}
+    </ReactComponentEventHandler>
   </ReactClassComponent>
 );
 
