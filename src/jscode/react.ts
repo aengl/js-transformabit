@@ -22,6 +22,7 @@ export type ReactStatelessComponentProps = {
 
 export class ReactStatelessComponent
   extends ReactComponentCommon<ast.VariableDeclaration, ReactStatelessComponentProps> {
+
   constructor(props: ReactStatelessComponentProps, children: GenericJsNode[]) {
     super(props);
     this.initialise(b.variableDeclaration('const', [
@@ -42,6 +43,7 @@ export type ReactComponentProps = {
 
 export class ReactComponent
   extends ReactComponentCommon<ast.VariableDeclaration, ReactComponentProps> {
+
   constructor(props: ReactComponentProps, children: GenericJsNode[]) {
     super(props);
     // Create event handlers
@@ -79,6 +81,7 @@ export type ReactClassComponentProps = {
 
 export class ReactClassComponent
   extends ReactComponentCommon<ast.ClassDeclaration, ReactClassComponentProps> {
+
   constructor(props: ReactClassComponentProps, children: GenericJsNode[]) {
     super(props);
     // Create event handlers
@@ -116,10 +119,10 @@ export class ReactClassComponent
 export class ReactComponentRenderProps {
 }
 
-export class ReactComponentRender extends JsNode<any> {
-  props: ReactComponentRenderProps;
+export class ReactComponentRender extends JsCodeNode<any, ReactComponentRenderProps> {
 
   constructor(props: ReactComponentRenderProps, children: string[]) {
+    super(props);
     if (children.length !== 1) {
       throw new Error('ReactComponentRender requires exactly one child');
     }
@@ -127,10 +130,7 @@ export class ReactComponentRender extends JsNode<any> {
     if (typeof renderBody !== 'string') {
       throw new Error('ReactComponentRender only accepts strings as children');
     }
-    super(
-      JsNode.fromExpressionStatement(renderBody).node()
-    );
-    this.props = props;
+    this.initialise(JsNode.fromExpressionStatement(renderBody).node());
   }
 }
 
@@ -138,11 +138,10 @@ export class ReactComponentEventHandlerProps {
   name: string;
 }
 
-export class ReactComponentEventHandler extends JsNode<any> {
-  props: ReactComponentEventHandlerProps;
+export class ReactComponentEventHandler extends JsCodeNode<any, ReactComponentEventHandlerProps> {
 
   constructor(props: ReactComponentEventHandlerProps, children: JsNode<ast.Statement>[]) {
-    super(b.blockStatement(children.map(child => child.node())));
-    this.props = props;
+    super(props);
+    this.initialise(b.blockStatement(children.map(child => child.node())));
   }
 }
