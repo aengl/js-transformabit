@@ -1,7 +1,8 @@
 import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
+import { JsCodeNode } from '../JsCode';
 import * as ast from 'ast-types';
 
-class ReactComponentCommon<T extends ast.Node> extends JsNode<T> {
+class ReactComponentCommon<T extends ast.Node, P> extends JsCodeNode<T, P> {
   private find(children: GenericJsNode[], type: any): GenericJsNode {
     for (let child of children) {
       if (child instanceof type) {
@@ -24,12 +25,10 @@ export type ReactStatelessComponentProps = {
   name: string;
 };
 
-export class ReactStatelessComponent extends ReactComponentCommon<ast.VariableDeclaration> {
-  props: ReactStatelessComponentProps;
-
+export class ReactStatelessComponent
+  extends ReactComponentCommon<ast.VariableDeclaration, ReactStatelessComponentProps> {
   constructor(props: ReactStatelessComponentProps, children: GenericJsNode[]) {
-    super();
-    this.props = props;
+    super(props);
     this.initialise(b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
@@ -46,12 +45,10 @@ export type ReactComponentProps = {
   name: string;
 };
 
-export class ReactComponent extends ReactComponentCommon<ast.VariableDeclaration> {
-  props: ReactComponentProps;
-
+export class ReactComponent
+  extends ReactComponentCommon<ast.VariableDeclaration, ReactComponentProps> {
   constructor(props: ReactComponentProps, children: GenericJsNode[]) {
-    super();
-    this.props = props;
+    super(props);
     // Create event handlers
     let eventHandlers = this.getEventHandlersFromChildren(children)
       .map(handler => b.property(
@@ -85,12 +82,10 @@ export type ReactClassComponentProps = {
   name: string;
 };
 
-export class ReactClassComponent extends ReactComponentCommon<ast.ClassDeclaration> {
-  props: ReactClassComponentProps;
-
+export class ReactClassComponent
+  extends ReactComponentCommon<ast.ClassDeclaration, ReactClassComponentProps> {
   constructor(props: ReactClassComponentProps, children: GenericJsNode[]) {
-    super();
-    this.props = props;
+    super(props);
     // Create event handlers
     let eventHandlers = this.getEventHandlersFromChildren(children)
       .map(handler => b.methodDefinition(
