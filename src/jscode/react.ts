@@ -2,13 +2,21 @@ import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode
 import * as ast from 'ast-types';
 
 class ReactComponentCommon<T extends ast.Node> extends JsNode<T> {
-  protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
+  private find(children: GenericJsNode[], type: any): GenericJsNode {
     for (let child of children) {
-      if (child instanceof ReactComponentRender) {
-        return child.node();
+      if (child instanceof type) {
+        return child;
       }
     }
     return null;
+  }
+
+  protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
+    return this.find(children, ReactComponentRender).node() as ast.Expression;
+  }
+
+  protected getEventHandlersFromChildren(children: GenericJsNode[]): ReactComponentEventHandler[] {
+    return children.filter(child => child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
   }
 }
 
@@ -21,13 +29,13 @@ export class ReactStatelessComponent extends ReactComponentCommon<ast.VariableDe
 
   constructor(props: ReactStatelessComponentProps, children: GenericJsNode[]) {
     super();
-    let body = this.getRenderBodyFromChildren(children);
+    this.props = props;
     this._node = b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
         b.arrowFunctionExpression(
           [b.identifier('props')],
-          body
+          this.getRenderBodyFromChildren(children)
         )
       )
     ]);
@@ -43,19 +51,30 @@ export class ReactComponent extends ReactComponentCommon<ast.VariableDeclaration
 
   constructor(props: ReactComponentProps, children: GenericJsNode[]) {
     super();
-    let body = this.getRenderBodyFromChildren(children);
+    this.props = props;
+    // Create event handlers
+    let eventHandlers = this.getEventHandlersFromChildren(children)
+      .map(handler => b.property(
+        'init',
+        b.identifier(handler.props.name),
+        b.functionExpression(null, [b.identifier('event')], handler.node())
+      )
+    );
+    eventHandlers.forEach(handler => handler.method = true);
+    // Create render method
     let renderMethod = b.property('init', b.identifier('render'),
       b.functionExpression(null, [], b.blockStatement([
-        b.returnStatement(body)
+        b.returnStatement(this.getRenderBodyFromChildren(children))
       ]))
     );
     renderMethod.method = true;
+    // Create AST
     this._node = b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
         b.callExpression(
           b.memberExpression(b.identifier('React'), b.identifier('createClass')),
-          [b.objectExpression([renderMethod])]
+          [b.objectExpression([renderMethod].concat(eventHandlers))]
         )
       )
     ]);
@@ -71,7 +90,16 @@ export class ReactClassComponent extends ReactComponentCommon<ast.ClassDeclarati
 
   constructor(props: ReactClassComponentProps, children: GenericJsNode[]) {
     super();
-    let body = this.getRenderBodyFromChildren(children);
+    this.props = props;
+    // Create event handlers
+    let eventHandlers = this.getEventHandlersFromChildren(children)
+      .map(handler => b.methodDefinition(
+        'method',
+        b.identifier(handler.props.name),
+        b.functionExpression(null, [b.identifier('event')], handler.node())
+      )
+    );
+    // Create AST
     this._node = b.classDeclaration(
       b.identifier(props.name),
       b.classBody([
@@ -82,11 +110,11 @@ export class ReactClassComponent extends ReactComponentCommon<ast.ClassDeclarati
             null,
             [],
             b.blockStatement([
-              b.returnStatement(body)
+              b.returnStatement(this.getRenderBodyFromChildren(children))
             ])
           )
         )
-      ]),
+      ].concat(eventHandlers)),
       b.memberExpression(
         b.identifier('React'),
         b.identifier('Component')
@@ -112,5 +140,19 @@ export class ReactComponentRender extends JsNode<any> {
     super(
       JsNode.fromExpressionStatement(renderBody).node()
     );
+    this.props = props;
+  }
+}
+
+export class ReactComponentEventHandlerProps {
+  name: string;
+}
+
+export class ReactComponentEventHandler extends JsNode<any> {
+  props: ReactComponentEventHandlerProps;
+
+  constructor(props: ReactComponentEventHandlerProps, children: JsNode<ast.Statement>[]) {
+    super(b.blockStatement(children.map(child => child.node())));
+    this.props = props;
   }
 }
