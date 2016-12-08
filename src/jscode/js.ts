@@ -27,8 +27,7 @@ export class VariableDeclaration extends JsNode<ast.VariableDeclaration> {
     super();
     let kindString = props.kind || VariableKind.Var;
     let declarators = this.getDeclarators(props, children);
-
-    this._node = <ast.VariableDeclaration>b.variableDeclaration(kindString.toString(), declarators);
+    this.initialise(b.variableDeclaration(kindString.toString(), declarators));
   }
 
   private getDeclarators(props: VariableDeclarationProps, children: GenericJsNode[]): ast.VariableDeclarator[] {
@@ -72,7 +71,7 @@ export class VariableDeclarator extends JsNode<ast.VariableDeclarator> {
       throw new Error("VariableDeclarator can only have one child");
     }
     let child = children.length ? children[0].node() : null;
-    this._node = <ast.VariableDeclarator>b.variableDeclarator(identifier, child);
+    this.initialise(b.variableDeclarator(identifier, child));
   }
 }
 
@@ -126,7 +125,7 @@ export class CallExpression extends JsNode<ast.CallExpression> {
     super();
     let callee = props.callee.node();
     let args = this.getArgs(children);
-    this._node = <ast.CallExpression>b.callExpression(callee, args);
+    this.initialise(b.callExpression(callee, args));
   }
 
   private getArgs(children: GenericJsNode[]): ast.Expression[] {
@@ -168,8 +167,7 @@ export class FunctionDeclaration extends JsNode<ast.FunctionDeclaration> {
     let identifier = new Identifier({ name: props.name }).node();
     let params = this.getParameters(children);
     let body = this.getBody(children);
-
-    this._node = <ast.FunctionDeclaration>b.functionDeclaration(identifier, params, body);
+    this.initialise(b.functionDeclaration(identifier, params, body));
   }
 
   private getParameters(children: GenericJsNode[]): ast.Pattern[] {
@@ -210,7 +208,7 @@ export class BlockStatement extends JsNode<ast.BlockStatement> {
     for (let child of children) {
       statements.push(child.node());
     }
-    this._node = <ast.BlockStatement>b.blockStatement(statements);
+    this.initialise(b.blockStatement(statements));
   }
 }
 
@@ -314,7 +312,7 @@ export class MemberExpression extends JsNode<ast.MemberExpression> {
     } else {
       object = props.object.node();
     }
-    this._node = <ast.MemberExpression>b.memberExpression(object, props.property.node());
+    this.initialise(b.memberExpression(object, props.property.node()));
   }
 }
 
@@ -345,8 +343,8 @@ export class AssignmentExpression extends JsNode<ast.AssignmentExpression> {
   constructor(props: AssignmentExpressionProps, children: GenericJsNode[]) {
     super();
     let operator = props.operator;
-    this._node = <ast.AssignmentExpression>b.assignmentExpression(
-      operator.toString(), props.left.node(), props.right.node());
+    this.initialise(b.assignmentExpression(
+      operator.toString(), props.left.node(), props.right.node()));
   }
 }
 
@@ -367,7 +365,7 @@ export class ClassDeclaration extends JsNode<ast.ClassDeclaration> {
     let id = this.getId(props.id);
     let superClass = this.getSuperClass(props);
     let body = new ClassBody({}, []).node();
-    this._node = <ast.ClassDeclaration>b.classDeclaration(id, body, superClass);
+    this.initialise(b.classDeclaration(id, body, superClass));
   }
 
   private getId(value: string | Identifier): ast.Identifier {

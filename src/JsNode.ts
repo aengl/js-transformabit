@@ -18,7 +18,7 @@ const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
 export class JsNodeList<T extends Node> {
-  _paths: NodePath[];
+  private _paths: NodePath[];
 
   constructor(obj?: any) {
     if (!obj) {
@@ -86,8 +86,8 @@ export class JsNodeList<T extends Node> {
  * Represents a node in the AST tree.
  */
 export class JsNode<T extends Node> implements transformabit.JsNode {
-  _node: T;
-  _path: NodePath;
+  private _node: T;
+  private _path: NodePath;
 
   static fromModuleCode(code: string, args?: Object): GenericJsNode {
     return JsNode.fromCollection(js(code, args));
@@ -128,6 +128,10 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
   }
 
   constructor(node?: T, path?: NodePath) {
+    this.initialise(node, path);
+  }
+
+  initialise(node?: T, path?: NodePath) {
     this._node = node || (path ? <T>path.value : null);
     this._path = path;
   }

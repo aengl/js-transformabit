@@ -30,7 +30,7 @@ export class ReactStatelessComponent extends ReactComponentCommon<ast.VariableDe
   constructor(props: ReactStatelessComponentProps, children: GenericJsNode[]) {
     super();
     this.props = props;
-    this._node = b.variableDeclaration('const', [
+    this.initialise(b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
         b.arrowFunctionExpression(
@@ -38,7 +38,7 @@ export class ReactStatelessComponent extends ReactComponentCommon<ast.VariableDe
           this.getRenderBodyFromChildren(children)
         )
       )
-    ]);
+    ]));
   }
 }
 
@@ -69,7 +69,7 @@ export class ReactComponent extends ReactComponentCommon<ast.VariableDeclaration
     );
     renderMethod.method = true;
     // Create AST
-    this._node = b.variableDeclaration('const', [
+    this.initialise(b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
         b.callExpression(
@@ -77,7 +77,7 @@ export class ReactComponent extends ReactComponentCommon<ast.VariableDeclaration
           [b.objectExpression([renderMethod].concat(eventHandlers))]
         )
       )
-    ]);
+    ]));
   }
 }
 
@@ -100,7 +100,7 @@ export class ReactClassComponent extends ReactComponentCommon<ast.ClassDeclarati
       )
     );
     // Create AST
-    this._node = b.classDeclaration(
+    this.initialise(b.classDeclaration(
       b.identifier(props.name),
       b.classBody([
         b.methodDefinition(
@@ -119,7 +119,7 @@ export class ReactClassComponent extends ReactComponentCommon<ast.ClassDeclarati
         b.identifier('React'),
         b.identifier('Component')
       )
-    );
+    ));
   }
 }
 
