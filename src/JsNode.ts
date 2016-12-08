@@ -188,7 +188,7 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
 
   findChildrenOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNodeList<T> {
     const collection = js(this._node).find(type, attr);
-    return new JsNodeList(collection);
+    return new JsNodeList<T>(collection);
   }
 
   findClosestParentOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNode<T> {
