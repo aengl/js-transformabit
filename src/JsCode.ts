@@ -15,6 +15,18 @@ export class JsCodeNode<T extends Node, P> extends JsNode<T> {
     super();
     this.props = props;
   }
+
+  /**
+   * Finds a node of a specific type amongst the JsCode children.
+   */
+  protected _find(children: GenericJsNode[], type: any): GenericJsNode {
+    for (let child of children) {
+      if (child instanceof type) {
+        return child;
+      }
+    }
+    return null;
+  }
 }
 
 export * from './jscode/js';

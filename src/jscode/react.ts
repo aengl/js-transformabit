@@ -3,17 +3,12 @@ import { JsCodeNode } from '../JsCode';
 import * as ast from 'ast-types';
 
 class ReactComponentCommon<T extends ast.Node, P> extends JsCodeNode<T, P> {
-  private find(children: GenericJsNode[], type: any): GenericJsNode {
-    for (let child of children) {
-      if (child instanceof type) {
-        return child;
-      }
+  protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
+    const body = this._find(children, ReactComponentRender)
+    if (body) {
+      return body.node() as ast.Expression;
     }
     return null;
-  }
-
-  protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
-    return this.find(children, ReactComponentRender).node() as ast.Expression;
   }
 
   protected getEventHandlersFromChildren(children: GenericJsNode[]): ReactComponentEventHandler[] {
