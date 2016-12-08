@@ -2,10 +2,10 @@ import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode
 import * as ast from 'ast-types';
 
 class ReactComponentCommon<T extends ast.Node> extends JsNode<T> {
-  protected getRenderBodyFromChildren(children: GenericJsNode[]): JsNode<ast.Expression> {
+  protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
     for (let child of children) {
       if (child instanceof ReactComponentRender) {
-        return child;
+        return child.node();
       }
     }
   }
@@ -26,7 +26,7 @@ export class ReactStatelessComponent extends ReactComponentCommon<ast.VariableDe
         b.identifier(props.name),
         b.arrowFunctionExpression(
           [b.identifier('props')],
-          body ? body.node() : null
+          body
         )
       )
     ]);
@@ -45,7 +45,7 @@ export class ReactComponent extends ReactComponentCommon<ast.VariableDeclaration
     let body = this.getRenderBodyFromChildren(children);
     let renderMethod = b.property('init', b.identifier('render'),
       b.functionExpression(null, [], b.blockStatement([
-        b.returnStatement(body ? body.node() : null)
+        b.returnStatement(body)
       ]))
     );
     renderMethod.method = true;
@@ -81,7 +81,7 @@ export class ReactClassComponent extends ReactComponentCommon<ast.ClassDeclarati
             null,
             [],
             b.blockStatement([
-              b.returnStatement(body ? body.node() : null)
+              b.returnStatement(body)
             ])
           )
         )
