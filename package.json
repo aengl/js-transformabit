@@ -9,7 +9,7 @@
     "build-watch": "tsc -w",
     "test": "jest",
     "test-watch": "jest --watch",
-    "print-watch": "nodemon -e ts --exec \"tsc /src/demo/printer.ts\""
+    "demo-watch": "nodemon -e js ./dist/demo/printer.js"
   },
   "devDependencies": {
     "@types/jest": "^16.0.0",

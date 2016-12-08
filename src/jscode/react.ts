@@ -8,6 +8,7 @@ class ReactComponentCommon<T extends ast.Node> extends JsNode<T> {
         return child.node();
       }
     }
+    return null;
   }
 }
 
