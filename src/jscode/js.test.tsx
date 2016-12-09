@@ -14,6 +14,12 @@ import {
   AssignmentExpression,
   AssignmentOperator,
   ClassDeclaration,
+  Property,
+  PropertyKind,
+  ObjectExpression,
+  FunctionExpression,
+  MethodDefinition,
+  MethodKind,
   ReactClassComponent,
   ReactComponent,
   ReactStatelessComponent,
@@ -256,10 +262,132 @@ describe('jscode/js', () => {
   });
 
 
+  it('MethodDefinition', () => {
+      let empty = (
+        <MethodDefinition key="bar" kind={MethodKind.Method}>
+        </MethodDefinition>
+      ) as MethodDefinition
+      expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
+
+      let notEmpty = (
+        <MethodDefinition key="foo" kind={MethodKind.Method}>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true}/>
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+        </MethodDefinition>
+      ) as MethodDefinition;
+      expect(notEmpty.format().replace(/\n([\s]*)/g, "")).toBe("foo() {return true;}");
+    });
+
   it('ClassDeclaration', () => {
-    let empty = (
-      <ClassDeclaration id="Foo" superClass={new Identifier({ name: "Bar" })} />
-    );
-    expect(empty.format()).toBe("class Foo extends Bar {}");
+      let empty = (
+        <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+        </ClassDeclaration>
+      ) as ClassDeclaration
+      expect(empty.format()).toBe("class Foo extends Bar {}");
+
+      let withMethod = (
+      <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+
+        <MethodDefinition key="foo" kind={MethodKind.Method}>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true}/>
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+        </MethodDefinition>
+
+      </ClassDeclaration>
+      ) as ClassDeclaration;
+      expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
+
+      let withTwoMethods = (
+        <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+        <MethodDefinition key="bar" kind={MethodKind.Method}>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true}/>
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+          </MethodDefinition>
+          <MethodDefinition key="foo" kind={MethodKind.Method}>
+            <FunctionExpression>
+              <BlockStatement>
+                <ReturnStatement>
+                  <Literal value={true}/>
+                </ReturnStatement>
+              </BlockStatement>
+            </FunctionExpression>
+          </MethodDefinition>
+
+        </ClassDeclaration>
+      ) as ClassDeclaration;
+      expect(withTwoMethods.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
+
+
+    });
+
+
+  it('FunctionExpression', () => {
+    let empty = <FunctionExpression/> as FunctionExpression
+     expect(empty.format()).toBe("function() {}");
+ 
+     //let gen = <FunctionExpression generator={true}/> as FunctionExpression
+     //expect(gen.format()).toBe("function*() {}");
+
+
+    let blockWithNoParams = (
+      <FunctionExpression>
+        <BlockStatement>
+          <VariableDeclaration name="num" kind={VariableKind.Let}>
+            <Literal value={3}/>
+          </VariableDeclaration>
+        </BlockStatement>
+      </FunctionExpression>
+    ) as FunctionExpression
+     expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}")
   });
+
+
+    it('Property', () => {
+     let valAsChild = (
+      <Property key="render" kind={PropertyKind.Init}>
+        <FunctionExpression/>
+      </Property>
+    ) as Property;
+    expect(valAsChild.format()).toBe("render: function() {}");
+
+    let one = <Literal value={1}/> as Literal;
+    let valAsProp = (
+       <Property key="num" kind={PropertyKind.Init} value={one}>
+      </Property>
+    ) as Property;
+    expect(valAsProp.format()).toBe("num: 1");
+  });
+
+
+  it('ObjectExpression', () => {
+    let empty = (
+       <ObjectExpression/>
+    ) as ObjectExpression;
+    expect(empty.format()).toBe("{}");
+
+     let abc1 = (
+      <ObjectExpression>
+         <Property key="a" kind={PropertyKind.Init} value={new Literal({value: "a"})}/>
+         <Property key="b" kind={PropertyKind.Init} value={new Literal({value: "b"})}/>
+         <Property key="c" kind={PropertyKind.Init} value={new Literal({value: "c"})}/>
+         <Property key="one" kind={PropertyKind.Init} value={new Literal({value:  1})}/>
+       </ObjectExpression>
+     ) as ObjectExpression;
+    expect(abc1.format().replace(/\s/g, "")).toBe(`{a:"a",b:"b",c:"c",one:1}`);
+   });
 });

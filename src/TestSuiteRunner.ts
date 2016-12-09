@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { JsNode, GenericJsNode } from './JsNode';
 import {Transformation} from './Transformation';
-import {RenameVariable} from './RenameVariable';
+import {RenameVariable} from './transformations/RenameVariable';
 import * as yaml from "js-yaml";
 
 const inputRoot = path.join(__dirname, "../tests/inputs");
