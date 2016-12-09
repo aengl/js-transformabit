@@ -69,12 +69,19 @@ export class JsNodeList<T extends Node> {
     return false;
   }
 
-  push(node: JsNode<T>) {
+  push(node: JsNode<T>): JsNodeList<T> {
     this._paths.push(node.path());
+    return this;
   }
 
-  pushPath(path: NodePath) {
+  pushPath(path: NodePath): JsNodeList<T> {
     this._paths.push(path);
+    return this;
+  }
+
+  removeAll(): JsNodeList<T> {
+    this._paths.forEach(path => path.prune());
+    return this;
   }
 
   toArray(): JsNode<T>[] {

@@ -48,6 +48,15 @@ describe('JsNodeList', () => {
     expect(list.at(1).format()).toBe('foo');
   });
 
+  it('remove all', () => {
+    const code = 'let foo = 23, bar = 42;';
+    let node = JsNode.fromModuleCode(code);
+    node
+      .findChildrenOfType(t.Literal)
+      .removeAll();
+    expect(node.format()).toBe('let foo, bar;');
+  });
+
   it('to array', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)

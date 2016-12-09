@@ -15,6 +15,9 @@ export class ExampleEditor implements Transformation {
   }
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
+    root
+      .findChildrenOfType(t.MethodDefinition)
+      .removeAll();
     return root;
   }
 }
