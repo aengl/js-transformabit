@@ -49,11 +49,18 @@ export class JsNodeList<T extends Node> {
   }
 
   map(func: (node: JsNode<T>, index?: number) => any): any[] {
-    return this._paths.map((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
+    return this._paths.map((value, index, array) =>
+      func(<JsNode<T>>JsNode.fromPath(value), index));
+  }
+
+  filter(predicate: (node: JsNode<T>, index?: number) => boolean): JsNodeList<T> {
+    return new JsNodeList<T>(this._paths.filter((value, index, array) =>
+      predicate(<JsNode<T>>JsNode.fromPath(value), index)));
   }
 
   forEach(func: (node: JsNode<T>, index?: number) => any): void {
-    this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
+    this._paths.forEach((value, index, array) =>
+      func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 
   /**

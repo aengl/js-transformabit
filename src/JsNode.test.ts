@@ -19,6 +19,15 @@ describe('JsNodeList', () => {
     expect(identifiers).toBe('foo,bar,baz');
   });
 
+  it('filter', () => {
+    const code = 'let foo, bar; let baz;';
+    const identifiers = JsNode.fromModuleCode(code)
+      .findChildrenOfType<Identifier>(t.Identifier)
+      .filter(n => n.node().name === 'bar');
+    expect(identifiers.size()).toBe(1);
+    expect(identifiers.at(0).format()).toBe('bar');
+  });
+
   it('forEach', () => {
     const code = 'let foo, bar; let baz;';
     const node = JsNode.fromModuleCode(code);
