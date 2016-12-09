@@ -114,6 +114,14 @@ export class ReactClassComponent
       )
     ));
   }
+
+  getRenderBody(): JsNode<ast.FunctionExpression> {
+    return null;
+    // TODO
+    // return this
+    //   .findChildrenOfType<ast.MethodDefinition>(t.MethodDefinition)
+    //   .filter(node => node.getMethodName() === 'render');
+  }
 }
 
 export class ReactComponentRenderProps {
@@ -138,7 +146,8 @@ export class ReactComponentEventHandlerProps {
   name: string;
 }
 
-export class ReactComponentEventHandler extends JsCodeNode<any, ReactComponentEventHandlerProps> {
+export class ReactComponentEventHandler
+  extends JsCodeNode<any, ReactComponentEventHandlerProps> {
 
   constructor(props: ReactComponentEventHandlerProps, children: JsNode<ast.Statement>[]) {
     super(props);

@@ -10,7 +10,7 @@ import {
 } from '../JsCode';
 
 import { JsNode, GenericJsNode } from '../JsNode';
-import { ExampleEditor } from './editor';
+import { DemoEditor } from './editor';
 
 let node = (
   <ReactClassComponent name='MyComponent'>
@@ -23,6 +23,6 @@ let node = (
   </ReactClassComponent>
 );
 
-node = new ExampleEditor().apply(node as GenericJsNode, null);
+node = new DemoEditor().apply(node as GenericJsNode, null);
 
 console.log(node.format());
