@@ -1,6 +1,6 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import { Node, NodePath, Type, Program, namedTypes as t, builders, visit } from 'ast-types';
+import { Node, NodePath, Type, Program, BlockStatement, namedTypes as t, builders, visit } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 import js = require('jscodeshift');
 
@@ -18,10 +18,12 @@ const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
 export class JsNodeList<T extends Node> {
-  _paths: NodePath[];
+  private _paths: NodePath[];
 
-  constructor(obj: any) {
-    if (obj instanceof Array) {
+  constructor(obj?: any) {
+    if (!obj) {
+      this._paths = [];
+    } else if (obj instanceof Array) {
       this._paths = js(obj).paths();
     } else if (isCollection(obj)) {
       this._paths = obj.paths();
@@ -47,15 +49,18 @@ export class JsNodeList<T extends Node> {
   }
 
   map(func: (node: JsNode<T>, index?: number) => any): any[] {
-    return this._paths.map((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
+    return this._paths.map((value, index, array) =>
+      func(<JsNode<T>>JsNode.fromPath(value), index));
+  }
+
+  filter(predicate: (node: JsNode<T>, index?: number) => boolean): JsNodeList<T> {
+    return new JsNodeList<T>(this._paths.filter((value, index, array) =>
+      predicate(<JsNode<T>>JsNode.fromPath(value), index)));
   }
 
   forEach(func: (node: JsNode<T>, index?: number) => any): void {
-    this._paths.forEach((value, index, array) => func(<JsNode<T>>JsNode.fromPath(value), index));
-  }
-
-    filter<T extends Node>(func: (node: JsNode<T>) => boolean): any[] {
-    return this._paths.filter(value => func(<JsNode<T>>JsNode.fromPath(value)));
+    this._paths.forEach((value, index, array) =>
+      func(<JsNode<T>>JsNode.fromPath(value), index));
   }
 
   /**
@@ -70,14 +75,33 @@ export class JsNodeList<T extends Node> {
     }
     return false;
   }
+
+  push(node: JsNode<T>): JsNodeList<T> {
+    this._paths.push(node.path());
+    return this;
+  }
+
+  pushPath(path: NodePath): JsNodeList<T> {
+    this._paths.push(path);
+    return this;
+  }
+
+  removeAll(): JsNodeList<T> {
+    this._paths.forEach(path => path.prune());
+    return this;
+  }
+
+  toArray(): JsNode<T>[] {
+    return this._paths.map(path => JsNode.fromPath(path) as JsNode<T>);
+  }
 }
 
 /**
  * Represents a node in the AST tree.
  */
 export class JsNode<T extends Node> implements transformabit.JsNode {
-  _node: T;
-  _path: NodePath;
+  private _node: T;
+  private _path: NodePath;
 
   static fromModuleCode(code: string, args?: Object): GenericJsNode {
     return JsNode.fromCollection(js(code, args));
@@ -110,7 +134,18 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
       .descend();
   }
 
+  static fromFunctionBody(code: string, args?: Object): GenericJsNodeList {
+    return JsNode
+      .fromCollection(js(`() => {${code}}`, args))
+      .findFirstChildOfType(t.BlockStatement)
+      .children();
+  }
+
   constructor(node?: T, path?: NodePath) {
+    this.initialise(node, path);
+  }
+
+  initialise(node?: T, path?: NodePath) {
     this._node = node || (path ? <T>path.value : null);
     this._path = path;
   }
@@ -120,7 +155,8 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
   }
 
   /**
-   * Returns the source code for the AST.
+   * Returns the source code for the
+
    */
   format(): string {
     return js(this._node).toSource().replace(/\r/g, '');
@@ -170,7 +206,7 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
 
   findChildrenOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNodeList<T> {
     const collection = js(this._node).find(type, attr);
-    return new JsNodeList(collection);
+    return new JsNodeList<T>(collection);
   }
 
   findClosestParentOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNode<T> {
@@ -268,10 +304,27 @@ export class JsNode<T extends Node> implements transformabit.JsNode {
   }
 
   /**
+   * Returns child nodes.
+   */
+  children(): GenericJsNodeList {
+    const self = this._path.node;
+    let children: GenericJsNodeList = new JsNodeList<any>();
+    visit(this._node, {
+      visitNode: function(p: NodePath) {
+        if (p.parent && p.parent.node === self) {
+          children.push(JsNode.fromPath(p));
+        }
+        this.traverse(p);
+      }
+    });
+    return children;
+  }
+
+  /**
    * Removes child nodes.
    */
   removeChildren(predicate?: (node: GenericJsNode) => boolean): void {
-    let self = this._path.node;
+    const self = this._path.node;
     visit(this._node, {
       visitNode: function(p: NodePath) {
         if (p.parent && p.parent.node === self) {

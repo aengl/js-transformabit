@@ -8,14 +8,15 @@
     "build": "tsc",
     "build-watch": "tsc -w",
     "test": "jest",
-    "test-watch": "jest --watch"
+    "test-watch": "jest --watch",
+    "demo-watch": "nodemon -e js ./dist/demo/printer.js"
   },
   "devDependencies": {
     "@types/jest": "^16.0.0",
     "@types/js-yaml": "^3.5.28",
     "@types/node": "^6.0.51",
     "jest": "^17.0.3",
-    "typescript": "^2.1.1"
+    "typescript": "^2.1.4"
   },
   "dependencies": {
     "js-yaml": "^3.7.0",

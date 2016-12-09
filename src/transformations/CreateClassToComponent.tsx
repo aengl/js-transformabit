@@ -12,15 +12,15 @@ export class CreateClassToComponent implements Transformation {
   }
 
   check(root: GenericJsNode, project: Project): boolean {
-    const createClasses = root.findChildrenOfType(t.CallExpression).filter<CallExpression>(ce => {
-      if (typeof ((ce.node().callee as MemberExpression).object as Identifier) === "undefined") {
+    const createClasses = root.findChildrenOfType(t.CallExpression).filter(ce => {
+      if (typeof (((ce.node() as CallExpression).callee as MemberExpression).object as Identifier) === "undefined") {
         return false;
       }
-      if (((ce.node().callee as MemberExpression).object as Identifier).name === "React") {
-        return ((ce.node().callee as MemberExpression).property as Identifier).name === "createClass";
+      if ((((ce.node() as CallExpression).callee as MemberExpression).object as Identifier).name === "React") {
+        return (((ce.node() as CallExpression).callee as MemberExpression).property as Identifier).name === "createClass";
       }
     });
-    return createClasses.length > 0;
+    return createClasses.toArray().length > 0;
   }
 
 
