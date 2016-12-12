@@ -927,6 +927,10 @@ export var builders: {
     key: (Literal | Identifier | Expression),
     value: Function, static?: boolean
   ) => MethodDefinition,
+  newExpression: (
+    callee: Expression,
+    args: (Expression | SpreadElement)[]
+  ) => NewExpression,
   objectExpression: (
     properties: (Property | ObjectMethod | ObjectProperty | SpreadProperty)[]
   ) => ObjectExpression,

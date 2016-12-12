@@ -1,7 +1,7 @@
 import { Transformation } from '../Transformation';
 import { GenericJsNode, NamedTypes as t } from '../JsNode';
 import { Project } from '../Project';
-import * as ast from 'ast-types';
+import { MethodDefinition } from '../jscode/js';
 
 export class DemoEditor implements Transformation {
   constructor() {
@@ -16,8 +16,8 @@ export class DemoEditor implements Transformation {
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
     root
-      .findChildrenOfType<ast.MethodDefinition>(t.MethodDefinition)
-      .filter(node => (node.node().key as ast.Identifier).name === 'render')
+      .findChildrenOfType(t.MethodDefinition)
+      .filter(node => (node as MethodDefinition).methodName() === 'render')
       .removeAll();
     return root;
   }

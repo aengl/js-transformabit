@@ -1,18 +1,21 @@
 import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
-import { JsCodeNode } from '../JsCode';
+import { Statement } from './js';
 import * as ast from 'ast-types';
 
-class ReactComponentCommon<T extends ast.Node, P> extends JsCodeNode<T, P> {
+class ReactComponentCommon<T extends ast.Node, P> extends JsNode<T, P> {
   protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
-    const body = this._find(children, ReactComponentRender)
+    const body = this._find(children, ReactComponentRender);
     if (body) {
-      return body.node() as ast.Expression;
+      return body.node as ast.Expression;
     }
     return null;
   }
 
-  protected getEventHandlersFromChildren(children: GenericJsNode[]): ReactComponentEventHandler[] {
-    return children.filter(child => child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
+  protected getEventHandlersFromChildren(
+    children: GenericJsNode[]): ReactComponentEventHandler[] {
+
+    return children.filter(child =>
+      child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
   }
 }
 
@@ -23,9 +26,10 @@ export type ReactStatelessComponentProps = {
 export class ReactStatelessComponent
   extends ReactComponentCommon<ast.VariableDeclaration, ReactStatelessComponentProps> {
 
-  constructor(props: ReactStatelessComponentProps, children: GenericJsNode[]) {
-    super(props);
-    this.initialise(b.variableDeclaration('const', [
+  build(props: ReactStatelessComponentProps,
+    children: GenericJsNode[]): ReactStatelessComponent {
+
+    this.node = b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
         b.arrowFunctionExpression(
@@ -33,7 +37,8 @@ export class ReactStatelessComponent
           this.getRenderBodyFromChildren(children)
         )
       )
-    ]));
+    ]);
+    return super.build(props, children);
   }
 }
 
@@ -44,14 +49,13 @@ export type ReactComponentProps = {
 export class ReactComponent
   extends ReactComponentCommon<ast.VariableDeclaration, ReactComponentProps> {
 
-  constructor(props: ReactComponentProps, children: GenericJsNode[]) {
-    super(props);
+  build(props: ReactComponentProps, children: GenericJsNode[]): ReactComponent {
     // Create event handlers
     let eventHandlers = this.getEventHandlersFromChildren(children)
       .map(handler => b.property(
         'init',
         b.identifier(handler.props.name),
-        b.functionExpression(null, [b.identifier('event')], handler.node())
+        b.functionExpression(null, [b.identifier('event')], handler.node)
       )
     );
     eventHandlers.forEach(handler => handler.method = true);
@@ -63,7 +67,7 @@ export class ReactComponent
     );
     renderMethod.method = true;
     // Create AST
-    this.initialise(b.variableDeclaration('const', [
+    this.node = b.variableDeclaration('const', [
       b.variableDeclarator(
         b.identifier(props.name),
         b.callExpression(
@@ -71,7 +75,8 @@ export class ReactComponent
           [b.objectExpression([renderMethod].concat(eventHandlers))]
         )
       )
-    ]));
+    ]);
+    return super.build(props, children);
   }
 }
 
@@ -82,18 +87,17 @@ export type ReactClassComponentProps = {
 export class ReactClassComponent
   extends ReactComponentCommon<ast.ClassDeclaration, ReactClassComponentProps> {
 
-  constructor(props: ReactClassComponentProps, children: GenericJsNode[]) {
-    super(props);
+  build(props: ReactClassComponentProps, children: GenericJsNode[]): ReactClassComponent {
     // Create event handlers
     let eventHandlers = this.getEventHandlersFromChildren(children)
       .map(handler => b.methodDefinition(
         'method',
         b.identifier(handler.props.name),
-        b.functionExpression(null, [b.identifier('event')], handler.node())
+        b.functionExpression(null, [b.identifier('event')], handler.node)
       )
     );
     // Create AST
-    this.initialise(b.classDeclaration(
+    this.node = b.classDeclaration(
       b.identifier(props.name),
       b.classBody([
         b.methodDefinition(
@@ -112,10 +116,11 @@ export class ReactClassComponent
         b.identifier('React'),
         b.identifier('Component')
       )
-    ));
+    );
+    return super.build(props, children);
   }
 
-  getRenderBody(): JsNode<ast.FunctionExpression> {
+  getRenderBody(): JsNode<ast.FunctionExpression, any> {
     return null;
     // TODO
     // return this
@@ -127,10 +132,8 @@ export class ReactClassComponent
 export class ReactComponentRenderProps {
 }
 
-export class ReactComponentRender extends JsCodeNode<any, ReactComponentRenderProps> {
-
-  constructor(props: ReactComponentRenderProps, children: string[]) {
-    super(props);
+export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps> {
+  build(props: ReactComponentRenderProps, children: string[]): ReactComponentRender {
     if (children.length !== 1) {
       throw new Error('ReactComponentRender requires exactly one child');
     }
@@ -138,7 +141,8 @@ export class ReactComponentRender extends JsCodeNode<any, ReactComponentRenderPr
     if (typeof renderBody !== 'string') {
       throw new Error('ReactComponentRender only accepts strings as children');
     }
-    this.initialise(JsNode.fromExpressionStatement(renderBody).node());
+    this.node = JsNode.fromExpressionStatement(renderBody).node;
+    return super.build(props, children);
   }
 }
 
@@ -147,10 +151,12 @@ export class ReactComponentEventHandlerProps {
 }
 
 export class ReactComponentEventHandler
-  extends JsCodeNode<any, ReactComponentEventHandlerProps> {
+  extends JsNode<any, ReactComponentEventHandlerProps> {
 
-  constructor(props: ReactComponentEventHandlerProps, children: JsNode<ast.Statement>[]) {
-    super(props);
-    this.initialise(b.blockStatement(children.map(child => child.node())));
+  build(props: ReactComponentEventHandlerProps,
+    children: Statement[]): ReactComponentEventHandler {
+
+    this.node = b.blockStatement(children.map(child => child.node));
+    return super.build(props, children);
   }
 }

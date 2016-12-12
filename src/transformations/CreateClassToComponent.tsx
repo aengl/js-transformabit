@@ -13,7 +13,7 @@ export class CreateClassToComponent implements Transformation {
 
   check(root: GenericJsNode, project: Project): boolean {
     const createClasses = root.findChildrenOfType(t.CallExpression).filter(ce => {
-      const callExpression = ce.node() as CallExpression;
+      const callExpression = ce.node as CallExpression;
       const callee = callExpression.callee as MemberExpression;
       if (typeof (callee.object as Identifier) === "undefined") {
         return false;
@@ -29,12 +29,12 @@ export class CreateClassToComponent implements Transformation {
   apply(root: GenericJsNode, project: Project): GenericJsNode {
 
     const variableDeclrations = root.findChildrenOfType(t.VariableDeclaration).forEach(vd => {
-      const variableDeclaration = vd.node() as VariableDeclaration;
+      const variableDeclaration = vd.node as VariableDeclaration;
       if (variableDeclaration.declarations[0].init.type == "CallExpression") {
         const callee = (variableDeclaration.declarations[0].init as CallExpression).callee as MemberExpression;
         if ((callee.object as Identifier).name === "React") {
           if ((callee.property as Identifier).name === "createClass") {
-            vd.replace(this.createComponent(variableDeclaration.declarations[0]).node() as VariableDeclarator);
+            vd.replace(this.createComponent(variableDeclaration.declarations[0]).node as VariableDeclarator);
           }
         }
       }

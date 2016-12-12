@@ -1,5 +1,13 @@
 import { JsNode, JsNodeList, NamedTypes as t, Builders as b } from './JsNode';
-import { Identifier } from 'ast-types';
+import {
+  Identifier,
+  MethodDefinition,
+  BlockStatement,
+  VariableDeclaration,
+  Literal,
+  ClassBody
+} from './JsCode';
+import * as ast from 'ast-types';
 
 describe('JsNodeList', () => {
   it('create', () => {
@@ -7,14 +15,14 @@ describe('JsNodeList', () => {
     const node = JsNode.fromModuleCode(code);
     const identifiers = node.findChildrenOfType(t.Identifier);
     expect(identifiers.size()).toBe(3);
-    expect(identifiers.at<Identifier>(2).node().name).toBe('baz');
+    expect(identifiers.at<ast.Identifier>(2).node.name).toBe('baz');
   });
 
   it('map', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
-      .findChildrenOfType<Identifier>(t.Identifier)
-      .map(n => n.node().name)
+      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .map(n => n.node.name)
       .join();
     expect(identifiers).toBe('foo,bar,baz');
   });
@@ -22,8 +30,8 @@ describe('JsNodeList', () => {
   it('filter', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
-      .findChildrenOfType<Identifier>(t.Identifier)
-      .filter(n => n.node().name === 'bar');
+      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .filter(n => n.node.name === 'bar');
     expect(identifiers.size()).toBe(1);
     expect(identifiers.at(0).format()).toBe('bar');
   });
@@ -32,26 +40,26 @@ describe('JsNodeList', () => {
     const code = 'let foo, bar; let baz;';
     const node = JsNode.fromModuleCode(code);
     node
-      .findChildrenOfType<Identifier>(t.Identifier)
-      .forEach(n => n.node().name = n.node().name.split('').reverse().join(''));
+      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .forEach(n => n.node.name = n.node.name.split('').reverse().join(''));
     expect(node.format()).toBe('let oof, rab; let zab;');
   });
 
   it('has', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType<Identifier>(t.Identifier);
-    expect(nodes.has(n => n.node().name === 'baz')).toBe(true);
-    expect(nodes.has(n => n.node().name === 'qux')).toBe(false);
+      .findChildrenOfType<ast.Identifier>(t.Identifier);
+    expect(nodes.has(n => n.node.name === 'baz')).toBe(true);
+    expect(nodes.has(n => n.node.name === 'qux')).toBe(false);
   });
 
   it('push', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType<Identifier>(t.Identifier);
+      .findChildrenOfType<ast.Identifier>(t.Identifier);
     const list = new JsNodeList();
     list.push(nodes.at(1));
-    list.pushPath(nodes.at(0).path());
+    list.pushPath(nodes.at(0).path);
     expect(list.size()).toBe(2);
     expect(list.at(0).format()).toBe('bar');
     expect(list.at(1).format()).toBe('foo');
@@ -69,7 +77,7 @@ describe('JsNodeList', () => {
   it('to array', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType<Identifier>(t.Identifier)
+      .findChildrenOfType<ast.Identifier>(t.Identifier)
       .toArray();
     expect(nodes.length).toBe(3);
     expect(nodes[0].format()).toBe('foo');
@@ -120,16 +128,16 @@ describe('JsNode', () => {
   it('chain find calls', () => {
     const code = 'class Foo { bar() {} };';
     const node = JsNode.fromModuleCode(code);
-    const method = node.findFirstChildOfType(t.MethodDefinition);
+    const method = node.findFirstChildOfType(MethodDefinition);
     expect(method.format()).toBe('bar() {}');
-    const block = method.findFirstChildOfType(t.BlockStatement);
+    const block = method.findFirstChildOfType(BlockStatement);
     expect(block.format()).toBe('{}');
   });
 
   it('find closest parent', () => {
     const code = 'class Foo { bar() {} }';
     const node = JsNode.fromModuleCode(code);
-    const method = node.findFirstChildOfType(t.MethodDefinition);
+    const method = node.findFirstChildOfType(MethodDefinition);
     expect(method.format()).toBe('bar() {}');
     const program = method.findClosestParentOfType(t.Program);
     expect(program.format()).toBe(code);
@@ -138,7 +146,7 @@ describe('JsNode', () => {
   it('find closest scope', () => {
     const code = 'function foo() { const foo = 42; }';
     const node = JsNode.fromModuleCode(code)
-      .findFirstChildOfType(t.VariableDeclaration)
+      .findFirstChildOfType(VariableDeclaration)
       .findClosestScope();
     expect(node.type()).toBe(t.FunctionDeclaration.toString());
     expect(node.format()).toBe(code);
@@ -154,7 +162,7 @@ describe('JsNode', () => {
 
   it('ascend', () => {
     const code = 'const foo = 42;';
-    const node = JsNode.fromModuleCode(code).findFirstChildOfType(t.Literal);
+    const node = JsNode.fromModuleCode(code).findFirstChildOfType(Literal);
     expect(node.ascend().format()).toBe('foo = 42');
     expect(node.ascend(node => node.check(t.Program)).format()).toBe(code);
   });
@@ -162,7 +170,7 @@ describe('JsNode', () => {
   it('get root', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code);
-    const literal = node.findFirstChildOfType(t.Literal);
+    const literal = node.findFirstChildOfType(Literal);
     expect(literal.format()).toBe('42');
     expect(literal.getRoot().format()).toBe(code);
   });
@@ -171,7 +179,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code);
     node
-      .findFirstChildOfType(t.Literal)
+      .findFirstChildOfType(Literal)
       .replace(b['literal'](23));
     expect(node.format()).toBe(code.replace('42', '23'));
   });
@@ -180,7 +188,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code);
     node
-      .findFirstChildOfType(t.Literal)
+      .findFirstChildOfType(Literal)
       .remove();
     expect(node.format()).toBe('const foo;');
   });
@@ -189,7 +197,7 @@ describe('JsNode', () => {
     const code = 'class Foo { bar() { return 23; } baz() { return 42; } }';
     const node = JsNode.fromModuleCode(code);
     const children = node
-      .findFirstChildOfType(t.ClassBody)
+      .findFirstChildOfType(ClassBody)
       .children();
     expect(children.size()).toBe(2);
     expect(children.at(0).format()).toBe('bar() { return 23; }');
@@ -200,7 +208,7 @@ describe('JsNode', () => {
     const code = 'class Foo { bar() { return 23; } baz() { return 42; } }';
     const node = JsNode.fromModuleCode(code);
     node
-      .findFirstChildOfType(t.ClassBody)
+      .findFirstChildOfType(ClassBody)
       .removeChildren();
     expect(node.format()).toBe('class Foo {}');
   });

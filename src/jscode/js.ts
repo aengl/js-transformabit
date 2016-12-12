@@ -1,6 +1,31 @@
 import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
-import { JsCodeNode } from '../JsCode';
 import * as ast from 'ast-types';
+
+/*========================================================================
+                                Expression
+=========================================================================*/
+
+export type ExpressionProps = {
+};
+
+export class Expression extends JsNode<ast.Expression, ExpressionProps> {
+  build(props: ExpressionProps): Expression {
+    return super.build(props);
+  }
+}
+
+/*========================================================================
+                                Statement
+=========================================================================*/
+
+export type StatementProps = {
+};
+
+export class Statement extends JsNode<ast.Statement, StatementProps> {
+  build(props: StatementProps): Statement {
+    return super.build(props);
+  }
+}
 
 /*========================================================================
                             Variable Delcaration
@@ -22,24 +47,30 @@ export type VariableDeclarationProps = {
 };
 
 export class VariableDeclaration
-  extends JsCodeNode<ast.VariableDeclaration, VariableDeclarationProps> {
+  extends JsNode<ast.VariableDeclaration, VariableDeclarationProps> {
 
-  constructor(props: VariableDeclarationProps, children: GenericJsNode[]) {
-    super(props);
+  build(props: VariableDeclarationProps,
+    children: GenericJsNode[] = []): VariableDeclaration {
+
     let kindString = props.kind || VariableKind.Var;
     let declarators = this.getDeclarators(props, children);
-    this.initialise(b.variableDeclaration(kindString.toString(), declarators));
+    this.node = b.variableDeclaration(kindString.toString(), declarators);
+    return super.build(props, children) as VariableDeclaration;
   }
 
-  private getDeclarators(props: VariableDeclarationProps, children: GenericJsNode[]): ast.VariableDeclarator[] {
+  private getDeclarators(props: VariableDeclarationProps,
+    children: GenericJsNode[]): ast.VariableDeclarator[] {
+
     let nodes: ast.VariableDeclarator[] = [];
     if (props.name) {
-      nodes.push(new VariableDeclarator({ name: props.name }, children as JsNode<ast.Expression>[]).node());
+      let declarator = new VariableDeclarator().build({ name: props.name });
+      declarator.build({ name: props.name }, children as Expression[]);
+      nodes.push(declarator.node);
       return nodes;
     }
     for (let child of children) {
       if (child.check(t.VariableDeclarator)) {
-        nodes.push(child.node() as ast.VariableDeclarator);
+        nodes.push(child.node as ast.VariableDeclarator);
       }
     }
 
@@ -56,20 +87,20 @@ export type VariableDeclaratorProps = {
 };
 
 export class VariableDeclarator
-  extends JsCodeNode<ast.VariableDeclarator, VariableDeclaratorProps> {
+  extends JsNode<ast.VariableDeclarator, VariableDeclaratorProps> {
 
   propTypes: {
-    children: JsNode<ast.Expression>
+    children: Expression
   };
 
-  constructor(props: VariableDeclaratorProps, children: JsNode<ast.Expression>[]) {
-    super(props);
-    let identifier = new Identifier({ name: props.name }).node();
+  build(props: VariableDeclaratorProps, children: Expression[] = []): VariableDeclarator {
+    let identifier = new Identifier().build({ name: props.name }).node;
     if (children.length > 1) {
       throw new Error("VariableDeclarator can only have one child");
     }
-    let child = children.length ? children[0].node() : null;
-    this.initialise(b.variableDeclarator(identifier, child));
+    let child = children.length ? children[0].node : null;
+    this.node = b.variableDeclarator(identifier, child);
+    return super.build(props, children) as VariableDeclarator;
   }
 }
 
@@ -81,11 +112,10 @@ export type LiteralProps = {
   value: string | number | boolean | null
 };
 
-export class Literal extends JsCodeNode<ast.Literal, LiteralProps> {
-
-  constructor(props: LiteralProps) {
-    super(props);
-    this.initialise(b.literal(props.value));
+export class Literal extends JsNode<ast.Literal, LiteralProps> {
+  build(props: LiteralProps): Literal {
+    this.node = b.literal(props.value);
+    return super.build(props);
   }
 }
 
@@ -97,11 +127,18 @@ export type IdentifierProps = {
   name: string
 };
 
-export class Identifier extends JsCodeNode<ast.Identifier, IdentifierProps> {
+export class Identifier extends JsNode<ast.Identifier, IdentifierProps> {
+  get name(): string {
+    return this._node.name;
+  }
 
-  constructor(props: IdentifierProps) {
-    super(props);
-    this.initialise(b.identifier(props.name));
+  set name(value: string) {
+    this._node.name = value;
+  }
+
+  build(props: IdentifierProps): Identifier {
+    this.node = b.identifier(props.name);
+    return super.build(props) as Identifier;
   }
 }
 
@@ -110,17 +147,19 @@ export class Identifier extends JsCodeNode<ast.Identifier, IdentifierProps> {
 =========================================================================*/
 
 export type CallExpressionProps = {
-  callee: Identifier | MemberExpression
+  callee: string | Identifier | MemberExpression
 };
 
 export class CallExpression
-  extends JsCodeNode<ast.CallExpression, CallExpressionProps> {
+  extends JsNode<ast.CallExpression, CallExpressionProps> {
 
-  constructor(props: CallExpressionProps, children: GenericJsNode[]) {
-    super(props);
-    let callee = props.callee.node();
+  build(props: CallExpressionProps, children: GenericJsNode[] = []): CallExpression {
+    let callee: ast.Identifier | ast.MemberExpression =
+      (typeof props.callee === 'string') ?
+        b.identifier(props.callee) : props.callee.node;
     let args = this.getArgs(children);
-    this.initialise(b.callExpression(callee, args));
+    this.node = b.callExpression(callee, args);
+    return super.build(props, children) as CallExpression;
   }
 
   private getArgs(children: GenericJsNode[]): ast.Expression[] {
@@ -130,11 +169,11 @@ export class CallExpression
         throw new Error("All Children must be of JsNode, if you are trying to pass in a variable that is a JsNode, write {variableNameHere}");
       }
       if (child.check<ast.Literal>(t.Literal)) {
-        args.push(child.node());
+        args.push(child.node);
       } else if (child.check<ast.Identifier>(t.Identifier)) {
-        args.push(child.node());
+        args.push(child.node);
       } else if (child.check<ast.CallExpression>(t.CallExpression)) {
-        args.push(child.node());
+        args.push(child.node);
       } else {
         throw new Error("argument if specified must be either a Literal, Identifier, or a CallExpression");
       }
@@ -152,21 +191,21 @@ export type FunctionDeclarationProps = {
 };
 
 export class FunctionDeclaration
-  extends JsCodeNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
+  extends JsNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
 
-  constructor(props: FunctionDeclarationProps, children: GenericJsNode[]) {
-    super(props);
-    let identifier = new Identifier({ name: props.name }).node();
+  build(props: FunctionDeclarationProps, children: GenericJsNode[]): FunctionDeclaration {
+    let identifier = new Identifier().build({ name: props.name }).node;
     let params = this.getParameters(children);
     let body = this.getBody(children);
-    this.initialise(b.functionDeclaration(identifier, params, body));
+    this.node = b.functionDeclaration(identifier, params, body);
+    return super.build(props, children) as FunctionDeclaration;
   }
 
   private getParameters(children: GenericJsNode[]): ast.Pattern[] {
     let params: ast.Pattern[] = [];
     for (let child of children) {
       if (child.check<ast.Identifier>(t.Identifier)) {
-        params.push(child.node());
+        params.push(child.node);
       }
     }
     return params;
@@ -175,10 +214,10 @@ export class FunctionDeclaration
   private getBody(children: GenericJsNode[]): ast.BlockStatement {
     for (let child of children) {
       if (child.check<ast.BlockStatement>(t.BlockStatement)) {
-        return child.node();
+        return child.node;
       }
     }
-    return new BlockStatement({}, []).node();
+    return b.blockStatement([]);
   }
 }
 
@@ -192,21 +231,18 @@ export type FunctionExpressionProps = {
   id?: Identifier | string
 };
 
-export class FunctionExpression extends JsNode<ast.FunctionExpression> {
+export class FunctionExpression
+  extends JsNode<ast.FunctionExpression, FunctionExpressionProps> {
 
   props: FunctionExpressionProps;
-  constructor(props: FunctionExpressionProps, children: GenericJsNode[]) {
-    super();
 
-    let params = this.getParameters(children);
-    let body = this.getBody(children);
-
-    this.initialise(<ast.FunctionExpression>b.functionExpression(
+  build(props: FunctionExpressionProps, children: GenericJsNode[]): FunctionExpression {
+    this.node = b.functionExpression(
       this.getId(props),
-      params,
-      body
-    ));
-
+      this.getParameters(children),
+      this.getBody(children)
+    );
+    return super.build(props, children) as FunctionExpression;
   }
 
   private getId(props: FunctionExpressionProps): ast.Identifier {
@@ -216,9 +252,9 @@ export class FunctionExpression extends JsNode<ast.FunctionExpression> {
     if (!props.id) {
       return null;
     } else if (props.id.constructor.name === "Identifier") {
-      return (props.id as Identifier).node();
+      return (props.id as Identifier).node;
     } else {
-      return new Identifier({name: <string>props.id}).node();
+      return new Identifier({name: <string>props.id}).node;
     }
   }
 
@@ -240,7 +276,7 @@ export class FunctionExpression extends JsNode<ast.FunctionExpression> {
     let params = Array<ast.Pattern>();
     for (let index in children) {
       if (children[index].check(ast.namedTypes.Identifier)) {
-        params.push(children[index].node() as ast.Pattern);
+        params.push(children[index].node as ast.Pattern);
       }
     }
     return params;
@@ -249,13 +285,12 @@ export class FunctionExpression extends JsNode<ast.FunctionExpression> {
   private getBody(children: GenericJsNode[]): ast.BlockStatement {
     for (let index in children) {
       if (children[index].check(ast.namedTypes.BlockStatement)) {
-        return children[index].node() as ast.BlockStatement;
+        return children[index].node as ast.BlockStatement;
       }
     }
-    return new BlockStatement({}, []).node();
+    return new BlockStatement({}, []).node;
   }
 }
-
 
 /*========================================================================
                             Block Statement
@@ -264,18 +299,16 @@ export class FunctionExpression extends JsNode<ast.FunctionExpression> {
 export type BlockStatementProps = {
 };
 
-export class BlockStatement extends JsCodeNode<ast.BlockStatement, BlockStatementProps> {
-
-  constructor(props: BlockStatementProps, children: JsNode<ast.Statement>[]) {
-    super(props);
+export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> {
+  build(props: BlockStatementProps, children: Statement[]): BlockStatement {
     let statements: ast.Statement[] = [];
     for (let child of children) {
-      statements.push(child.node());
+      statements.push(child.node);
     }
-    this.initialise(b.blockStatement(statements));
+    this.node = b.blockStatement(statements);
+    return super.build(props, children);
   }
 }
-
 
 /*========================================================================
                             Property
@@ -296,61 +329,56 @@ export type PropertyProps = {
   computed?: boolean
 }
 
-export class Property extends JsNode<ast.Property> {
-
+export class Property extends JsNode<ast.Property, PropertyProps> {
   props: PropertyProps;
-  constructor(props: PropertyProps, children: GenericJsNode[]) {
-    super();
 
+  build(props: PropertyProps, children: GenericJsNode[]): Property {
     let key = this.getKey(props);
     let kind = props.kind.toString() as 'init' | 'get' | 'set';
 
-    this.initialise(<ast.Property>b.property(
+    this.node = b.property(
       kind,
       key,
       this.getValue(props, children) as ast.Identifier | ast.FunctionExpression | ast.ArrowFunctionExpression | ast.Literal
-    ));
-
+    );
+    return super.build(props, children) as Property;
   }
-
 
   private getValue(props: PropertyProps, children: GenericJsNode[]): ast.Node {
     if (props.value) {
-      return (props.value as GenericJsNode).node();
+      return (props.value as GenericJsNode).node;
     }
     if (children.length < 1) {
       throw new Error("Must supplu value in either props or as a child");
     } else {
-      return (children[0] as GenericJsNode).node();
+      return (children[0] as GenericJsNode).node;
     }
   }
 
   private getKey(props: PropertyProps): ast.Expression {
     if (props.key.constructor.name === "String") {
-      return new Identifier({name: <string>props.key}).node();
+      return new Identifier({name: <string>props.key}).node;
     } else {
-      return (props.key as Identifier).node();
+      return (props.key as Identifier).node;
     }
   }
 }
-
 
 /*========================================================================
                             Object Expression
 =========================================================================*/
 
 export type ObjectExpressionProps = {
-
 }
 
-export class ObjectExpression extends JsNode<ast.ObjectExpression> {
+export class ObjectExpression
+  extends JsNode<ast.ObjectExpression, ObjectExpressionProps> {
 
   props: ObjectExpressionProps;
-  constructor(props: ObjectExpressionProps, children: GenericJsNode[]) {
-    super();
-    this.initialise(<ast.ObjectExpression>b.objectExpression(
-      this.getProperties(children)
-    ));
+
+  build(props: ObjectExpressionProps, children: GenericJsNode[]): ObjectExpression {
+    this.node = b.objectExpression(this.getProperties(children));
+    return super.build(props, children) as ObjectExpression;
   }
 
   private getProperties(children: GenericJsNode[]): ast.Property[] {
@@ -359,7 +387,7 @@ export class ObjectExpression extends JsNode<ast.ObjectExpression> {
       if (jsnode.constructor.name !== "Property") {
         throw new Error("Children of Object Expression must be all of Property");
       }
-      nodes.push(jsnode.node() as ast.Property);
+      nodes.push(jsnode.node as ast.Property);
     }
     return nodes;
   }
@@ -367,12 +395,11 @@ export class ObjectExpression extends JsNode<ast.ObjectExpression> {
 
 
 
-
 /*========================================================================
               Utility for Expression Statement and Return Statement
 =========================================================================*/
 
-function getSingleExpression(children: JsNode<ast.Expression>[],
+function getSingleExpression(children: Expression[],
   allowNull: boolean, statement: string): ast.Expression {
 
   if (children.length === 0) {
@@ -391,7 +418,7 @@ function getSingleExpression(children: JsNode<ast.Expression>[],
     case "Literal":
     case "CallExpression":
     case "AssignmentExpression":
-      return children[0].node();
+      return children[0].node;
     default:
       throw new Error("The expression in an " + statement + " must be either an Identifier, CallExpression, AssignmentExpression, or a Literal");
   }
@@ -405,14 +432,13 @@ export type ExpressionStatementProps = {
 };
 
 export class ExpressionStatement
-  extends JsCodeNode<ast.ExpressionStatement, ExpressionStatementProps> {
+  extends JsNode<ast.ExpressionStatement, ExpressionStatementProps> {
 
-  constructor(props: ExpressionStatementProps, children: JsNode<ast.Expression>[]) {
-    super(props);
-    this.initialise(b.expressionStatement(
-      getSingleExpression(children, false, t.ExpressionStatement.toString())));
+  build(props: ExpressionStatementProps, children: Expression[]): ExpressionStatement {
+    this.node = b.expressionStatement(
+      getSingleExpression(children, false, t.ExpressionStatement.toString()));
+    return super.build(props, children);
   }
-
 }
 
 /*========================================================================
@@ -422,12 +448,11 @@ export class ExpressionStatement
 export type ReturnStatementProps = {
 };
 
-export class ReturnStatement extends JsCodeNode<ast.ReturnStatement, ReturnStatementProps> {
-
-  constructor(props: ReturnStatementProps, children: JsNode<ast.Expression>[]) {
-    super(props);
-    this.initialise(<ast.ReturnStatement>b.returnStatement(
-      getSingleExpression(children, true, t.ReturnStatement.toString())));
+export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
+  build(props: ReturnStatementProps, children: Expression[]): ReturnStatement {
+    this.node = <ast.ReturnStatement>b.returnStatement(
+      getSingleExpression(children, true, t.ReturnStatement.toString()));
+    return super.build(props, children);
   }
 }
 
@@ -438,11 +463,10 @@ export class ReturnStatement extends JsCodeNode<ast.ReturnStatement, ReturnState
 export type ThisExpressionProps = {
 };
 
-export class ThisExpression extends JsCodeNode<ast.ThisExpression, ThisExpressionProps> {
-
-  constructor(props: ThisExpressionProps, children: GenericJsNode[]) {
-    super(props);
-    this.initialise(b.thisExpression());
+export class ThisExpression extends JsNode<ast.ThisExpression, ThisExpressionProps> {
+  build(props: ThisExpressionProps, children: GenericJsNode[]): ThisExpression {
+    this.node = b.thisExpression();
+    return super.build(props, children);
   }
 }
 
@@ -456,30 +480,20 @@ export type MemberExpressionProps = {
 };
 
 export class MemberExpression
-  extends JsCodeNode<ast.MemberExpression, MemberExpressionProps> {
+  extends JsNode<ast.MemberExpression, MemberExpressionProps> {
 
-  constructor(props: MemberExpressionProps, children: GenericJsNode[]) {
-    super(props);
+  build(props: MemberExpressionProps, children: GenericJsNode[]): MemberExpression {
     let object: ast.Node;
-    let property = this.getAsNode(props.property);
     if (!props.object) {
-      object = new ThisExpression({}, []).node();
+      object = b.thisExpression();
     } else {
-      object = this.getAsNode(props.object);
+      object = (typeof props.object === 'string') ?
+        b.identifier(props.object) : props.object.node;
     }
-
-    this.initialise(<ast.MemberExpression>b.memberExpression(object, property));
-  }
-
-  private getAsNode(item: ThisExpression | MemberExpression | Identifier | string): ast.Expression {
-    if (item.constructor.name == "String") {
-      return new Identifier({name: <string>item}).node();
-    }
-
-    return (item as GenericJsNode).node() as ast.Expression;
-
-   // this.initialise(b.memberExpression(object, props.property.node()));
-
+    let property: ast.Identifier = (typeof props.property === 'string') ?
+      b.identifier(props.property) : props.property.node;
+    this.node = b.memberExpression(object, property);
+    return super.build(props, children);
   }
 }
 
@@ -505,13 +519,13 @@ export type AssignmentExpressionProps = {
 };
 
 export class AssignmentExpression
-  extends JsCodeNode<ast.AssignmentExpression, AssignmentExpressionProps> {
+  extends JsNode<ast.AssignmentExpression, AssignmentExpressionProps> {
 
-  constructor(props: AssignmentExpressionProps, children: GenericJsNode[]) {
-    super(props);
+  build(props: AssignmentExpressionProps, children: GenericJsNode[]): AssignmentExpression {
     let operator = props.operator;
-    this.initialise(b.assignmentExpression(
-      operator.toString(), props.left.node(), props.right.node()));
+    this.node = b.assignmentExpression(
+      operator.toString(), props.left.node, props.right.node);
+    return super.build(props, children);
   }
 }
 
@@ -524,33 +538,33 @@ export type ClassDeclarationProps = {
   superClass?: string | Identifier | MemberExpression
 };
 
-export class ClassDeclaration extends JsCodeNode<ast.ClassDeclaration, ClassDeclarationProps> {
+export class ClassDeclaration
+  extends JsNode<ast.ClassDeclaration, ClassDeclarationProps> {
 
-  constructor(props: ClassDeclarationProps, children: GenericJsNode[]) {
-    super(props);
-    let id = this.getId(props.id);
-    let superClass = this.getSuperClass(props);
-
-    let body = new ClassBody({}, children).node();
-    this.initialise (<ast.ClassDeclaration>b.classDeclaration(id, body, superClass));
-
+  build(props: ClassDeclarationProps, children: GenericJsNode[]): ClassDeclaration {
+    this.node = b.classDeclaration(
+      this.getId(props.id),
+      new ClassBody().build({}, children).node,
+      this.getSuperClass(props)
+    );
+    return super.build(props, children) as ClassDeclaration;
   }
 
   private getId(value: string | Identifier): ast.Identifier {
-    if (typeof(value) === "string") {
-      return new Identifier({ name: value }).node();
+    if (typeof(value) === 'string') {
+      return new Identifier().build({ name: value }).node;
     }
-    return value.node();
+    return value.node;
   }
 
   private getSuperClass(props: ClassDeclarationProps): ast.Expression {
     if (!props.superClass) {
       return null;
     }
-    if (typeof(props.superClass) === "string") {
-      return new Identifier({ name: <string>props.superClass }).node();
+    if (typeof(props.superClass) === 'string') {
+      return new Identifier().build({ name: props.superClass }).node;
     }
-    return (props.superClass as Identifier).node();
+    return (props.superClass as Identifier).node;
   }
 }
 
@@ -561,11 +575,10 @@ export class ClassDeclaration extends JsCodeNode<ast.ClassDeclaration, ClassDecl
 export type ClassBodyProps = {
 };
 
-export class ClassBody extends JsCodeNode<ast.ClassBody, ClassBodyProps> {
-
-  constructor(props: ClassBodyProps, children: GenericJsNode[]) {
-    super(props);
-    this.initialise(<ast.ClassBody>b.classBody(this.asNodeArray(children)));
+export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
+  build(props: ClassBodyProps, children: GenericJsNode[]): ClassBody {
+    this.node = b.classBody(this.asNodeArray(children));
+    return super.build(props, children) as ClassBody;
   }
 
   private asNodeArray(children: GenericJsNode[]): ast.ClassBodyElement[] {
@@ -574,7 +587,7 @@ export class ClassBody extends JsCodeNode<ast.ClassBody, ClassBodyProps> {
     }
     let nodes = Array<ast.ClassBodyElement>();
     for (let n of children) {
-      nodes.push(n.node() as ast.ClassBodyElement);
+      nodes.push(n.node as ast.ClassBodyElement);
     }
     return nodes;
   }
@@ -599,18 +612,20 @@ export type MethodDefinitionProps = {
   expression?: FunctionExpression
 }
 
-export class MethodDefinition extends JsNode<ast.MethodDefinition> {
+export class MethodDefinition
+  extends JsNode<ast.MethodDefinition, MethodDefinitionProps> {
 
   props: MethodDefinitionProps;
-  constructor(props: MethodDefinitionProps, children: GenericJsNode[]) {
-    super();
+
+  build(props: MethodDefinitionProps, children: GenericJsNode[]): MethodDefinition {
     let kindString = (props.kind.toString() as 'set' | 'constructor' | 'get' | 'method');
-    this.initialise(<ast.MethodDefinition>b.methodDefinition(
+    this.node = b.methodDefinition(
       kindString,
       this.getKey(props),
       this.getFunction(props, children),
       this.getBool(props.staticMethod)
-    ));
+    );
+    return super.build(props, children) as MethodDefinition;
   }
 
   private getBool(val?: boolean): boolean {
@@ -622,44 +637,48 @@ export class MethodDefinition extends JsNode<ast.MethodDefinition> {
 
   private getKey(props: MethodDefinitionProps): ast.Expression {
     if (props.key.constructor.name === "String") {
-      return new Identifier({name: <string>props.key}).node();
+      return new Identifier({name: <string>props.key}).node;
     }
-    return (props.key as Identifier).node();
+    return (props.key as Identifier).node;
   }
 
-  private getFunction(props: MethodDefinitionProps, children: GenericJsNode[]): ast.Function {
+  private getFunction(props: MethodDefinitionProps,
+    children: GenericJsNode[]): ast.Function {
+
     if (props.expression) {
-      return props.expression.node();
+      return props.expression.node;
     }
     if (children.length === 0) {
-      return new FunctionExpression({}, []).node();
+      return new FunctionExpression({}, []).node;
     }
-    return (children[0] as FunctionExpression).node();
+    return (children[0] as FunctionExpression).node;
   }
 }
 
 /*========================================================================
                             New Expression
 =========================================================================*/
+
+type NewExpressionChild = (ast.Expression | ast.SpreadElement);
+
 export type NewExpressionProps = {
   callee: Identifier | MemberExpression
-}
+};
 
-export class NewExpression extends JsNode<ast.NewExpression> {
-
+export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps> {
   props: NewExpressionProps;
-  constructor(props: NewExpressionProps, children: GenericJsNode[]) {
-    super();
-    this.initialise(
-      <ast.NewExpression>ast.builders["newExpression"](props.callee.node(), this.getArgs(children))
-    );
 
+  build(props: NewExpressionProps,
+    children: JsNode<NewExpressionChild, any>[]): NewExpression {
+
+    this.node = ast.builders.newExpression(props.callee.node, this.getArgs(children))
+    return super.build(props, children) as NewExpression;
   }
 
-  private getArgs(children: GenericJsNode[]): ast.Node[] {
-    const nodes = new Array<ast.Node>();
+  private getArgs(children: JsNode<NewExpressionChild, any>[]): NewExpressionChild[] {
+    const nodes: NewExpressionChild[] = [];
     for (const child of children) {
-      nodes.push(child.node());
+      nodes.push(child.node);
     }
     return nodes;
   }
