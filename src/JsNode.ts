@@ -15,6 +15,7 @@ import js = require('jscodeshift');
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNodeList = JsNodeList<Node, any>;
 export type GenericJsNode = JsNode<Node, any>;
+export type JsNodeType<T> = { new(props: any): T };
 export const NamedTypes = t;
 export const Builders = builders;
 
@@ -109,8 +110,8 @@ export class JsNodeList<T extends Node, P> {
  * Represents a node in the AST tree.
  */
 export class JsNode<T extends Node, P> implements transformabit.JsNode {
-  private _node: T;
-  private _path: NodePath;
+  protected _node: T;
+  protected _path: NodePath;
 
   public props: P;
 
@@ -120,8 +121,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   static fromCode(code: string, args?: Object): GenericJsNodeList {
     const program = <Program>JsNode
-      .fromCollection(js(code, args))
-      .findFirstChildOfType(t.Program)
+      .fromCollection(js(code, args).find('Program'))
       .node();
     return new JsNodeList(program.body);
   }
@@ -144,15 +144,13 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   static fromExpressionStatement(code: string, args?: Object): GenericJsNode {
     return JsNode
-      .fromCollection(js(`() => ${code}`, args))
-      .findFirstChildOfType(t.ArrowFunctionExpression)
+      .fromCollection(js(`() => ${code}`, args).find('ArrowFunctionExpression'))
       .descend();
   }
 
   static fromFunctionBody(code: string, args?: Object): GenericJsNodeList {
     return JsNode
-      .fromCollection(js(`() => {${code}}`, args))
-      .findFirstChildOfType(t.BlockStatement)
+      .fromCollection(js(`() => {${code}}`, args).find('BlockStatement'))
       .children();
   }
 
@@ -214,9 +212,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return this.type() === type.toString();
   }
 
-  findFirstChildOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNode<T, P> {
-    const collection = js(this._node).find(type, attr);
-    return <JsNode<T, P>>JsNode.fromPath(collection.get());
+  findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
+    const collection = js(this._node).find(type.name, attr);
+    return <T>JsNode.fromPath(collection.get());
   }
 
   findChildrenOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNodeList<T, P> {

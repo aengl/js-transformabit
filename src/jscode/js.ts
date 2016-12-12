@@ -40,7 +40,7 @@ export class MethodDefinition extends JsNode<ast.MethodDefinition, MethodDefinit
   }
 
   methodName(): string {
-    return this.findFirstChildOfType<ast.Identifier>(t.Identifier).node().name;
+    return this.findFirstChildOfType(Identifier).name;
   }
 }
 
@@ -143,6 +143,13 @@ export type IdentifierProps = {
 };
 
 export class Identifier extends JsNode<ast.Identifier, IdentifierProps> {
+  get name(): string {
+    return this._node.name;
+  }
+
+  set name(value: string) {
+    this._node.name = value;
+  }
 
   constructor(props: IdentifierProps) {
     super(props);
@@ -235,7 +242,6 @@ export type BlockStatementProps = {
 };
 
 export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> {
-
   constructor(props: BlockStatementProps, children: Statement[]) {
     super(props);
     let statements: ast.Statement[] = [];
@@ -300,7 +306,6 @@ export type ReturnStatementProps = {
 };
 
 export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
-
   constructor(props: ReturnStatementProps, children: Expression[]) {
     super(props);
     this.initialise(<ast.ReturnStatement>b.returnStatement(
@@ -316,7 +321,6 @@ export type ThisExpressionProps = {
 };
 
 export class ThisExpression extends JsNode<ast.ThisExpression, ThisExpressionProps> {
-
   constructor(props: ThisExpressionProps, children: GenericJsNode[]) {
     super(props);
     this.initialise(b.thisExpression());
@@ -388,7 +392,8 @@ export type ClassDeclarationProps = {
   superClass?: string | Identifier
 };
 
-export class ClassDeclaration extends JsNode<ast.ClassDeclaration, ClassDeclarationProps> {
+export class ClassDeclaration
+  extends JsNode<ast.ClassDeclaration, ClassDeclarationProps> {
 
   constructor(props: ClassDeclarationProps, children: GenericJsNode[]) {
     super(props);
@@ -424,7 +429,6 @@ export type ClassBodyProps = {
 };
 
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
-
   constructor(props: ClassBodyProps, children: GenericJsNode[]) {
     super(props);
     this.initialise(b.classBody([]));

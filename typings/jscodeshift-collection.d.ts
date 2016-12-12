@@ -28,7 +28,7 @@ declare module 'jscodeshift-collection' {
     isOfType(type: any): boolean;
 
     // Typed methods for Node
-    find(type: any, filter: Object): Collection;
+    find(type: any, filter?: Object): Collection;
     closestScope(): Collection;
     closest(type: any, filter: Object): Collection;
     getVariableDeclarators(nameGetter: (path: NodePath, ...args: Array<any>)

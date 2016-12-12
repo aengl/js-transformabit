@@ -11,8 +11,11 @@ class ReactComponentCommon<T extends ast.Node, P> extends JsNode<T, P> {
     return null;
   }
 
-  protected getEventHandlersFromChildren(children: GenericJsNode[]): ReactComponentEventHandler[] {
-    return children.filter(child => child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
+  protected getEventHandlersFromChildren(
+    children: GenericJsNode[]): ReactComponentEventHandler[] {
+
+    return children.filter(child =>
+      child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
   }
 }
 
