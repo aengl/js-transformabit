@@ -1,8 +1,12 @@
 import {
   JsCode,
   ReturnStatement,
+  CallExpression,
+  MethodDefinition,
+  BlockStatement,
   Literal,
   Identifier,
+  VariableDeclaration,
   ReactComponent,
   ReactClassComponent,
   ReactStatelessComponent,
@@ -35,5 +39,16 @@ let node = JsNode.fromModuleCode(
 }`);
 
 let id = node.findFirstChildOfType(Identifier);
+id.name = 'FOO';
 
 console.log(node.format());
+
+console.log(
+  JsNode.fromModuleCode(
+`class Foo {
+  bar() {}
+}`)
+    .findFirstChildOfType(MethodDefinition)
+    .findFirstChildOfType(BlockStatement)
+    .format()
+);

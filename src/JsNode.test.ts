@@ -15,14 +15,14 @@ describe('JsNodeList', () => {
     const node = JsNode.fromModuleCode(code);
     const identifiers = node.findChildrenOfType(t.Identifier);
     expect(identifiers.size()).toBe(3);
-    expect(identifiers.at<ast.Identifier>(2).node().name).toBe('baz');
+    expect(identifiers.at<ast.Identifier>(2).node.name).toBe('baz');
   });
 
   it('map', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
       .findChildrenOfType<ast.Identifier>(t.Identifier)
-      .map(n => n.node().name)
+      .map(n => n.node.name)
       .join();
     expect(identifiers).toBe('foo,bar,baz');
   });
@@ -31,7 +31,7 @@ describe('JsNodeList', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
       .findChildrenOfType<ast.Identifier>(t.Identifier)
-      .filter(n => n.node().name === 'bar');
+      .filter(n => n.node.name === 'bar');
     expect(identifiers.size()).toBe(1);
     expect(identifiers.at(0).format()).toBe('bar');
   });
@@ -41,7 +41,7 @@ describe('JsNodeList', () => {
     const node = JsNode.fromModuleCode(code);
     node
       .findChildrenOfType<ast.Identifier>(t.Identifier)
-      .forEach(n => n.node().name = n.node().name.split('').reverse().join(''));
+      .forEach(n => n.node.name = n.node.name.split('').reverse().join(''));
     expect(node.format()).toBe('let oof, rab; let zab;');
   });
 
@@ -49,8 +49,8 @@ describe('JsNodeList', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
       .findChildrenOfType<ast.Identifier>(t.Identifier);
-    expect(nodes.has(n => n.node().name === 'baz')).toBe(true);
-    expect(nodes.has(n => n.node().name === 'qux')).toBe(false);
+    expect(nodes.has(n => n.node.name === 'baz')).toBe(true);
+    expect(nodes.has(n => n.node.name === 'qux')).toBe(false);
   });
 
   it('push', () => {
@@ -59,7 +59,7 @@ describe('JsNodeList', () => {
       .findChildrenOfType<ast.Identifier>(t.Identifier);
     const list = new JsNodeList();
     list.push(nodes.at(1));
-    list.pushPath(nodes.at(0).path());
+    list.pushPath(nodes.at(0).path);
     expect(list.size()).toBe(2);
     expect(list.at(0).format()).toBe('bar');
     expect(list.at(1).format()).toBe('foo');

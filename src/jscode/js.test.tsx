@@ -41,10 +41,8 @@ describe('jscode/js', () => {
 
     expect(foobar.format()).toBe("let foo, bar;");
 
-
     let age = <VariableDeclaration name="age" kind={VariableKind.Let}><Literal value={3} /></VariableDeclaration>;
     expect(age.format()).toBe("let age = 3;");
-
 
     let bananasInPajamas = (
       <VariableDeclaration kind={VariableKind.Const}>
@@ -66,7 +64,6 @@ describe('jscode/js', () => {
     let bol = new Literal({ value: true });
     let str = new Literal({ value: "Hello" });
   });
-
 
   it('CallExpression', () => {
     let foo = <CallExpression callee={new Identifier({ name: "foo" })} />;
@@ -116,7 +113,6 @@ describe('jscode/js', () => {
 
     expect(simpleBlock.format().replace(/\n/g, "")).toBe("{    let num = 3;}");
   });
-
 
   it('FunctionDeclaration', () => {
     let empty = <FunctionDeclaration name="skip" />;
@@ -201,7 +197,6 @@ describe('jscode/js', () => {
     expect(thss.format()).toBe("this");
   });
 
-
   it('MemberExpression', () => {
     let thisFoo = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({ name: "foo" })} />;
     expect(thisFoo.format()).toBe("this.foo");
@@ -215,7 +210,6 @@ describe('jscode/js', () => {
     let funcfoo = new MemberExpression({ object: prototypefunc, property: new Identifier({ name: "foo" }) }, []);
     expect(funcfoo.format()).toBe("this.prototype.func.foo");
   });
-
 
   it('AssignmentExpression', () => {
     let variable = (
@@ -254,7 +248,6 @@ describe('jscode/js', () => {
     );
     expect(memberAndIdentifier.format()).toBe("this.level = level");
   });
-
 
   it('ClassDeclaration', () => {
     let empty = (

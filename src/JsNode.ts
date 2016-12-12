@@ -1,6 +1,7 @@
 /// <reference path="../typings/jscodeshift.d.ts" />
 
-import { Node,
+import {
+  Node,
   NodePath,
   Type,
   Program,
@@ -15,7 +16,7 @@ import js = require('jscodeshift');
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNodeList = JsNodeList<Node, any>;
 export type GenericJsNode = JsNode<Node, any>;
-export type JsNodeType<T> = { new(...args: any[]): T };
+export type JsNodeType<T> = { new(): T };
 export const NamedTypes = t;
 export const Builders = builders;
 
@@ -87,7 +88,7 @@ export class JsNodeList<T extends Node, P> {
   }
 
   push(node: JsNode<T, P>): JsNodeList<T, P> {
-    this._paths.push(node.path());
+    this._paths.push(node.path);
     return this;
   }
 
@@ -120,26 +121,26 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   static fromCode(code: string, args?: Object): GenericJsNodeList {
-    const program = <Program>JsNode
-      .fromCollection(js(code, args).find('Program'))
-      .node();
+    const program = <Program>JsNode.fromCollection(js(code, args).find('Program')).node;
     return new JsNodeList(program.body);
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
     let node = new JsNode();
-    node.initialise(null, collection.get());
+    node.initialiseFromCollection(collection);
     return node;
   }
 
   static fromPath(path: NodePath): GenericJsNode {
     let node = new JsNode;
-    node.initialise(null, path);
+    node.path = path;
     return node;
   }
 
   static fromNode(astNode: Node): GenericJsNode {
-    return new JsNode(astNode);
+    let node = new JsNode();
+    node.node = astNode;
+    return node;
   }
 
   static fromExpressionStatement(code: string, args?: Object): GenericJsNode {
@@ -154,13 +155,10 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
       .children();
   }
 
-  constructor(props?: P) {
-    this.props = props;
-  }
-
-  initialise(node?: T, path?: NodePath) {
-    this._node = node || (path ? <T>path.value : null);
-    this._path = path;
+  constructor(props?: P, children?: GenericJsNode[]) {
+    if (props || children) {
+      this.build(props, children);
+    }
   }
 
   hasParent(): boolean {
@@ -181,8 +179,13 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  path(): NodePath {
+  get path(): NodePath {
     return this._path;
+  }
+
+  set path(path: NodePath) {
+    this._node = <T>path.value;
+    this._path = path;
   }
 
   /**
@@ -191,8 +194,26 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  node(): T {
+  get node(): T {
     return this._node;
+  }
+
+  set node(node: T) {
+    this._node = node;
+  }
+
+  initialiseFromCollection(collection: Collection): JsNode<T, P> {
+    this.path = collection.get();
+    return this;
+  }
+
+  build(props: P, children?: GenericJsNode[]): JsNode<T, P> {
+    this.props = props;
+    if (!this.node || !this.node.type) {
+      throw new Error(`${this.constructor.name}.build() did not assign a valid node`);
+    }
+    // console.warn(this.constructor.name, this.node);
+    return this;
   }
 
   /**
@@ -214,7 +235,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     const collection = js(this._node).find(type.name, attr);
-    return <T>JsNode.fromPath(collection.get());
+    let node = new type();
+    node.initialiseFromCollection(collection);
+    return node;
   }
 
   findChildrenOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNodeList<T, P> {
