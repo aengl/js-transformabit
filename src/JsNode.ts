@@ -15,7 +15,7 @@ import js = require('jscodeshift');
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNodeList = JsNodeList<Node, any>;
 export type GenericJsNode = JsNode<Node, any>;
-export type JsNodeType<T> = { new(props: any): T };
+export type JsNodeType<T> = { new(...args: any[]): T };
 export const NamedTypes = t;
 export const Builders = builders;
 
