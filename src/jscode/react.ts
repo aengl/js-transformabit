@@ -1,10 +1,10 @@
 import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
-import { JsCodeNode } from '../JsCode';
+import { Statement } from './js';
 import * as ast from 'ast-types';
 
-class ReactComponentCommon<T extends ast.Node, P> extends JsCodeNode<T, P> {
+class ReactComponentCommon<T extends ast.Node, P> extends JsNode<T, P> {
   protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
-    const body = this._find(children, ReactComponentRender)
+    const body = this._find(children, ReactComponentRender);
     if (body) {
       return body.node() as ast.Expression;
     }
@@ -115,7 +115,7 @@ export class ReactClassComponent
     ));
   }
 
-  getRenderBody(): JsNode<ast.FunctionExpression> {
+  getRenderBody(): JsNode<ast.FunctionExpression, any> {
     return null;
     // TODO
     // return this
@@ -127,7 +127,7 @@ export class ReactClassComponent
 export class ReactComponentRenderProps {
 }
 
-export class ReactComponentRender extends JsCodeNode<any, ReactComponentRenderProps> {
+export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps> {
 
   constructor(props: ReactComponentRenderProps, children: string[]) {
     super(props);
@@ -147,9 +147,9 @@ export class ReactComponentEventHandlerProps {
 }
 
 export class ReactComponentEventHandler
-  extends JsCodeNode<any, ReactComponentEventHandlerProps> {
+  extends JsNode<any, ReactComponentEventHandlerProps> {
 
-  constructor(props: ReactComponentEventHandlerProps, children: JsNode<ast.Statement>[]) {
+  constructor(props: ReactComponentEventHandlerProps, children: Statement[]) {
     super(props);
     this.initialise(b.blockStatement(children.map(child => child.node())));
   }

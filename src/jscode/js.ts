@@ -1,6 +1,48 @@
 import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
-import { JsCodeNode } from '../JsCode';
 import * as ast from 'ast-types';
+
+/*========================================================================
+                                Expression
+=========================================================================*/
+
+export type ExpressionProps = {
+};
+
+export class Expression extends JsNode<ast.Expression, ExpressionProps> {
+  constructor(props: ExpressionProps) {
+    super(props);
+  }
+}
+
+/*========================================================================
+                                Statement
+=========================================================================*/
+
+export type StatementProps = {
+};
+
+export class Statement extends JsNode<ast.Statement, StatementProps> {
+  constructor(props: StatementProps) {
+    super(props);
+  }
+}
+
+/*========================================================================
+                                Statement
+=========================================================================*/
+
+export type MethodDefinitionProps = {
+};
+
+export class MethodDefinition extends JsNode<ast.MethodDefinition, MethodDefinitionProps> {
+  constructor(props: StatementProps) {
+    super(props);
+  }
+
+  methodName(): string {
+    return this.findFirstChildOfType<ast.Identifier>(t.Identifier).node().name;
+  }
+}
 
 /*========================================================================
                             Variable Delcaration
@@ -22,7 +64,7 @@ export type VariableDeclarationProps = {
 };
 
 export class VariableDeclaration
-  extends JsCodeNode<ast.VariableDeclaration, VariableDeclarationProps> {
+  extends JsNode<ast.VariableDeclaration, VariableDeclarationProps> {
 
   constructor(props: VariableDeclarationProps, children: GenericJsNode[]) {
     super(props);
@@ -31,10 +73,13 @@ export class VariableDeclaration
     this.initialise(b.variableDeclaration(kindString.toString(), declarators));
   }
 
-  private getDeclarators(props: VariableDeclarationProps, children: GenericJsNode[]): ast.VariableDeclarator[] {
+  private getDeclarators(props: VariableDeclarationProps,
+    children: GenericJsNode[]): ast.VariableDeclarator[] {
+
     let nodes: ast.VariableDeclarator[] = [];
     if (props.name) {
-      nodes.push(new VariableDeclarator({ name: props.name }, children as JsNode<ast.Expression>[]).node());
+      nodes.push(new VariableDeclarator({ name: props.name },
+        children as Expression[]).node());
       return nodes;
     }
     for (let child of children) {
@@ -56,13 +101,13 @@ export type VariableDeclaratorProps = {
 };
 
 export class VariableDeclarator
-  extends JsCodeNode<ast.VariableDeclarator, VariableDeclaratorProps> {
+  extends JsNode<ast.VariableDeclarator, VariableDeclaratorProps> {
 
   propTypes: {
-    children: JsNode<ast.Expression>
+    children: Expression
   };
 
-  constructor(props: VariableDeclaratorProps, children: JsNode<ast.Expression>[]) {
+  constructor(props: VariableDeclaratorProps, children: Expression[]) {
     super(props);
     let identifier = new Identifier({ name: props.name }).node();
     if (children.length > 1) {
@@ -81,7 +126,7 @@ export type LiteralProps = {
   value: string | number | boolean | null
 };
 
-export class Literal extends JsCodeNode<ast.Literal, LiteralProps> {
+export class Literal extends JsNode<ast.Literal, LiteralProps> {
 
   constructor(props: LiteralProps) {
     super(props);
@@ -97,7 +142,7 @@ export type IdentifierProps = {
   name: string
 };
 
-export class Identifier extends JsCodeNode<ast.Identifier, IdentifierProps> {
+export class Identifier extends JsNode<ast.Identifier, IdentifierProps> {
 
   constructor(props: IdentifierProps) {
     super(props);
@@ -114,7 +159,7 @@ export type CallExpressionProps = {
 };
 
 export class CallExpression
-  extends JsCodeNode<ast.CallExpression, CallExpressionProps> {
+  extends JsNode<ast.CallExpression, CallExpressionProps> {
 
   constructor(props: CallExpressionProps, children: GenericJsNode[]) {
     super(props);
@@ -152,7 +197,7 @@ export type FunctionDeclarationProps = {
 };
 
 export class FunctionDeclaration
-  extends JsCodeNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
+  extends JsNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
 
   constructor(props: FunctionDeclarationProps, children: GenericJsNode[]) {
     super(props);
@@ -189,9 +234,9 @@ export class FunctionDeclaration
 export type BlockStatementProps = {
 };
 
-export class BlockStatement extends JsCodeNode<ast.BlockStatement, BlockStatementProps> {
+export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> {
 
-  constructor(props: BlockStatementProps, children: JsNode<ast.Statement>[]) {
+  constructor(props: BlockStatementProps, children: Statement[]) {
     super(props);
     let statements: ast.Statement[] = [];
     for (let child of children) {
@@ -205,7 +250,7 @@ export class BlockStatement extends JsCodeNode<ast.BlockStatement, BlockStatemen
               Utility for Expression Statement and Return Statement
 =========================================================================*/
 
-function getSingleExpression(children: JsNode<ast.Expression>[],
+function getSingleExpression(children: Expression[],
   allowNull: boolean, statement: string): ast.Expression {
 
   if (children.length === 0) {
@@ -237,9 +282,9 @@ export type ExpressionStatementProps = {
 };
 
 export class ExpressionStatement
-  extends JsCodeNode<ast.ExpressionStatement, ExpressionStatementProps> {
+  extends JsNode<ast.ExpressionStatement, ExpressionStatementProps> {
 
-  constructor(props: ExpressionStatementProps, children: JsNode<ast.Expression>[]) {
+  constructor(props: ExpressionStatementProps, children: Expression[]) {
     super(props);
     this.initialise(b.expressionStatement(
       getSingleExpression(children, false, t.ExpressionStatement.toString())));
@@ -254,9 +299,9 @@ export class ExpressionStatement
 export type ReturnStatementProps = {
 };
 
-export class ReturnStatement extends JsCodeNode<ast.ReturnStatement, ReturnStatementProps> {
+export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
 
-  constructor(props: ReturnStatementProps, children: JsNode<ast.Expression>[]) {
+  constructor(props: ReturnStatementProps, children: Expression[]) {
     super(props);
     this.initialise(<ast.ReturnStatement>b.returnStatement(
       getSingleExpression(children, true, t.ReturnStatement.toString())));
@@ -270,7 +315,7 @@ export class ReturnStatement extends JsCodeNode<ast.ReturnStatement, ReturnState
 export type ThisExpressionProps = {
 };
 
-export class ThisExpression extends JsCodeNode<ast.ThisExpression, ThisExpressionProps> {
+export class ThisExpression extends JsNode<ast.ThisExpression, ThisExpressionProps> {
 
   constructor(props: ThisExpressionProps, children: GenericJsNode[]) {
     super(props);
@@ -288,7 +333,7 @@ export type MemberExpressionProps = {
 };
 
 export class MemberExpression
-  extends JsCodeNode<ast.MemberExpression, MemberExpressionProps> {
+  extends JsNode<ast.MemberExpression, MemberExpressionProps> {
 
   constructor(props: MemberExpressionProps, children: GenericJsNode[]) {
     super(props);
@@ -324,7 +369,7 @@ export type AssignmentExpressionProps = {
 };
 
 export class AssignmentExpression
-  extends JsCodeNode<ast.AssignmentExpression, AssignmentExpressionProps> {
+  extends JsNode<ast.AssignmentExpression, AssignmentExpressionProps> {
 
   constructor(props: AssignmentExpressionProps, children: GenericJsNode[]) {
     super(props);
@@ -343,7 +388,7 @@ export type ClassDeclarationProps = {
   superClass?: string | Identifier
 };
 
-export class ClassDeclaration extends JsCodeNode<ast.ClassDeclaration, ClassDeclarationProps> {
+export class ClassDeclaration extends JsNode<ast.ClassDeclaration, ClassDeclarationProps> {
 
   constructor(props: ClassDeclarationProps, children: GenericJsNode[]) {
     super(props);
@@ -378,7 +423,7 @@ export class ClassDeclaration extends JsCodeNode<ast.ClassDeclaration, ClassDecl
 export type ClassBodyProps = {
 };
 
-export class ClassBody extends JsCodeNode<ast.ClassBody, ClassBodyProps> {
+export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
 
   constructor(props: ClassBodyProps, children: GenericJsNode[]) {
     super(props);
