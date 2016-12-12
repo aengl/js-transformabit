@@ -390,9 +390,10 @@ function getSingleExpression(children: JsNode<ast.Expression>[],
     case "Identifier":
     case "Literal":
     case "CallExpression":
+    case "AssignmentExpression":
       return children[0].node();
     default:
-      throw new Error("The expression in an " + statement + " must be either an Identifier, CallExpression, or a Literal");
+      throw new Error("The expression in an " + statement + " must be either an Identifier, CallExpression, AssignmentExpression, or a Literal");
   }
 }
 
@@ -500,7 +501,7 @@ export enum AssignmentOperator {
 export type AssignmentExpressionProps = {
   operator: AssignmentOperator,
   left: Identifier | MemberExpression,
-  right: Identifier | Literal | CallExpression
+  right: Identifier | Literal | CallExpression | NewExpression
 };
 
 export class AssignmentExpression
@@ -634,5 +635,32 @@ export class MethodDefinition extends JsNode<ast.MethodDefinition> {
       return new FunctionExpression({}, []).node();
     }
     return (children[0] as FunctionExpression).node();
+  }
+}
+
+/*========================================================================
+                            New Expression
+=========================================================================*/
+export type NewExpressionProps = {
+  callee: Identifier | MemberExpression
+}
+
+export class NewExpression extends JsNode<ast.NewExpression> {
+
+  props: NewExpressionProps;
+  constructor(props: NewExpressionProps, children: GenericJsNode[]) {
+    super();
+    this.initialise(
+      <ast.NewExpression>ast.builders["newExpression"](props.callee.node(), this.getArgs(children))
+    );
+
+  }
+
+  private getArgs(children: GenericJsNode[]): ast.Node[] {
+    const nodes = new Array<ast.Node>();
+    for (const child of children) {
+      nodes.push(child.node());
+    }
+    return nodes;
   }
 }

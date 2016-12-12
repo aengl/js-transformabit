@@ -23,6 +23,7 @@ import {
   ReactClassComponent,
   ReactComponent,
   ReactStatelessComponent,
+  NewExpression,
   JsCode
 } from '../JsCode';
 
@@ -390,4 +391,22 @@ describe('jscode/js', () => {
      ) as ObjectExpression;
     expect(abc1.format().replace(/\s/g, "")).toBe(`{a:"a",b:"b",c:"c",one:1}`);
    });
+
+   it('NewExpression', () => {
+     let newEmpty = (
+       <NewExpression callee={new Identifier({name: "Object"})}>
+       </NewExpression>
+     ) as NewExpression;
+     expect(newEmpty.format()).toBe("new Object()");
+
+     let fewArgs = (
+       <NewExpression callee={new Identifier({name: "Thing"})}>
+          <Literal value={3}/>
+          <Identifier name="bar"/>
+          <Literal value="foo"/>
+       </NewExpression>
+     ) as NewExpression;
+     expect(fewArgs.format()).toBe("new Thing(3, bar, \"foo\")");
+
+   })
 });

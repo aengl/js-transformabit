@@ -1,0 +1,6 @@
+webfeed:
+  input: "webfeed.jsx"
+  output: "webfeed.jsx"
+  params:
+    - "WebFeed"
+    - "localhost"

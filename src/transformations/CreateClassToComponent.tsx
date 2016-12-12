@@ -13,11 +13,13 @@ export class CreateClassToComponent implements Transformation {
 
   check(root: GenericJsNode, project: Project): boolean {
     const createClasses = root.findChildrenOfType(t.CallExpression).filter(ce => {
-      if (typeof (((ce.node() as CallExpression).callee as MemberExpression).object as Identifier) === "undefined") {
+      const callExpression = ce.node() as CallExpression;
+      const callee = callExpression.callee as MemberExpression;
+      if (typeof (callee.object as Identifier) === "undefined") {
         return false;
       }
-      if ((((ce.node() as CallExpression).callee as MemberExpression).object as Identifier).name === "React") {
-        return (((ce.node() as CallExpression).callee as MemberExpression).property as Identifier).name === "createClass";
+      if ((callee.object as Identifier).name === "React") {
+        return (callee.property as Identifier).name === "createClass";
       }
     });
     return createClasses.toArray().length > 0;
@@ -27,12 +29,12 @@ export class CreateClassToComponent implements Transformation {
   apply(root: GenericJsNode, project: Project): GenericJsNode {
 
     const variableDeclrations = root.findChildrenOfType(t.VariableDeclaration).forEach(vd => {
-      //const variableDeclaration = vd.node() as VariableDeclaration;
-      if ((vd.node() as VariableDeclaration).declarations[0].init.type == "CallExpression") {
-        const ce = (vd.node() as VariableDeclaration).declarations[0].init as CallExpression;
-        if (((ce.callee as MemberExpression).object as Identifier).name === "React") {
-          if (((ce.callee as MemberExpression).property as Identifier).name === "createClass") {
-            vd.replace(this.createComponent((vd.node() as VariableDeclaration).declarations[0]).node() as VariableDeclarator);
+      const variableDeclaration = vd.node() as VariableDeclaration;
+      if (variableDeclaration.declarations[0].init.type == "CallExpression") {
+        const callee = (variableDeclaration.declarations[0].init as CallExpression).callee as MemberExpression;
+        if ((callee.object as Identifier).name === "React") {
+          if ((callee.property as Identifier).name === "createClass") {
+            vd.replace(this.createComponent(variableDeclaration.declarations[0]).node() as VariableDeclarator);
           }
         }
       }
