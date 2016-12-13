@@ -245,11 +245,15 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return new JsNodeList<T, P>(collection);
   }
 
-  findClosestParentOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNode<T, P> {
+  findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     console.assert(this._path);
-    const closest = js(this._path).closest(type, attr);
+    let astType = NamedTypes[type.name];
+    console.assert(astType);
+    const closest = js(this._path).closest(astType, attr);
     if (closest.size() > 0) {
-      return <JsNode<T, P>>JsNode.fromCollection(closest);
+      let node = new type();
+      node.initialiseFromCollection(closest);
+      return node;
     }
   }
 

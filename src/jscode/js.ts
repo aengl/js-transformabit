@@ -2,6 +2,19 @@ import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode
 import * as ast from 'ast-types';
 
 /*========================================================================
+                                 Program
+=========================================================================*/
+
+export type ProgramProps = {
+};
+
+export class Program extends JsNode<ast.Program, ProgramProps> {
+  build(props: ProgramProps): Program {
+    return super.build(props);
+  }
+}
+
+/*========================================================================
                                 Expression
 =========================================================================*/
 

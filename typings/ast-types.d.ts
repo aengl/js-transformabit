@@ -874,7 +874,8 @@ export var namedTypes: {
   ObjectProperty: Type,
   ClassMethod: Type,
   RestProperty: Type,
-  ForAwaitStatement: Type
+  ForAwaitStatement: Type,
+  [typeName: string]: Type
 };
 
 export var builders: {

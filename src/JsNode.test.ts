@@ -5,7 +5,8 @@ import {
   BlockStatement,
   VariableDeclaration,
   Literal,
-  ClassBody
+  ClassBody,
+  Program
 } from './JsCode';
 import * as ast from 'ast-types';
 
@@ -139,7 +140,7 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code);
     const method = node.findFirstChildOfType(MethodDefinition);
     expect(method.format()).toBe('bar() {}');
-    const program = method.findClosestParentOfType(t.Program);
+    const program = method.findClosestParentOfType(Program);
     expect(program.format()).toBe(code);
   });
 
