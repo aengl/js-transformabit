@@ -15,7 +15,6 @@ import {
     BlockStatement,
     MethodKind
 } from '../JsCode';
-import * as ast from 'ast-types';
 
 export class BindWebSocket implements Transformation {
 
@@ -42,17 +41,7 @@ export class BindWebSocket implements Transformation {
     }
 
     private isReactComponent(klass: ClassDeclaration): boolean {
-        if (klass.node.superClass.type !== "MemberExpression") {
-            return false;
-        }
-        const member = klass.node.superClass;
-        if ((member.object as ast.Identifier).name !== "React") {
-            return false;
-        }
-        if ((member.property as ast.Identifier).name !== "Component") {
-            return false;
-        }
-        return true;
+        return klass.superClass().format() === 'React.Component';
     }
 
     apply(root: GenericJsNode, project: Project): GenericJsNode {
@@ -62,7 +51,6 @@ export class BindWebSocket implements Transformation {
                this.addBindings(m);
            }
         });
-
         return root;
     }
 

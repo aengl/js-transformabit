@@ -210,16 +210,21 @@ describe('jscode/js', () => {
 
 
   it('MemberExpression', () => {
-    let thisFoo = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({ name: "foo" })} />;
+    let thisFoo = <MemberExpression
+      object={new ThisExpression({}, [])}
+      property={new Identifier({ name: "foo" })} />;
     expect(thisFoo.format()).toBe("this.foo");
 
     let noThis = <MemberExpression property={new Identifier({ name: "bar" })} />;
     expect(noThis.format()).toBe("this.bar");
 
     // this.prototype.func.foo
-    let thisprototype = new MemberExpression({ property: new Identifier({ name: "prototype" }) }, []);
-    let prototypefunc = new MemberExpression({ object: thisprototype, property: new Identifier({ name: "func" }) }, []);
-    let funcfoo = new MemberExpression({ object: prototypefunc, property: new Identifier({ name: "foo" }) }, []);
+    let thisprototype = new MemberExpression(
+      { property: new Identifier({ name: "prototype" }) }, []);
+    let prototypefunc = new MemberExpression(
+      { object: thisprototype, property: new Identifier({ name: "func" }) }, []);
+    let funcfoo = new MemberExpression(
+      { object: prototypefunc, property: new Identifier({ name: "foo" }) }, []);
     expect(funcfoo.format()).toBe("this.prototype.func.foo");
   });
 
@@ -340,7 +345,7 @@ describe('jscode/js', () => {
   it('FunctionExpression', () => {
     let empty = <FunctionExpression/> as FunctionExpression
      expect(empty.format()).toBe("function() {}");
- 
+
      //let gen = <FunctionExpression generator={true}/> as FunctionExpression
      //expect(gen.format()).toBe("function*() {}");
 

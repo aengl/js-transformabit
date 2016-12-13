@@ -11,10 +11,11 @@ import {
   ReactClassComponent,
   ReactStatelessComponent,
   ReactComponentRender,
-  ReactComponentEventHandler
+  ReactComponentEventHandler,
+  ClassDeclaration
 } from '../JsCode';
 
-import { JsNode, GenericJsNode, JsNodeFactory } from '../JsNode';
+import { JsNode, GenericJsNode } from '../JsNode';
 import { DemoEditor } from './editor';
 
 let node: GenericJsNode = (
@@ -28,17 +29,10 @@ let node: GenericJsNode = (
   </ReactClassComponent>
 ) as GenericJsNode;
 
-node = new DemoEditor().apply(node as GenericJsNode, null);
+// node = new DemoEditor().apply(node as GenericJsNode, null);
 
-// node = JsNode.fromModuleCode(
-// `class Foo {
-//   bar() {
-//     let baz = 42;
-//     return baz;
-//   }
-// }`);
+// console.log(node.format());
 
-// let id = node.findFirstChildOfType(Identifier);
-// id.name = 'FOO';
-
-console.log(node.format());
+if (node.check(ClassDeclaration)) {
+  console.log(node);
+}

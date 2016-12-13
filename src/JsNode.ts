@@ -13,7 +13,7 @@ import * as js from 'jscodeshift';
 
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNode = JsNode<Node, any>;
-export type JsNodeType<T> = { new(): T };
+export type JsNodeType<T extends GenericJsNode> = { new(): T };
 
 const isCollection = (obj: any): obj is Collection =>
   obj.constructor.name === 'Collection';
@@ -27,8 +27,12 @@ export class JsNodeFactory {
     JsNodeFactory.registeredTypes[type.name] = type;
   }
 
+  static getType<T extends GenericJsNode>(typeName: string): JsNodeType<T> {
+    return JsNodeFactory.registeredTypes[typeName];
+  }
+
   static create<T extends GenericJsNode>(typeName: string): T {
-    const type = JsNodeFactory.registeredTypes[typeName];
+    const type = JsNodeFactory.getType<T>(typeName);
     if (!type) {
       // console.warn('Attempted to create unknown node type: ' + typeName);
       return <T>new JsNode<any, any>();
@@ -41,16 +45,24 @@ export class JsNodeFactory {
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
 export class JsNodeList<T extends GenericJsNode> {
-  private _paths: NodePath[];
+  protected _paths: NodePath[] = [];
 
-  constructor(obj?: any) {
-    if (!obj) {
-      this._paths = [];
-    } else if (obj instanceof Array) {
-      this._paths = js(obj).paths();
-    } else if (isCollection(obj)) {
-      this._paths = obj.paths();
-    }
+  static fromNodes(nodes: Node[]): JsNodeList<any> {
+    const list = new JsNodeList();
+    list._paths = js(nodes).paths();
+    return list;
+  }
+
+  static fromPaths(paths: NodePath[]): JsNodeList<any> {
+    const list = new JsNodeList();
+    list._paths = paths;
+    return list;
+  }
+
+  static fromCollection(collection: Collection): JsNodeList<any> {
+    const list = new JsNodeList();
+    list._paths = collection.paths();
+    return list;
   }
 
   /**
@@ -77,7 +89,7 @@ export class JsNodeList<T extends GenericJsNode> {
   }
 
   filter(predicate: (node: T, index?: number) => boolean): JsNodeList<T> {
-    return new JsNodeList<T>(this._paths.filter((value, index, array) =>
+    return JsNodeList.fromPaths(this._paths.filter((value, index, array) =>
       predicate(<T>JsNode.fromPath(value), index)));
   }
 
@@ -145,8 +157,8 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   static fromCode(code: string, args?: Object): JsNodeList<any> {
-    const program = <Program>JsNode.fromCollection(js(code, args).find('Program')).node;
-    return new JsNodeList(program.body);
+    const program = JsNode.fromCollection(js(code, args).find('Program'));
+    return JsNodeList.fromNodes((<any>program.node).body);
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
@@ -242,14 +254,18 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     let astType = t[type.name];
     console.assert(astType);
     const collection = js(this._node).find(type.name, attr);
-    return <T>JsNode.fromCollection(collection);
+    if (collection.size() > 0) {
+      return <T>JsNode.fromCollection(collection);
+    }
   }
 
   findChildrenOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): JsNodeList<T> {
     let astType = t[type.name];
     console.assert(astType);
     const collection = js(this._node).find(astType, attr);
-    return new JsNodeList<T>(collection);
+    if (collection.size() > 0) {
+      return JsNodeList.fromCollection(collection);
+    }
   }
 
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
@@ -409,4 +425,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     }
     return null;
   }
+}
+
+export class ComplexNode<X extends GenericJsNode, T extends Node, P> extends JsNode<T, P> {
 }
