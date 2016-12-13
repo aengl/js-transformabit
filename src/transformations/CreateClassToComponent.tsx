@@ -1,9 +1,24 @@
 import {Transformation} from '../Transformation';
-import {GenericJsNode, JsNode, NamedTypes as t} from '../JsNode';
-import {CallExpression, ObjectExpression, MemberExpression, Identifier, VariableDeclaration, VariableDeclarator, Property, Node}  from 'ast-types';
+import {GenericJsNode, JsNode} from '../JsNode';
+import {
+  CallExpression,
+  ObjectExpression,
+  MemberExpression,
+  Identifier,
+  VariableDeclaration,
+  VariableDeclarator,
+  Property
+} from 'ast-types';
 import {Project} from '../Project';
-import {ClassDeclaration, ClassBody, MethodDefinition, MethodKind, MemberExpression as MemberExpressionCode, Identifier as IdentifierCode, JsCode} from '../JsCode';
-
+import {
+  JsCode,
+  ClassDeclaration,
+  MethodDefinition,
+  MethodKind,
+  MemberExpression as MemberExpressionCode,
+  CallExpression as CallExpressionCode,
+  VariableDeclaration as VariableDeclarationCode
+} from '../JsCode';
 
 export class CreateClassToComponent implements Transformation {
 
@@ -12,7 +27,7 @@ export class CreateClassToComponent implements Transformation {
   }
 
   check(root: GenericJsNode, project: Project): boolean {
-    const createClasses = root.findChildrenOfType(t.CallExpression).filter(ce => {
+    const createClasses = root.findChildrenOfType(CallExpressionCode).filter(ce => {
       const callExpression = ce.node as CallExpression;
       const callee = callExpression.callee as MemberExpression;
       if (typeof (callee.object as Identifier) === "undefined") {
@@ -27,10 +42,9 @@ export class CreateClassToComponent implements Transformation {
 
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
-
-    const variableDeclrations = root.findChildrenOfType(t.VariableDeclaration).forEach(vd => {
+    root.findChildrenOfType(VariableDeclarationCode).forEach(vd => {
       const variableDeclaration = vd.node as VariableDeclaration;
-      if (variableDeclaration.declarations[0].init.type == "CallExpression") {
+      if (variableDeclaration.declarations[0].init.type === "CallExpression") {
         const callee = (variableDeclaration.declarations[0].init as CallExpression).callee as MemberExpression;
         if ((callee.object as Identifier).name === "React") {
           if ((callee.property as Identifier).name === "createClass") {
@@ -63,8 +77,8 @@ export class CreateClassToComponent implements Transformation {
         body.push(method);
       }
     }
-    const reactComponent = <MemberExpressionCode object="React" property="Component"/> as MemberExpressionCode
-    let component = new ClassDeclaration({id:(varDec.id as Identifier).name, superClass: reactComponent}, body);
+    const reactComponent = <MemberExpressionCode object="React" property="Component"/> as MemberExpressionCode;
+    let component = new ClassDeclaration({id: (varDec.id as Identifier).name, superClass: reactComponent}, body);
     return component;
   }
 }

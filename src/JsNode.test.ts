@@ -1,4 +1,4 @@
-import { JsNode, JsNodeList, NamedTypes as t } from './JsNode';
+import { JsNode, JsNodeList } from './JsNode';
 import {
   Identifier,
   MethodDefinition,
@@ -16,15 +16,15 @@ describe('JsNodeList', () => {
   it('create', () => {
     const code = 'let foo, bar; let baz;';
     const node = JsNode.fromModuleCode(code);
-    const identifiers = node.findChildrenOfType(t.Identifier);
+    const identifiers = node.findChildrenOfType(Identifier);
     expect(identifiers.size()).toBe(3);
-    expect(identifiers.at<ast.Identifier>(2).node.name).toBe('baz');
+    expect(identifiers.at(2).node.name).toBe('baz');
   });
 
   it('map', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
-      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .findChildrenOfType(Identifier)
       .map(n => n.node.name)
       .join();
     expect(identifiers).toBe('foo,bar,baz');
@@ -33,7 +33,7 @@ describe('JsNodeList', () => {
   it('filter', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)
-      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .findChildrenOfType(Identifier)
       .filter(n => n.node.name === 'bar');
     expect(identifiers.size()).toBe(1);
     expect(identifiers.at(0).format()).toBe('bar');
@@ -43,7 +43,7 @@ describe('JsNodeList', () => {
     const code = 'let foo, bar; let baz;';
     const node = JsNode.fromModuleCode(code);
     node
-      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .findChildrenOfType(Identifier)
       .forEach(n => n.node.name = n.node.name.split('').reverse().join(''));
     expect(node.format()).toBe('let oof, rab; let zab;');
   });
@@ -51,7 +51,7 @@ describe('JsNodeList', () => {
   it('has', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType<ast.Identifier>(t.Identifier);
+      .findChildrenOfType(Identifier);
     expect(nodes.has(n => n.node.name === 'baz')).toBe(true);
     expect(nodes.has(n => n.node.name === 'qux')).toBe(false);
   });
@@ -59,7 +59,7 @@ describe('JsNodeList', () => {
   it('push', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType<ast.Identifier>(t.Identifier);
+      .findChildrenOfType(Identifier);
     const list = new JsNodeList();
     list.push(nodes.at(1));
     list.pushPath(nodes.at(0).path);
@@ -72,7 +72,7 @@ describe('JsNodeList', () => {
     const code = 'let foo = 23, bar = 42;';
     let node = JsNode.fromModuleCode(code);
     node
-      .findChildrenOfType(t.Literal)
+      .findChildrenOfType(Literal)
       .removeAll();
     expect(node.format()).toBe('let foo, bar;');
   });
@@ -80,7 +80,7 @@ describe('JsNodeList', () => {
   it('to array', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType<ast.Identifier>(t.Identifier)
+      .findChildrenOfType(Identifier)
       .toArray();
     expect(nodes.length).toBe(3);
     expect(nodes[0].format()).toBe('foo');
@@ -122,7 +122,7 @@ describe('JsNode', () => {
   it('find child', () => {
     const code = 'const foo = 42, bar = 23;';
     const node = JsNode.fromModuleCode(code);
-    const identifiers = node.findChildrenOfType(t.Identifier);
+    const identifiers = node.findChildrenOfType(Identifier);
     expect(identifiers.size()).toBe(2);
     expect(identifiers.at(0).format()).toBe('foo');
     expect(identifiers.at(1).format()).toBe('bar');
@@ -151,7 +151,7 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code)
       .findFirstChildOfType(VariableDeclaration)
       .findClosestScope();
-    expect(node.type()).toBe(t.FunctionDeclaration.toString());
+    expect(node.type()).toBe('FunctionDeclaration');
     expect(node.format()).toBe(code);
   });
 

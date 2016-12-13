@@ -40,3 +40,5 @@ node = new DemoEditor().apply(node as GenericJsNode, null);
 
 // let id = node.findFirstChildOfType(Identifier);
 // id.name = 'FOO';
+
+console.log(node.format());

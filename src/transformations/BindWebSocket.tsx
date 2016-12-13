@@ -1,20 +1,27 @@
 import {Transformation} from '../Transformation';
-import {GenericJsNode, JsNode, NamedTypes as t} from '../JsNode';
+import {GenericJsNode} from '../JsNode';
 import {Project} from '../Project';
-import {ClassDeclaration, Identifier, MemberExpression, MethodDefinition, CallExpression, BlockStatement}  from 'ast-types';
 import {
+    ClassDeclaration,
+    Identifier,
+    MemberExpression,
+    MethodDefinition,
+    BlockStatement
+}  from 'ast-types';
+
+import {
+    JsCode,
     MethodDefinition as MethodDefinitionCode,
-    MethodKind, CallExpression as CallExpressionCode,
     MemberExpression as MemberExpressionCode,
     ExpressionStatement as ExpressionStatementCode,
-    VariableDeclaration as VariableDeclarationCode,
     AssignmentExpression as AssignmentExpressionCode,
     NewExpression as NewExpressionCode,
     Literal as LiteralCode,
     AssignmentOperator,
-    VariableKind,
     Identifier as IdentifierCode,
-    JsCode
+    ClassDeclaration as ClassDeclarationCode,
+    BlockStatement as BlockStatementCode,
+    MethodKind
 } from '../JsCode';
 
 export class BindWebSocket implements Transformation {
@@ -32,7 +39,7 @@ export class BindWebSocket implements Transformation {
     }
 
     private getMatchingReactComponents(root: GenericJsNode): GenericJsNode[] {
-       const matchingComponents = root.findChildrenOfType(t.ClassDeclaration).filter(k => {
+       const matchingComponents = root.findChildrenOfType(ClassDeclarationCode).filter(k => {
             const klass  = k.node as ClassDeclaration;
             if (!this.isMatchingComponentName(klass)) {
                 return false;
@@ -66,7 +73,7 @@ export class BindWebSocket implements Transformation {
 
     apply(root: GenericJsNode, project: Project): GenericJsNode {
         const component = this.getMatchingReactComponents(root)[0];
-        component.findChildrenOfType(t.MethodDefinition).forEach(m => {
+        component.findChildrenOfType(MethodDefinitionCode).forEach(m => {
            const method = m.node as MethodDefinition;
            if (method.kind === "constructor") {
                this.addBindings(m);
@@ -96,7 +103,7 @@ export class BindWebSocket implements Transformation {
         ctor.path.insertAfter(onOpen.node);
         ctor.path.insertAfter(onError.node);
 
-        ctor.findChildrenOfType(t.BlockStatement).forEach(bs => {
+        ctor.findChildrenOfType(BlockStatementCode).forEach(bs => {
             const blockStatement = bs.node as BlockStatement;
             let socketObject =  (<MemberExpressionCode object="this" property="connection"/>) as MemberExpressionCode;
             let newWebsocket = (

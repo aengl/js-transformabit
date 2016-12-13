@@ -1,5 +1,5 @@
 import { Transformation } from '../Transformation';
-import { GenericJsNode, NamedTypes as t } from '../JsNode';
+import { GenericJsNode } from '../JsNode';
 import { Project } from '../Project';
 import { MethodDefinition } from '../jscode/js';
 
@@ -15,10 +15,10 @@ export class DemoEditor implements Transformation {
   }
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
-    // root
-      // .findChildrenOfType(t.MethodDefinition)
-      // .filter(node => node.methodName() === 'render')
-      // .removeAll();
+    root
+      .findChildrenOfType(MethodDefinition)
+      .filter(node => node.methodName() === 'render')
+      .removeAll();
     return root;
   }
 }

@@ -1,8 +1,7 @@
 import {
   JsNode,
   JsNodeFactory,
-  GenericJsNode,
-  NamedTypes as t
+  GenericJsNode
 } from '../JsNode';
 import * as ast from 'ast-types';
 
@@ -285,6 +284,20 @@ export class FunctionExpression
     return super.build(props, children) as FunctionExpression;
   }
 
+  isExpression(props: FunctionExpressionProps): boolean {
+    if (props === null) {
+      return false;
+    }
+    return typeof props.expression !== "undefined";
+  }
+
+  isGenerator(props: FunctionExpressionProps): boolean {
+    if (props === null) {
+      return false;
+    }
+    return typeof props.generator !== "undefined";
+  }
+
   private getId(props: FunctionExpressionProps): ast.Identifier {
     if (props === null) {
       return null;
@@ -296,20 +309,6 @@ export class FunctionExpression
     } else {
       return new Identifier({name: <string>props.id}).node;
     }
-  }
-
-  private isExpression(props: FunctionExpressionProps): boolean {
-    if (props === null) {
-      return false;
-    }
-    return typeof props.expression !== "undefined";
-  }
-
-  private isGenerator(props: FunctionExpressionProps): boolean {
-    if (props === null) {
-      return false;
-    }
-    return typeof props.generator !== "undefined";
   }
 
   private getParameters(children: GenericJsNode[]): ast.Pattern[] {
@@ -368,7 +367,7 @@ export type PropertyProps = {
   method?: boolean,
   shorthand?: boolean,
   computed?: boolean
-}
+};
 
 @JsNodeFactory.registerType
 export class Property extends JsNode<ast.Property, PropertyProps> {
@@ -381,7 +380,8 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
     this.node = b.property(
       kind,
       key,
-      this.getValue(props, children) as ast.Identifier | ast.FunctionExpression | ast.ArrowFunctionExpression | ast.Literal
+      this.getValue(props, children) as ast.Identifier |
+        ast.FunctionExpression | ast.ArrowFunctionExpression | ast.Literal
     );
     return super.build(props, children) as Property;
   }
@@ -411,7 +411,7 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
 =========================================================================*/
 
 export type ObjectExpressionProps = {
-}
+};
 
 @JsNodeFactory.registerType
 export class ObjectExpression
@@ -435,8 +435,6 @@ export class ObjectExpression
     return nodes;
   }
 }
-
-
 
 /*========================================================================
               Utility for Expression Statement and Return Statement
@@ -463,7 +461,8 @@ function getSingleExpression(children: Expression[],
     case "AssignmentExpression":
       return children[0].node;
     default:
-      throw new Error("The expression in an " + statement + " must be either an Identifier, CallExpression, AssignmentExpression, or a Literal");
+      throw new Error("The expression in an " + statement +
+        " must be either an Identifier, CallExpression, AssignmentExpression, or a Literal");
   }
 }
 
@@ -480,7 +479,7 @@ export class ExpressionStatement
 
   build(props: ExpressionStatementProps, children: Expression[]): ExpressionStatement {
     this.node = b.expressionStatement(
-      getSingleExpression(children, false, t.ExpressionStatement.toString()));
+      getSingleExpression(children, false, ExpressionStatement.name));
     return super.build(props, children);
   }
 }
@@ -496,7 +495,7 @@ export type ReturnStatementProps = {
 export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
   build(props: ReturnStatementProps, children: Expression[]): ReturnStatement {
     this.node = <ast.ReturnStatement>b.returnStatement(
-      getSingleExpression(children, true, t.ReturnStatement.toString()));
+      getSingleExpression(children, true, ReturnStatement.name));
     return super.build(props, children);
   }
 }
@@ -660,7 +659,7 @@ export type MethodDefinitionProps = {
   computed?: boolean,
   staticMethod?: boolean,
   expression?: FunctionExpression
-}
+};
 
 @JsNodeFactory.registerType
 export class MethodDefinition
@@ -677,6 +676,10 @@ export class MethodDefinition
       this.getBool(props.staticMethod)
     );
     return super.build(props, children) as MethodDefinition;
+  }
+
+  methodName() {
+    return this.findFirstChildOfType(Identifier).name;
   }
 
   private getBool(val?: boolean): boolean {
@@ -723,7 +726,7 @@ export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps>
   build(props: NewExpressionProps,
     children: JsNode<NewExpressionChild, any>[]): NewExpression {
 
-    this.node = ast.builders.newExpression(props.callee.node, this.getArgs(children))
+    this.node = ast.builders.newExpression(props.callee.node, this.getArgs(children));
     return super.build(props, children) as NewExpression;
   }
 
