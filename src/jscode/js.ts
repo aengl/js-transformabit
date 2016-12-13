@@ -9,6 +9,20 @@ import * as ast from 'ast-types';
 const b = ast.builders;
 
 /*========================================================================
+                                  File
+=========================================================================*/
+
+export type FileProps = {
+};
+
+@JsNodeFactory.registerType
+export class File extends JsNode<ast.File, FileProps> {
+  build(props: FileProps): File {
+    return super.build(props);
+  }
+}
+
+/*========================================================================
                                  Program
 =========================================================================*/
 
@@ -93,8 +107,8 @@ export class VariableDeclaration
       return nodes;
     }
     for (let child of children) {
-      if (child.check(t.VariableDeclarator)) {
-        nodes.push(child.node as ast.VariableDeclarator);
+      if (child.check(VariableDeclarator)) {
+        nodes.push(child.node);
       }
     }
 
@@ -196,11 +210,7 @@ export class CallExpression
       if (!(child instanceof JsNode)) {
         throw new Error("All Children must be of JsNode, if you are trying to pass in a variable that is a JsNode, write {variableNameHere}");
       }
-      if (child.check<ast.Literal>(t.Literal)) {
-        args.push(child.node);
-      } else if (child.check<ast.Identifier>(t.Identifier)) {
-        args.push(child.node);
-      } else if (child.check<ast.CallExpression>(t.CallExpression)) {
+      if (child.check(Literal) || child.check(Identifier) || child.check(CallExpression)) {
         args.push(child.node);
       } else {
         throw new Error("argument if specified must be either a Literal, Identifier, or a CallExpression");
@@ -233,7 +243,7 @@ export class FunctionDeclaration
   private getParameters(children: GenericJsNode[]): ast.Pattern[] {
     let params: ast.Pattern[] = [];
     for (let child of children) {
-      if (child.check<ast.Identifier>(t.Identifier)) {
+      if (child.check(Identifier)) {
         params.push(child.node);
       }
     }
@@ -242,7 +252,7 @@ export class FunctionDeclaration
 
   private getBody(children: GenericJsNode[]): ast.BlockStatement {
     for (let child of children) {
-      if (child.check<ast.BlockStatement>(t.BlockStatement)) {
+      if (child.check(BlockStatement)) {
         return child.node;
       }
     }
@@ -305,7 +315,7 @@ export class FunctionExpression
   private getParameters(children: GenericJsNode[]): ast.Pattern[] {
     let params = Array<ast.Pattern>();
     for (let index in children) {
-      if (children[index].check(ast.namedTypes.Identifier)) {
+      if (children[index].check(Identifier)) {
         params.push(children[index].node as ast.Pattern);
       }
     }
@@ -314,7 +324,7 @@ export class FunctionExpression
 
   private getBody(children: GenericJsNode[]): ast.BlockStatement {
     for (let index in children) {
-      if (children[index].check(ast.namedTypes.BlockStatement)) {
+      if (children[index].check(BlockStatement)) {
         return children[index].node as ast.BlockStatement;
       }
     }

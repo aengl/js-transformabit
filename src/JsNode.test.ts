@@ -4,9 +4,11 @@ import {
   MethodDefinition,
   BlockStatement,
   VariableDeclaration,
+  ReturnStatement,
   Literal,
   ClassBody,
-  Program
+  Program,
+  File
 } from './JsCode';
 import * as ast from 'ast-types';
 
@@ -96,13 +98,13 @@ describe('JsNode', () => {
   it('create from module', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code);
-    expect(node.check(t.File)).toBe(true);
+    expect(node.check(File)).toBe(true);
   });
 
   it('create from code', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromCode(code).at(0);
-    expect(node.check(t.VariableDeclaration)).toBe(true);
+    expect(node.check(VariableDeclaration)).toBe(true);
   });
 
   it('create from expression statement', () => {
@@ -157,7 +159,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42;';
     let node = JsNode.fromCode(code).at(0).descend();
     expect(node.format()).toBe('foo = 42');
-    node = JsNode.fromModuleCode(code).descend(node => node.check(t.Literal));
+    node = JsNode.fromModuleCode(code).descend(node => node.check(Literal));
     expect(node.format()).toBe('42');
   });
 
@@ -165,7 +167,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code).findFirstChildOfType(Literal);
     expect(node.ascend().format()).toBe('foo = 42');
-    expect(node.ascend(node => node.check(t.Program)).format()).toBe(code);
+    expect(node.ascend(node => node.check(Program)).format()).toBe(code);
   });
 
   it('get root', () => {
@@ -217,7 +219,7 @@ describe('JsNode', () => {
   it('remove ancestors', () => {
     const code = 'class Foo { bar() { return 23; } baz() { return 42; } }';
     const node = JsNode.fromModuleCode(code);
-    node.removeDescendants(node => node.check(t.ReturnStatement));
+    node.removeDescendants(node => node.check(ReturnStatement));
     expect(node.format()).toBe('class Foo { bar() {} baz() {} }');
   });
 });

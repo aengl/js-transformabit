@@ -23,7 +23,7 @@ interface BaseNode {
 
 export type Node =
   Identifier | Literal | Program | Function | SwitchCase | CatchClause |
-  VariableDeclarator | Statement | Expression | Property |
+  File | VariableDeclarator | Statement | Expression | Property |
   AssignmentProperty | Super | TemplateElement | SpreadElement | Pattern |
   ClassBody | Class | MethodDefinition | ModuleDeclaration | ModuleSpecifier;
 
@@ -42,6 +42,13 @@ export interface Position {
   line: number;
   /** >= 0 */
   column: number;
+}
+
+export interface File {
+  type: 'File';
+  program: Program;
+  loc?: SourceLocation;
+  comments?: any; // No idea what that is for
 }
 
 export interface Program extends BaseNode {

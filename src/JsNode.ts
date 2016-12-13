@@ -32,7 +32,7 @@ export class JsNodeFactory {
   static create<T extends GenericJsNode>(typeName: string): T {
     const type = JsNodeFactory.registeredTypes[typeName];
     if (!type) {
-      console.warn('Attempted to create unknown node type: ' + typeName);
+      // console.warn('Attempted to create unknown node type: ' + typeName);
       return <T>new JsNode<any, any>();
     }
     return new type();
@@ -236,8 +236,8 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   /**
    * Returns true if the node type matches the specified type.
    */
-  check<T extends Node>(type: TypeIdentifier): this is JsNode<T, P> {
-    return this.type() === type.toString();
+  check<T extends GenericJsNode>(type: JsNodeType<T>): this is T {
+    return this.type() === type.name;
   }
 
   findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
