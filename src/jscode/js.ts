@@ -1,4 +1,9 @@
-import { JsNode, GenericJsNode, NamedTypes as t } from '../JsNode';
+import {
+  JsNode,
+  JsNodeFactory,
+  GenericJsNode,
+  NamedTypes as t
+} from '../JsNode';
 import * as ast from 'ast-types';
 
 const b = ast.builders;
@@ -10,6 +15,7 @@ const b = ast.builders;
 export type ProgramProps = {
 };
 
+@JsNodeFactory.registerType
 export class Program extends JsNode<ast.Program, ProgramProps> {
   build(props: ProgramProps): Program {
     return super.build(props);
@@ -23,6 +29,7 @@ export class Program extends JsNode<ast.Program, ProgramProps> {
 export type ExpressionProps = {
 };
 
+@JsNodeFactory.registerType
 export class Expression extends JsNode<ast.Expression, ExpressionProps> {
   build(props: ExpressionProps): Expression {
     return super.build(props);
@@ -36,6 +43,7 @@ export class Expression extends JsNode<ast.Expression, ExpressionProps> {
 export type StatementProps = {
 };
 
+@JsNodeFactory.registerType
 export class Statement extends JsNode<ast.Statement, StatementProps> {
   build(props: StatementProps): Statement {
     return super.build(props);
@@ -61,6 +69,7 @@ export type VariableDeclarationProps = {
   kind?: VariableKind
 };
 
+@JsNodeFactory.registerType
 export class VariableDeclaration
   extends JsNode<ast.VariableDeclaration, VariableDeclarationProps> {
 
@@ -101,6 +110,7 @@ export type VariableDeclaratorProps = {
   name: string
 };
 
+@JsNodeFactory.registerType
 export class VariableDeclarator
   extends JsNode<ast.VariableDeclarator, VariableDeclaratorProps> {
 
@@ -127,6 +137,7 @@ export type LiteralProps = {
   value: string | number | boolean | null
 };
 
+@JsNodeFactory.registerType
 export class Literal extends JsNode<ast.Literal, LiteralProps> {
   build(props: LiteralProps): Literal {
     this.node = b.literal(props.value);
@@ -142,6 +153,7 @@ export type IdentifierProps = {
   name: string
 };
 
+@JsNodeFactory.registerType
 export class Identifier extends JsNode<ast.Identifier, IdentifierProps> {
   get name(): string {
     return this._node.name;
@@ -165,6 +177,7 @@ export type CallExpressionProps = {
   callee: string | Identifier | MemberExpression
 };
 
+@JsNodeFactory.registerType
 export class CallExpression
   extends JsNode<ast.CallExpression, CallExpressionProps> {
 
@@ -205,6 +218,7 @@ export type FunctionDeclarationProps = {
   name: string
 };
 
+@JsNodeFactory.registerType
 export class FunctionDeclaration
   extends JsNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
 
@@ -246,6 +260,7 @@ export type FunctionExpressionProps = {
   id?: Identifier | string
 };
 
+@JsNodeFactory.registerType
 export class FunctionExpression
   extends JsNode<ast.FunctionExpression, FunctionExpressionProps> {
 
@@ -314,6 +329,7 @@ export class FunctionExpression
 export type BlockStatementProps = {
 };
 
+@JsNodeFactory.registerType
 export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> {
   build(props: BlockStatementProps, children: Statement[]): BlockStatement {
     let statements: ast.Statement[] = [];
@@ -344,6 +360,7 @@ export type PropertyProps = {
   computed?: boolean
 }
 
+@JsNodeFactory.registerType
 export class Property extends JsNode<ast.Property, PropertyProps> {
   props: PropertyProps;
 
@@ -386,6 +403,7 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
 export type ObjectExpressionProps = {
 }
 
+@JsNodeFactory.registerType
 export class ObjectExpression
   extends JsNode<ast.ObjectExpression, ObjectExpressionProps> {
 
@@ -446,6 +464,7 @@ function getSingleExpression(children: Expression[],
 export type ExpressionStatementProps = {
 };
 
+@JsNodeFactory.registerType
 export class ExpressionStatement
   extends JsNode<ast.ExpressionStatement, ExpressionStatementProps> {
 
@@ -463,6 +482,7 @@ export class ExpressionStatement
 export type ReturnStatementProps = {
 };
 
+@JsNodeFactory.registerType
 export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
   build(props: ReturnStatementProps, children: Expression[]): ReturnStatement {
     this.node = <ast.ReturnStatement>b.returnStatement(
@@ -478,6 +498,7 @@ export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatement
 export type ThisExpressionProps = {
 };
 
+@JsNodeFactory.registerType
 export class ThisExpression extends JsNode<ast.ThisExpression, ThisExpressionProps> {
   build(props: ThisExpressionProps, children: GenericJsNode[]): ThisExpression {
     this.node = b.thisExpression();
@@ -494,6 +515,7 @@ export type MemberExpressionProps = {
   property: Identifier | string
 };
 
+@JsNodeFactory.registerType
 export class MemberExpression
   extends JsNode<ast.MemberExpression, MemberExpressionProps> {
 
@@ -533,6 +555,7 @@ export type AssignmentExpressionProps = {
   right: Identifier | Literal | CallExpression | NewExpression
 };
 
+@JsNodeFactory.registerType
 export class AssignmentExpression
   extends JsNode<ast.AssignmentExpression, AssignmentExpressionProps> {
 
@@ -553,6 +576,7 @@ export type ClassDeclarationProps = {
   superClass?: string | Identifier | MemberExpression
 };
 
+@JsNodeFactory.registerType
 export class ClassDeclaration
   extends JsNode<ast.ClassDeclaration, ClassDeclarationProps> {
 
@@ -590,6 +614,7 @@ export class ClassDeclaration
 export type ClassBodyProps = {
 };
 
+@JsNodeFactory.registerType
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   build(props: ClassBodyProps, children: GenericJsNode[]): ClassBody {
     this.node = b.classBody(this.asNodeArray(children));
@@ -627,6 +652,7 @@ export type MethodDefinitionProps = {
   expression?: FunctionExpression
 }
 
+@JsNodeFactory.registerType
 export class MethodDefinition
   extends JsNode<ast.MethodDefinition, MethodDefinitionProps> {
 
@@ -680,6 +706,7 @@ export type NewExpressionProps = {
   callee: Identifier | MemberExpression
 };
 
+@JsNodeFactory.registerType
 export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps> {
   props: NewExpressionProps;
 

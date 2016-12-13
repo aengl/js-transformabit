@@ -1,11 +1,10 @@
-import { JsNode, GenericJsNode } from './JsNode';
-import { Node } from 'ast-types';
+import { GenericJsNode, JsNodeType } from './JsNode';
 
 export class JsCode {
   static createElement(...args: any[]): GenericJsNode {
     let [func, props, ...children] = args;
-    let node = new args[0]();
-    node.build(args[1], children);
+    let node = new func();
+    node.build(props, children);
     return node;
   }
 }

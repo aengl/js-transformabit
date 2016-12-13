@@ -88,7 +88,7 @@ describe('JsNodeList', () => {
 });
 
 describe('JsNode', () => {
-  it('create & print', () => {
+  it('create & format', () => {
     const code = 'const foo = 42;';
     expect(JsNode.fromModuleCode(code).format()).toBe(code);
   });

@@ -9,7 +9,7 @@ import {
   visit
 } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
-import js = require('jscodeshift');
+import * as js from 'jscodeshift';
 
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNodeList = JsNodeList<Node, any>;
@@ -21,6 +21,23 @@ const isCollection = (obj: any): obj is Collection =>
   obj.constructor.name === 'Collection';
 // const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
 // const isNode = (obj: any): obj is Node => !!obj.type;
+
+export class JsNodeFactory {
+  static registeredTypes: {[typeName: string]: JsNodeType<any>} = {};
+
+  static registerType(type: JsNodeType<any>): void {
+    JsNodeFactory.registeredTypes[type.name] = type;
+  }
+
+  static create<T extends GenericJsNode>(typeName: string): T {
+    const type = JsNodeFactory.registeredTypes[typeName];
+    if (!type) {
+      console.warn('Attempted to create unknown node type: ' + typeName);
+      return <T>new JsNode<any, any>();
+    }
+    return new type();
+  }
+}
 
 /**
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
@@ -113,6 +130,18 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   public props: P;
 
+  static fromNode<T extends GenericJsNode>(astNode: Node): T {
+    let node = JsNodeFactory.create<T>(astNode.type.toString());
+    node.node = astNode;
+    return node;
+  }
+
+  static fromPath<T extends GenericJsNode>(path: NodePath): T {
+    const node = JsNodeFactory.create<T>(path.value.type.toString());
+    node.path = path;
+    return node;
+  }
+
   static fromModuleCode(code: string, args?: Object): GenericJsNode {
     return JsNode.fromCollection(js(code, args));
   }
@@ -123,21 +152,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
-    let node = new JsNode();
-    node.initialiseFromCollection(collection);
-    return node;
-  }
-
-  static fromPath(path: NodePath): GenericJsNode {
-    let node = new JsNode;
-    node.path = path;
-    return node;
-  }
-
-  static fromNode(astNode: Node): GenericJsNode {
-    let node = new JsNode();
-    node.node = astNode;
-    return node;
+    return JsNode.fromPath(collection.get());
   }
 
   static fromExpressionStatement(code: string, args?: Object): GenericJsNode {
@@ -199,11 +214,6 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     this._node = node;
   }
 
-  initialiseFromCollection(collection: Collection): JsNode<T, P> {
-    this.path = collection.get();
-    return this;
-  }
-
   build(props: P, children?: any[]): JsNode<T, P> {
     this.props = props;
     if (!this.node || !this.node.type) {
@@ -234,9 +244,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     let astType = t[type.name];
     console.assert(astType);
     const collection = js(this._node).find(type.name, attr);
-    let node = new type();
-    node.initialiseFromCollection(collection);
-    return node;
+    return <T>JsNode.fromCollection(collection);
   }
 
   findChildrenOfType<T extends Node>(type: TypeIdentifier, attr?: {}): JsNodeList<T, P> {
@@ -250,9 +258,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     console.assert(astType);
     const closest = js(this._path).closest(astType, attr);
     if (closest.size() > 0) {
-      let node = new type();
-      node.initialiseFromCollection(closest);
-      return node;
+      return <T>JsNode.fromCollection(closest);
     }
   }
 
