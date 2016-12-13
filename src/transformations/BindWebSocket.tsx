@@ -2,27 +2,20 @@ import {Transformation} from '../Transformation';
 import {GenericJsNode} from '../JsNode';
 import {Project} from '../Project';
 import {
-    ClassDeclaration,
-    Identifier,
-    MemberExpression,
-    MethodDefinition,
-    BlockStatement
-}  from 'ast-types';
-
-import {
     JsCode,
-    MethodDefinition as MethodDefinitionCode,
-    MemberExpression as MemberExpressionCode,
-    ExpressionStatement as ExpressionStatementCode,
-    AssignmentExpression as AssignmentExpressionCode,
-    NewExpression as NewExpressionCode,
-    Literal as LiteralCode,
+    MethodDefinition,
+    MemberExpression,
+    ExpressionStatement,
+    AssignmentExpression,
+    NewExpression,
+    Literal,
     AssignmentOperator,
-    Identifier as IdentifierCode,
-    ClassDeclaration as ClassDeclarationCode,
-    BlockStatement as BlockStatementCode,
+    Identifier,
+    ClassDeclaration,
+    BlockStatement,
     MethodKind
 } from '../JsCode';
+import * as ast from 'ast-types';
 
 export class BindWebSocket implements Transformation {
 
@@ -39,33 +32,24 @@ export class BindWebSocket implements Transformation {
     }
 
     private getMatchingReactComponents(root: GenericJsNode): GenericJsNode[] {
-       const matchingComponents = root.findChildrenOfType(ClassDeclarationCode).filter(k => {
-            const klass  = k.node as ClassDeclaration;
-            if (!this.isMatchingComponentName(klass)) {
-                return false;
-            }
-
-            if (!this.isReactComponent(klass)) {
-                return false;
-            }
-            return true;
-        });
+        const matchingComponents = root.findChildrenOfType(ClassDeclaration)
+            .filter(k => this.isMatchingComponentName(k) && this.isReactComponent(k));
         return matchingComponents.toArray();
     }
 
     private isMatchingComponentName(klass: ClassDeclaration): boolean {
-        return ((klass.id as Identifier).name == this.component);
+        return klass.node.id.name === this.component;
     }
 
     private isReactComponent(klass: ClassDeclaration): boolean {
-        if (klass.superClass.type !== "MemberExpression") {
+        if (klass.node.superClass.type !== "MemberExpression") {
             return false;
         }
-        const member = (klass.superClass as MemberExpression);
-        if ((member.object as Identifier).name !== "React") {
+        const member = klass.node.superClass;
+        if ((member.object as ast.Identifier).name !== "React") {
             return false;
         }
-        if ((member.property as Identifier).name !== "Component") {
+        if ((member.property as ast.Identifier).name !== "Component") {
             return false;
         }
         return true;
@@ -73,9 +57,8 @@ export class BindWebSocket implements Transformation {
 
     apply(root: GenericJsNode, project: Project): GenericJsNode {
         const component = this.getMatchingReactComponents(root)[0];
-        component.findChildrenOfType(MethodDefinitionCode).forEach(m => {
-           const method = m.node as MethodDefinition;
-           if (method.kind === "constructor") {
+        component.findChildrenOfType(MethodDefinition).forEach(m => {
+           if (m.node.kind === "constructor") {
                this.addBindings(m);
            }
         });
@@ -85,44 +68,41 @@ export class BindWebSocket implements Transformation {
 
     private addBindings(ctor: GenericJsNode) {
         const onMessage = (
-            <MethodDefinitionCode key={"onMessage"} kind={MethodKind.Method}>
-            </MethodDefinitionCode>
-        ) as MethodDefinitionCode;
+            <MethodDefinition key={"onMessage"} kind={MethodKind.Method}>
+            </MethodDefinition>
+        ) as MethodDefinition;
 
         const onOpen = (
-            <MethodDefinitionCode key={"onOpen"} kind={MethodKind.Method}>
-            </MethodDefinitionCode>
-        ) as MethodDefinitionCode;
+            <MethodDefinition key={"onOpen"} kind={MethodKind.Method}>
+            </MethodDefinition>
+        ) as MethodDefinition;
 
         const onError = (
-            <MethodDefinitionCode key={"onError"} kind={MethodKind.Method}>
-            </MethodDefinitionCode>
-        ) as MethodDefinitionCode;
+            <MethodDefinition key={"onError"} kind={MethodKind.Method}>
+            </MethodDefinition>
+        ) as MethodDefinition;
 
         ctor.path.insertAfter(onMessage.node);
         ctor.path.insertAfter(onOpen.node);
         ctor.path.insertAfter(onError.node);
 
-        ctor.findChildrenOfType(BlockStatementCode).forEach(bs => {
-            const blockStatement = bs.node as BlockStatement;
-            let socketObject =  (<MemberExpressionCode object="this" property="connection"/>) as MemberExpressionCode;
+        ctor.findChildrenOfType(BlockStatement).forEach(bs => {
+            let socketObject =  (<MemberExpression object="this" property="connection"/>) as MemberExpression;
             let newWebsocket = (
-                <NewExpressionCode callee={new IdentifierCode({name: "WebSocket"})}>
-                    <LiteralCode value={"wss://" + this.address}/>
-                </NewExpressionCode>
-            ) as NewExpressionCode;
+                <NewExpression callee={new Identifier({name: "WebSocket"})}>
+                    <Literal value={"wss://" + this.address}/>
+                </NewExpression>
+            ) as NewExpression;
             let socketCall = (
-                <ExpressionStatementCode>
-                    <AssignmentExpressionCode
+                <ExpressionStatement>
+                    <AssignmentExpression
                         operator={AssignmentOperator.Equals}
                         left={socketObject}
                         right={newWebsocket}
                     />
-                </ExpressionStatementCode>
-            ) as ExpressionStatementCode;
-            blockStatement.body.push(socketCall.node);
+                </ExpressionStatement>
+            ) as ExpressionStatement;
+            bs.node.body.push(socketCall.node);
         });
     }
-
-
 }
