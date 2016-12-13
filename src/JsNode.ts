@@ -207,7 +207,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return this;
   }
 
-  build(props: P, children?: GenericJsNode[]): JsNode<T, P> {
+  build(props: P, children?: any[]): JsNode<T, P> {
     this.props = props;
     if (!this.node || !this.node.type) {
       throw new Error(`${this.constructor.name}.build() did not assign a valid node`);
@@ -234,6 +234,8 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
+    let astType = t[type.name];
+    console.assert(astType);
     const collection = js(this._node).find(type.name, attr);
     let node = new type();
     node.initialiseFromCollection(collection);
@@ -247,7 +249,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     console.assert(this._path);
-    let astType = NamedTypes[type.name];
+    let astType = t[type.name];
     console.assert(astType);
     const closest = js(this._path).closest(astType, attr);
     if (closest.size() > 0) {

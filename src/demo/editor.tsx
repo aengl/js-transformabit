@@ -15,10 +15,10 @@ export class DemoEditor implements Transformation {
   }
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
-    root
-      .findChildrenOfType(t.MethodDefinition)
-      .filter(node => (node as MethodDefinition).methodName() === 'render')
-      .removeAll();
+    // root
+      // .findChildrenOfType(t.MethodDefinition)
+      // .filter(node => node.methodName() === 'render')
+      // .removeAll();
     return root;
   }
 }

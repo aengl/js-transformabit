@@ -38,7 +38,7 @@ export class ReactStatelessComponent
         )
       )
     ]);
-    return super.build(props, children);
+    return super.build(props, children) as ReactStatelessComponent;
   }
 }
 
@@ -76,7 +76,7 @@ export class ReactComponent
         )
       )
     ]);
-    return super.build(props, children);
+    return super.build(props, children) as ReactComponent;
   }
 }
 
@@ -117,7 +117,7 @@ export class ReactClassComponent
         b.identifier('Component')
       )
     );
-    return super.build(props, children);
+    return super.build(props, children) as ReactClassComponent;
   }
 
   getRenderBody(): JsNode<ast.FunctionExpression, any> {
@@ -142,7 +142,7 @@ export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps>
       throw new Error('ReactComponentRender only accepts strings as children');
     }
     this.node = JsNode.fromExpressionStatement(renderBody).node;
-    return super.build(props, children);
+    return super.build(props, children) as ReactComponentRender;
   }
 }
 
