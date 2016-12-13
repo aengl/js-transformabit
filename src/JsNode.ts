@@ -5,9 +5,7 @@ import {
   NodePath,
   Type,
   Program,
-  BlockStatement,
   namedTypes as t,
-  builders,
   visit
 } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
@@ -18,11 +16,10 @@ export type GenericJsNodeList = JsNodeList<Node, any>;
 export type GenericJsNode = JsNode<Node, any>;
 export type JsNodeType<T> = { new(): T };
 export const NamedTypes = t;
-export const Builders = builders;
 
 const isCollection = (obj: any): obj is Collection =>
   obj.constructor.name === 'Collection';
-const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
+// const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
 // const isNode = (obj: any): obj is Node => !!obj.type;
 
 /**

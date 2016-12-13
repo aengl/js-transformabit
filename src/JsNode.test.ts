@@ -1,4 +1,4 @@
-import { JsNode, JsNodeList, NamedTypes as t, Builders as b } from './JsNode';
+import { JsNode, JsNodeList, NamedTypes as t } from './JsNode';
 import {
   Identifier,
   MethodDefinition,
@@ -181,7 +181,7 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code);
     node
       .findFirstChildOfType(Literal)
-      .replace(b['literal'](23));
+      .replace(ast.builders.literal(23));
     expect(node.format()).toBe(code.replace('42', '23'));
   });
 

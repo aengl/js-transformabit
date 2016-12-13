@@ -1,8 +1,10 @@
-import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
+import { JsNode, GenericJsNode } from '../JsNode';
 import { Statement } from './js';
 import * as ast from 'ast-types';
 
-class ReactComponentCommon<T extends ast.Node, P> extends JsNode<T, P> {
+const b = ast.builders;
+
+export class ReactComponentCommon<T extends ast.Node, P> extends JsNode<T, P> {
   protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
     const body = this._find(children, ReactComponentRender);
     if (body) {

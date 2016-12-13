@@ -1,5 +1,7 @@
-import { JsNode, GenericJsNode, NamedTypes as t, Builders as b } from '../JsNode';
+import { JsNode, GenericJsNode, NamedTypes as t } from '../JsNode';
 import * as ast from 'ast-types';
+
+const b = ast.builders;
 
 /*========================================================================
                                  Program
@@ -672,7 +674,7 @@ export class MethodDefinition
                             New Expression
 =========================================================================*/
 
-type NewExpressionChild = (ast.Expression | ast.SpreadElement);
+export type NewExpressionChild = (ast.Expression | ast.SpreadElement);
 
 export type NewExpressionProps = {
   callee: Identifier | MemberExpression
