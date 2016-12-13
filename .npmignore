@@ -1,0 +1,12 @@
+.vscode/
+node_modules/
+src/
+tests/
+typings/
+*.yml
+*.sh
+Makefile
+tsconfig.json
+tslint.json
+yarn.lock
+**/*.test.*

@@ -7,6 +7,9 @@
  * https://github.com/DefinitelyTyped/DefinitelyTyped
  */
 
+// TODO: publish using
+// https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html
+
 interface BaseNode {
   // Every leaf interface that extends BaseNode must specify a type property.
   // The type property should be a string literal. For example, Identifier
