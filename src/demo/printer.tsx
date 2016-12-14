@@ -31,9 +31,13 @@ let node = (
 ) as ReactClassComponent;
 // console.log(node.format());
 
+let method = node.findFirstChildOfType(MethodDefinition)
+console.log(method.format());
+console.log(method.findClosestParentOfType(ClassDeclaration));
+
 // Demo: editor
-new DemoEditor().apply(node, null);
-console.log(node.format());
+// new DemoEditor().apply(node, null);
+// console.log(node.format());
 
 // Demo: type guards
 // if (node.check(ClassDeclaration)) {

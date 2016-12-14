@@ -4,11 +4,15 @@ import {
   Node,
   NodePath,
   Type,
-  namedTypes as t,
-  visit
+  namedTypes as t
 } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 import * as js from 'jscodeshift';
+
+// Important! Even though recast just re-exports types from ast-types, JS will
+// consider them to be different objects. When jscodeshift gets a NodePath that
+// was created in ast-types instead of recast, it won't recognise it and fail.
+const visit = require('recast').visit;
 
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNode = JsNode<Node, any>;
@@ -260,21 +264,22 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
-    let astType = t[type.name];
-    if (!astType) {
-      throw new InvalidTypeError(type.name);
-    }
-    const collection = js(this._node).find(type.name, attr);
-    if (collection.size() > 0) {
-      return <T>JsNode.fromCollection(collection);
-    }
+    const matchedNode = <T>this.descend(node => node.check(type));
+    // We can't just return matchedNode since it will always be a registered
+    // type. In case we are looking for a complex type, we need to explicitly
+    // construct it from the matched node.
+    const node = new type();
+    node.path = matchedNode.path;
+    return node;
   }
 
   findChildrenOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): JsNodeList<T> {
+    // TODO: rewrite to work properly with complex types
     let astType = t[type.name];
     if (!astType) {
       throw new InvalidTypeError(type.name);
-    }const collection = js(this._node).find(astType, attr);
+    }
+    const collection = js(this._node).find(astType, attr);
     if (collection.size() > 0) {
       return JsNodeList.fromCollection(collection);
     }
@@ -288,16 +293,19 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
       }
       const closest = js(this._path).closest(astType, attr);
       if (closest.size() > 0) {
-        return <T>JsNode.fromCollection(closest);
+        // See findFirstChildOfType for details
+        const node = new type();
+        node.path = closest.get();
+        return <T>node;
       }
     }
   }
 
   findClosestScope(): GenericJsNode {
     if (this._path) {
-      const closest = js(this._path).closestScope();
-      if (closest.size() > 0) {
-        return JsNode.fromCollection(closest);
+      const scope = this._path.scope && this._path.scope.path;
+      if (scope) {
+        return JsNode.fromPath(scope);
       }
     }
   }
@@ -307,26 +315,26 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * predicate callback.
    */
   descend(predicate?: (node: GenericJsNode) => boolean): GenericJsNode {
-    let skip = true;
     let result: NodePath;
+    const self = this._node;
     visit(this._node, {
       visitNode: function(p: NodePath) {
-        if (skip) {
-          // This skips the node itself (just traverses children)
-          skip = false;
-          this.traverse(p);
-        } else {
+        if (p.node === self) {
+          this.traverse(p)
+        } else if (!result) {
           const node = JsNode.fromPath(p);
           if (predicate === undefined || predicate(node)) {
             result = p;
             return false;
-          } else {
-            this.traverse(p);
           }
+          this.traverse(p);
         }
+        return false;
       }
     });
-    return JsNode.fromPath(result);
+    if (result) {
+      return JsNode.fromPath(result);
+    }
   }
 
   /**
@@ -391,7 +399,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Returns child nodes.
    */
   children<T extends GenericJsNode>(): JsNodeList<T> {
-    const self = this._path.node;
+    const self = this._node;
     let children = new JsNodeList<T>();
     visit(this._node, {
       visitNode: function(p: NodePath) {
@@ -408,7 +416,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Removes child nodes.
    */
   removeChildren(predicate?: (node: GenericJsNode) => boolean): void {
-    const self = this._path.node;
+    const self = this._node;
     visit(this._node, {
       visitNode: function(p: NodePath) {
         if (p.parent && p.parent.node === self) {
@@ -449,7 +457,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   /**
-   * Gets the node that wraps a property of the current node.
+   * Get a list of nodes that wrap a property of the current node.
    */
   protected getNodes<T extends GenericJsNode>(propertyName: string): JsNodeList<T> {
     if (this._path) {

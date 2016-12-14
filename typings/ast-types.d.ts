@@ -590,7 +590,7 @@ export function getSupertypeNames(typeName: string): string;
 export function astNodesAreEquivalent(): void;
 export function finalize(): void;
 export function use(plugin: any): any;
-export function visit(node: Node, methods: Object): void; // TODO: return PathVisitor
+export function visit(node: Node | NodePath, methods: Object): void; // TODO: return PathVisitor
 
 export class Type {
   static or(...args: Array<ConvertibleToType>): Type;
@@ -635,7 +635,7 @@ export class Path {
 
   constructor(value: Path, parentPath?: Path, name?: string);
   getValueProperty(name: string): string;
-  get(name: string): string;
+  get(name: string): any;
   each(callback: (childPath: Path) => void, context?: Path): void;
   map(callback: (childPath: Path) => Path, context?: Path): Array<Path>;
   filter(callback: (childPath: Path) => boolean, context?: Path): Array<Path>;
@@ -674,6 +674,14 @@ export class Scope {
   lookup(name: string): Scope;
   lookupType(name: string): Scope;
   getGlobalScope(): Scope;
+
+  path: NodePath;
+  node: Node;
+  isGlobal: Boolean;
+  depth: number;
+  parent: NodePath;
+  bindings: any; // TODO
+  type: any; // TODO
 }
 
 export var builtInTypes: {
