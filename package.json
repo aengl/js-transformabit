@@ -14,12 +14,12 @@
   "devDependencies": {
     "@types/jest": "^16.0.0",
     "@types/js-yaml": "^3.5.28",
-    "@types/node": "^6.0.51",
     "jest": "^17.0.3",
     "ts-jest": "^17.0.3",
     "typescript": "^2.1.4"
   },
   "dependencies": {
+    "@types/node": "^6.0.52",
     "js-yaml": "^3.7.0",
     "jscodeshift": "^0.3.30"
   }

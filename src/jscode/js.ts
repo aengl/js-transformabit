@@ -289,12 +289,12 @@ export class FunctionExpression
     return super.build(props, children) as FunctionExpression;
   }
 
-  params(): JsNodeList<Pattern> {
-    return JsNodeList.fromNodes(this.node.params);
+  params() {
+    return this.getNodes<Pattern>('params');
   }
 
-  body(): BlockStatement | GenericExpression {
-    return <BlockStatement | GenericExpression>JsNode.fromNode(this.node.body);
+  body() {
+    return this.getNode<BlockStatement | GenericExpression>('body');
   }
 
   isExpression(props: FunctionExpressionProps): boolean {
@@ -556,13 +556,12 @@ export class MemberExpression
     return super.build(props, children) as MemberExpression;
   }
 
-  object(): GenericExpression {
-    // TODO: using fromNode() will destroy parent relationships - alternative?
-    return JsNode.fromNode<GenericExpression>(this.node.object);
+  object() {
+    return this.getNode<GenericExpression>('object');
   }
 
-  property(): GenericExpression {
-    return JsNode.fromNode<GenericExpression>(this.node.property);
+  property() {
+    return this.getNode<GenericExpression>('property');
   }
 }
 
@@ -622,11 +621,11 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
   }
 
   id(): Identifier {
-    return JsNode.fromNode<Identifier>(this.node.id);
+    return this.getNode<Identifier>('id');
   }
 
   superClass(): GenericExpression {
-    return JsNode.fromNode<GenericExpression>(this.node.superClass);
+    return this.getNode<GenericExpression>('superClass');
   }
 
   private getId(value: string | Identifier): ast.Identifier {

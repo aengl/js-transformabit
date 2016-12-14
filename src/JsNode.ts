@@ -17,6 +17,12 @@ export type JsNodeType<T extends GenericJsNode> = {
   check?: (node: GenericJsNode) => boolean
 };
 
+export class InvalidTypeError extends Error {
+  constructor(public typeId: string) {
+    super(`Invalid type "${typeId}"; only annotated types are allowed`);
+  }
+}
+
 export class JsNodeFactory {
   static registeredTypes: {[typeName: string]: JsNodeType<any>} = {};
 
@@ -255,7 +261,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     let astType = t[type.name];
-    console.assert(astType);
+    if (!astType) {
+      throw new InvalidTypeError(type.name);
+    }
     const collection = js(this._node).find(type.name, attr);
     if (collection.size() > 0) {
       return <T>JsNode.fromCollection(collection);
@@ -264,28 +272,33 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   findChildrenOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): JsNodeList<T> {
     let astType = t[type.name];
-    console.assert(astType);
-    const collection = js(this._node).find(astType, attr);
+    if (!astType) {
+      throw new InvalidTypeError(type.name);
+    }const collection = js(this._node).find(astType, attr);
     if (collection.size() > 0) {
       return JsNodeList.fromCollection(collection);
     }
   }
 
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
-    console.assert(this._path);
-    let astType = t[type.name];
-    console.assert(astType);
-    const closest = js(this._path).closest(astType, attr);
-    if (closest.size() > 0) {
-      return <T>JsNode.fromCollection(closest);
+    if (this._path) {
+      let astType = t[type.name];
+      if (!astType) {
+        throw new InvalidTypeError(type.name);
+      }
+      const closest = js(this._path).closest(astType, attr);
+      if (closest.size() > 0) {
+        return <T>JsNode.fromCollection(closest);
+      }
     }
   }
 
   findClosestScope(): GenericJsNode {
-    console.assert(this._path);
-    const closest = js(this._path).closestScope();
-    if (closest.size() > 0) {
-      return JsNode.fromCollection(closest);
+    if (this._path) {
+      const closest = js(this._path).closestScope();
+      if (closest.size() > 0) {
+        return JsNode.fromCollection(closest);
+      }
     }
   }
 
@@ -321,15 +334,16 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * predicate callback.
    */
   ascend(predicate?: (node: GenericJsNode) => boolean): GenericJsNode {
-    console.assert(this._path);
-    let currentPath = this._path.parent;
-    if (predicate) {
-      while (currentPath && !predicate(JsNode.fromPath(currentPath))) {
-        currentPath = currentPath.parent;
+    if (this._path) {
+      let currentPath = this._path.parent;
+      if (predicate) {
+        while (currentPath && !predicate(JsNode.fromPath(currentPath))) {
+          currentPath = currentPath.parent;
+        }
       }
-    }
-    if (currentPath) {
-      return JsNode.fromPath(currentPath);
+      if (currentPath) {
+        return JsNode.fromPath(currentPath);
+      }
     }
   }
 
@@ -337,11 +351,13 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Returns the node at the root of the current AST.
    */
   getRoot() {
-    let path = this._path;
-    while (path.parent) {
-      path = path.parent;
+    if (this._path) {
+      let path = this._path;
+      while (path.parent) {
+        path = path.parent;
+      }
+      return JsNode.fromPath(path);
     }
-    return JsNode.fromPath(path);
   }
 
   /**
@@ -366,8 +382,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Removes the sub-tree from the AST that has this node at the root.
    */
   remove(): void {
-    console.assert(this._path);
-    this._path.prune();
+    if (this._path) {
+      this._path.prune();
+    }
   }
 
   /**
@@ -419,7 +436,26 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
       }
     });
   }
-}
 
-export class ComplexNode<X extends GenericJsNode, T extends Node, P> extends JsNode<T, P> {
+  /**
+   * Gets the node that wraps a property of the current node.
+   */
+  protected getNode<T extends GenericJsNode>(propertyName: string): T {
+    if (this._path) {
+      return JsNode.fromPath<T>(this._path.get(propertyName));
+    } else {
+      return JsNode.fromNode<T>((<any>this._node)[propertyName]);
+    }
+  }
+
+  /**
+   * Gets the node that wraps a property of the current node.
+   */
+  protected getNodes<T extends GenericJsNode>(propertyName: string): JsNodeList<T> {
+    if (this._path) {
+      return JsNodeList.fromPaths(this._path.get(propertyName));
+    } else {
+      return JsNodeList.fromNodes((<any>this._node)[propertyName]);
+    }
+  }
 }
