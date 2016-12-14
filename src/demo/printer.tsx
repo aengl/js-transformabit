@@ -31,11 +31,9 @@ let node = (
 ) as ReactClassComponent;
 // console.log(node.format());
 
-console.log(node.convertToReactComponent().format());
-
 // Demo: editor
-// new DemoEditor().apply(node, null);
-// console.log(node.format());
+new DemoEditor().apply(node, null);
+console.log(node.format());
 
 // Demo: type guards
 // if (node.check(ClassDeclaration)) {

@@ -71,4 +71,29 @@ describe('jscode/react', () => {
     }
 }`);
   });
+
+  it('ReactClassComponent -> ReactComponent', () => {
+    let component = (
+      <ReactClassComponent id='Foo'>
+        <ReactComponentRender>
+          {'<div>bar!</div>'}
+        </ReactComponentRender>
+        <ReactComponentEventHandler name='bar'>
+          <ReturnStatement>
+            <Literal value={42} />
+          </ReturnStatement>
+        </ReactComponentEventHandler>
+      </ReactClassComponent>
+    ) as ReactClassComponent;
+    expect(component.convertToReactComponent().format()).toBe(
+`const Foo = React.createClass({
+    render() {
+        return <div>bar!</div>;
+    },
+
+    bar(event) {
+        return 42;
+    }
+});`);
+  });
 });

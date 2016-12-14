@@ -2,6 +2,7 @@ import { Transformation } from '../Transformation';
 import { GenericJsNode } from '../JsNode';
 import { Project } from '../Project';
 import { MethodDefinition } from '../jscode/js';
+import { ReactClassComponent } from '../jscode/react';
 
 export class DemoEditor implements Transformation {
   constructor() {
@@ -14,11 +15,18 @@ export class DemoEditor implements Transformation {
     return true;
   }
 
+  // apply(root: GenericJsNode, project: Project): GenericJsNode {
+  //   root
+  //     .findChildrenOfType(MethodDefinition)
+  //     .filter(node => node.methodName() === 'render')
+  //     .removeAll();
+  //   return root;
+  // }
+
   apply(root: GenericJsNode, project: Project): GenericJsNode {
-    root
-      .findChildrenOfType(MethodDefinition)
-      .filter(node => node.methodName() === 'render')
-      .removeAll();
+    if (root.check(ReactClassComponent)) {
+      root.convertToReactComponent();
+    }
     return root;
   }
 }

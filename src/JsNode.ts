@@ -12,7 +12,10 @@ import * as js from 'jscodeshift';
 
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNode = JsNode<Node, any>;
-export type JsNodeType<T extends GenericJsNode> = { new(): T };
+export type JsNodeType<T extends GenericJsNode> = {
+  new(): T,
+  check?: (node: GenericJsNode) => boolean
+};
 
 export class JsNodeFactory {
   static registeredTypes: {[typeName: string]: JsNodeType<any>} = {};
@@ -242,6 +245,11 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Returns true if the node type matches the specified type.
    */
   check<T extends GenericJsNode>(type: JsNodeType<T>): this is T {
+    if (type.check) {
+      // If the type has a static check(), use that one instead. This allows
+      // complex types to perform more sophisticated checks.
+      return type.check(this);
+    }
     return this.type() === type.name;
   }
 
