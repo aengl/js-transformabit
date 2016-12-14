@@ -1,4 +1,5 @@
 import {
+  JsCode,
   VariableDeclaration,
   VariableDeclarator,
   VariableKind,
@@ -20,11 +21,7 @@ import {
   FunctionExpression,
   MethodDefinition,
   MethodKind,
-  ReactClassComponent,
-  ReactComponent,
-  ReactStatelessComponent,
-  NewExpression,
-  JsCode
+  NewExpression
 } from '../JsCode';
 
 describe('jscode/js', () => {
@@ -48,10 +45,8 @@ describe('jscode/js', () => {
 
     expect(foobar.format()).toBe("let foo, bar;");
 
-
     let age = <VariableDeclaration name="age" kind={VariableKind.Let}><Literal value={3} /></VariableDeclaration>;
     expect(age.format()).toBe("let age = 3;");
-
 
     let bananasInPajamas = (
       <VariableDeclaration kind={VariableKind.Const}>
@@ -65,15 +60,13 @@ describe('jscode/js', () => {
     );
 
     expect(bananasInPajamas.format()).toBe("const b1 = 1, b2 = 2;");
-
   });
 
   it('Literal', () => {
-    let int = new Literal({ value: 8 });
-    let bol = new Literal({ value: true });
-    let str = new Literal({ value: "Hello" });
+    expect(new Literal({ value: 8 }).format()).toBe('8');
+    expect(new Literal({ value: true }).format()).toBe('true');
+    expect(new Literal({ value: "Hello" }).format()).toBe('"Hello"');
   });
-
 
   it('CallExpression', () => {
     let foo = <CallExpression callee={new Identifier({ name: "foo" })} />;
@@ -103,7 +96,6 @@ describe('jscode/js', () => {
       </CallExpression>
     );
     expect(memberCall.format()).toBe("this.foo(bar)");
-
   });
 
   it('BlockStatement', () => {
@@ -123,7 +115,6 @@ describe('jscode/js', () => {
 
     expect(simpleBlock.format().replace(/\n/g, "")).toBe("{    let num = 3;}");
   });
-
 
   it('FunctionDeclaration', () => {
     let empty = <FunctionDeclaration name="skip" />;
@@ -208,7 +199,6 @@ describe('jscode/js', () => {
     expect(thss.format()).toBe("this");
   });
 
-
   it('MemberExpression', () => {
     let thisFoo = <MemberExpression
       object={new ThisExpression({}, [])}
@@ -227,7 +217,6 @@ describe('jscode/js', () => {
       { object: prototypefunc, property: new Identifier({ name: "foo" }) }, []);
     expect(funcfoo.format()).toBe("this.prototype.func.foo");
   });
-
 
   it('AssignmentExpression', () => {
     let variable = (
@@ -267,12 +256,11 @@ describe('jscode/js', () => {
     expect(memberAndIdentifier.format()).toBe("this.level = level");
   });
 
-
   it('MethodDefinition', () => {
       let empty = (
         <MethodDefinition key="bar" kind={MethodKind.Method}>
         </MethodDefinition>
-      ) as MethodDefinition
+      );
       expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
 
       let notEmpty = (
@@ -285,7 +273,7 @@ describe('jscode/js', () => {
             </BlockStatement>
           </FunctionExpression>
         </MethodDefinition>
-      ) as MethodDefinition;
+      );
       expect(notEmpty.format().replace(/\n([\s]*)/g, "")).toBe("foo() {return true;}");
     });
 
@@ -293,7 +281,7 @@ describe('jscode/js', () => {
       let empty = (
         <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
         </ClassDeclaration>
-      ) as ClassDeclaration
+      );
       expect(empty.format()).toBe("class Foo extends Bar {}");
 
       let withMethod = (
@@ -310,7 +298,7 @@ describe('jscode/js', () => {
         </MethodDefinition>
 
       </ClassDeclaration>
-      ) as ClassDeclaration;
+      );
       expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
 
       let withTwoMethods = (
@@ -335,20 +323,16 @@ describe('jscode/js', () => {
           </MethodDefinition>
 
         </ClassDeclaration>
-      ) as ClassDeclaration;
+      );
       expect(withTwoMethods.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
-
-
     });
 
-
   it('FunctionExpression', () => {
-    let empty = <FunctionExpression/> as FunctionExpression
+    let empty = <FunctionExpression/>;
      expect(empty.format()).toBe("function() {}");
 
-     //let gen = <FunctionExpression generator={true}/> as FunctionExpression
-     //expect(gen.format()).toBe("function*() {}");
-
+     // let gen = <FunctionExpression generator={true}/> as FunctionExpression
+     // expect(gen.format()).toBe("function*() {}");
 
     let blockWithNoParams = (
       <FunctionExpression>
@@ -358,32 +342,30 @@ describe('jscode/js', () => {
           </VariableDeclaration>
         </BlockStatement>
       </FunctionExpression>
-    ) as FunctionExpression
-     expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}")
+    );
+     expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}");
   });
-
 
     it('Property', () => {
      let valAsChild = (
       <Property key="render" kind={PropertyKind.Init}>
         <FunctionExpression/>
       </Property>
-    ) as Property;
+    );
     expect(valAsChild.format()).toBe("render: function() {}");
 
     let one = <Literal value={1}/> as Literal;
     let valAsProp = (
        <Property key="num" kind={PropertyKind.Init} value={one}>
       </Property>
-    ) as Property;
+    );
     expect(valAsProp.format()).toBe("num: 1");
   });
-
 
   it('ObjectExpression', () => {
     let empty = (
        <ObjectExpression/>
-    ) as ObjectExpression;
+    );
     expect(empty.format()).toBe("{}");
 
      let abc1 = (
@@ -393,7 +375,7 @@ describe('jscode/js', () => {
          <Property key="c" kind={PropertyKind.Init} value={new Literal({value: "c"})}/>
          <Property key="one" kind={PropertyKind.Init} value={new Literal({value:  1})}/>
        </ObjectExpression>
-     ) as ObjectExpression;
+     );
     expect(abc1.format().replace(/\s/g, "")).toBe(`{a:"a",b:"b",c:"c",one:1}`);
    });
 
@@ -401,7 +383,7 @@ describe('jscode/js', () => {
      let newEmpty = (
        <NewExpression callee={new Identifier({name: "Object"})}>
        </NewExpression>
-     ) as NewExpression;
+     );
      expect(newEmpty.format()).toBe("new Object()");
 
      let fewArgs = (
@@ -410,8 +392,8 @@ describe('jscode/js', () => {
           <Identifier name="bar"/>
           <Literal value="foo"/>
        </NewExpression>
-     ) as NewExpression;
+     );
      expect(fewArgs.format()).toBe("new Thing(3, bar, \"foo\")");
 
-   })
+   });
 });

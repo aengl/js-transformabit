@@ -49,7 +49,7 @@ describe('jscode/react', () => {
 
   it('ReactClassComponent', () => {
     let component = (
-      <ReactClassComponent name='Foo'>
+      <ReactClassComponent id='Foo'>
         <ReactComponentRender>
           {'<div>bar!</div>'}
         </ReactComponentRender>

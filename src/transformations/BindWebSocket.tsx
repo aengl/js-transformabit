@@ -12,6 +12,7 @@ import {
     AssignmentOperator,
     Identifier,
     ClassDeclaration,
+    GenericClassDeclaration,
     BlockStatement,
     MethodKind
 } from '../JsCode';
@@ -36,11 +37,11 @@ export class BindWebSocket implements Transformation {
         return matchingComponents.toArray();
     }
 
-    private isMatchingComponentName(klass: ClassDeclaration): boolean {
+    private isMatchingComponentName(klass: GenericClassDeclaration): boolean {
         return klass.node.id.name === this.component;
     }
 
-    private isReactComponent(klass: ClassDeclaration): boolean {
+    private isReactComponent(klass: GenericClassDeclaration): boolean {
         return klass.superClass().format() === 'React.Component';
     }
 

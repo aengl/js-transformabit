@@ -1,24 +1,33 @@
-import { JsNode, GenericJsNode } from '../JsNode';
-import { Statement } from './js';
+import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
+import {
+  Statement,
+  ClassDeclaration,
+  ClassDeclarationProps
+} from './js';
 import * as ast from 'ast-types';
 
 const b = ast.builders;
 
-export class ReactComponentCommon<T extends ast.Node, P> extends JsNode<T, P> {
-  protected getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
-    const body = this._find(children, ReactComponentRender);
-    if (body) {
-      return body.node as ast.Expression;
+function find(children: GenericJsNode[], type: JsNodeType<any>): GenericJsNode {
+  for (let child of children) {
+    if (child instanceof type) {
+      return child;
     }
-    return null;
   }
+  return null;
+}
 
-  protected getEventHandlersFromChildren(
-    children: GenericJsNode[]): ReactComponentEventHandler[] {
-
-    return children.filter(child =>
-      child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
+function getRenderBodyFromChildren(children: GenericJsNode[]): ast.Expression {
+  const body = find(children, ReactComponentRender);
+  if (body) {
+    return body.node as ast.Expression;
   }
+  return null;
+}
+
+function getEventHandlersFromChildren(children: GenericJsNode[]): ReactComponentEventHandler[] {
+  return children.filter(child =>
+    child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
 }
 
 export type ReactStatelessComponentProps = {
@@ -26,7 +35,7 @@ export type ReactStatelessComponentProps = {
 };
 
 export class ReactStatelessComponent
-  extends ReactComponentCommon<ast.VariableDeclaration, ReactStatelessComponentProps> {
+  extends JsNode<ast.VariableDeclaration, ReactStatelessComponentProps> {
 
   build(props: ReactStatelessComponentProps,
     children: GenericJsNode[]): ReactStatelessComponent {
@@ -36,7 +45,7 @@ export class ReactStatelessComponent
         b.identifier(props.name),
         b.arrowFunctionExpression(
           [b.identifier('props')],
-          this.getRenderBodyFromChildren(children)
+          getRenderBodyFromChildren(children)
         )
       )
     ]);
@@ -49,11 +58,11 @@ export type ReactComponentProps = {
 };
 
 export class ReactComponent
-  extends ReactComponentCommon<ast.VariableDeclaration, ReactComponentProps> {
+  extends JsNode<ast.VariableDeclaration, ReactComponentProps> {
 
   build(props: ReactComponentProps, children: GenericJsNode[]): ReactComponent {
     // Create event handlers
-    let eventHandlers = this.getEventHandlersFromChildren(children)
+    let eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.property(
         'init',
         b.identifier(handler.props.name),
@@ -64,7 +73,7 @@ export class ReactComponent
     // Create render method
     let renderMethod = b.property('init', b.identifier('render'),
       b.functionExpression(null, [], b.blockStatement([
-        b.returnStatement(this.getRenderBodyFromChildren(children))
+        b.returnStatement(getRenderBodyFromChildren(children))
       ]))
     );
     renderMethod.method = true;
@@ -82,16 +91,14 @@ export class ReactComponent
   }
 }
 
-export type ReactClassComponentProps = {
-  name: string;
-};
+export type ReactClassComponentProps = ClassDeclarationProps;
 
 export class ReactClassComponent
-  extends ReactComponentCommon<ast.ClassDeclaration, ReactClassComponentProps> {
+  extends ClassDeclaration<ast.ClassDeclaration, ReactClassComponentProps> {
 
   build(props: ReactClassComponentProps, children: GenericJsNode[]): ReactClassComponent {
     // Create event handlers
-    let eventHandlers = this.getEventHandlersFromChildren(children)
+    let eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.methodDefinition(
         'method',
         b.identifier(handler.props.name),
@@ -100,7 +107,7 @@ export class ReactClassComponent
     );
     // Create AST
     this.node = b.classDeclaration(
-      b.identifier(props.name),
+      b.identifier(typeof props.id === 'string' ? props.id : props.id.name),
       b.classBody([
         b.methodDefinition(
           'method',
@@ -109,7 +116,7 @@ export class ReactClassComponent
             null,
             [],
             b.blockStatement([
-              b.returnStatement(this.getRenderBodyFromChildren(children))
+              b.returnStatement(getRenderBodyFromChildren(children))
             ])
           )
         )
@@ -119,7 +126,7 @@ export class ReactClassComponent
         b.identifier('Component')
       )
     );
-    return super.build(props, children) as ReactClassComponent;
+    return this;
   }
 
   getRenderBody(): JsNode<ast.FunctionExpression, any> {

@@ -43,15 +43,15 @@ export type ExpressionProps = {
 };
 
 @JsNodeFactory.registerType
-export class ExpressionBase<T extends ast.Expression, P extends ExpressionProps>
+export class Expression<T extends ast.Expression, P extends ExpressionProps>
   extends JsNode<T, P> {
 
-  build(props: P, children: any[]): ExpressionBase<T, P> {
+  build(props: P, children: any[]): Expression<T, P> {
     return super.build(props, children);
   }
 }
 
-export type Expression = ExpressionBase<ast.Expression, ExpressionProps>;
+export type GenericExpression = Expression<ast.Expression, ExpressionProps>;
 
 /*========================================================================
                                 Statement
@@ -105,7 +105,7 @@ export class VariableDeclaration
     let nodes: ast.VariableDeclarator[] = [];
     if (props.name) {
       let declarator = new VariableDeclarator().build({ name: props.name });
-      declarator.build({ name: props.name }, children as Expression[]);
+      declarator.build({ name: props.name }, children as GenericExpression[]);
       nodes.push(declarator.node);
       return nodes;
     }
@@ -132,10 +132,10 @@ export class VariableDeclarator
   extends JsNode<ast.VariableDeclarator, VariableDeclaratorProps> {
 
   propTypes: {
-    children: Expression
+    children: GenericExpression
   };
 
-  build(props: VariableDeclaratorProps, children: Expression[] = []): VariableDeclarator {
+  build(props: VariableDeclaratorProps, children: GenericExpression[] = []): VariableDeclarator {
     let identifier = new Identifier().build({ name: props.name }).node;
     if (children.length > 1) {
       throw new Error("VariableDeclarator can only have one child");
@@ -444,7 +444,7 @@ export class ObjectExpression
               Utility for Expression Statement and Return Statement
 =========================================================================*/
 
-function getSingleExpression(children: Expression[],
+function getSingleExpression(children: GenericExpression[],
   allowNull: boolean, statement: string): ast.Expression {
 
   if (children.length === 0) {
@@ -481,7 +481,7 @@ export type ExpressionStatementProps = {
 export class ExpressionStatement
   extends JsNode<ast.ExpressionStatement, ExpressionStatementProps> {
 
-  build(props: ExpressionStatementProps, children: Expression[]): ExpressionStatement {
+  build(props: ExpressionStatementProps, children: GenericExpression[]): ExpressionStatement {
     this.node = b.expressionStatement(
       getSingleExpression(children, false, ExpressionStatement.name));
     return super.build(props, children);
@@ -497,7 +497,7 @@ export type ReturnStatementProps = {
 
 @JsNodeFactory.registerType
 export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
-  build(props: ReturnStatementProps, children: Expression[]): ReturnStatement {
+  build(props: ReturnStatementProps, children: GenericExpression[]): ReturnStatement {
     this.node = <ast.ReturnStatement>b.returnStatement(
       getSingleExpression(children, true, ReturnStatement.name));
     return super.build(props, children);
@@ -512,7 +512,7 @@ export type ThisExpressionProps = ExpressionProps;
 
 @JsNodeFactory.registerType
 export class ThisExpression
-  extends ExpressionBase<ast.ThisExpression, ThisExpressionProps> {
+  extends Expression<ast.ThisExpression, ThisExpressionProps> {
 
   build(props: ThisExpressionProps, children: any[]): ThisExpression {
     this.node = b.thisExpression();
@@ -525,13 +525,13 @@ export class ThisExpression
 =========================================================================*/
 
 export type MemberExpressionProps = ExpressionProps & {
-  object?: Expression | string,
-  property: Expression | string
+  object?: GenericExpression | string,
+  property: GenericExpression | string
 };
 
 @JsNodeFactory.registerType
 export class MemberExpression
-  extends ExpressionBase<ast.MemberExpression, MemberExpressionProps> {
+  extends Expression<ast.MemberExpression, MemberExpressionProps> {
 
   build(props: MemberExpressionProps, children: any[]): MemberExpression {
     let object: ast.Node;
@@ -547,12 +547,13 @@ export class MemberExpression
     return super.build(props, children) as MemberExpression;
   }
 
-  object(): Expression {
-    return JsNode.fromNode<Expression>(this.node.object);
+  object(): GenericExpression {
+    // TODO: using fromNode() will destroy parent relationships - alternative?
+    return JsNode.fromNode<GenericExpression>(this.node.object);
   }
 
-  property(): Expression {
-    return JsNode.fromNode<Expression>(this.node.property);
+  property(): GenericExpression {
+    return JsNode.fromNode<GenericExpression>(this.node.property);
   }
 }
 
@@ -599,20 +600,20 @@ export type ClassDeclarationProps = {
 };
 
 @JsNodeFactory.registerType
-export class ClassDeclaration
-  extends JsNode<ast.ClassDeclaration, ClassDeclarationProps> {
+export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDeclarationProps>
+  extends JsNode<T, P> {
 
-  build(props: ClassDeclarationProps, children: any[]): ClassDeclaration {
-    this.node = b.classDeclaration(
+  build(props: P, children: any[]): ClassDeclaration<T, P> {
+    this.node = <T>b.classDeclaration(
       this.getId(props.id),
       new ClassBody().build({}, children).node,
       this.getSuperClass(props)
     );
-    return super.build(props, children) as ClassDeclaration;
+    return super.build(props, children) as ClassDeclaration<T, P>;
   }
 
-  superClass(): Expression {
-    return JsNode.fromNode<Expression>(this.node.superClass);
+  superClass(): GenericExpression {
+    return JsNode.fromNode<GenericExpression>(this.node.superClass);
   }
 
   private getId(value: string | Identifier): ast.Identifier {
@@ -632,6 +633,9 @@ export class ClassDeclaration
     return (props.superClass as Identifier).node;
   }
 }
+
+export type GenericClassDeclaration = ClassDeclaration<
+  ast.ClassDeclaration, ClassDeclarationProps>;
 
 /*========================================================================
                             Class Body

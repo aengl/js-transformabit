@@ -4,7 +4,6 @@ import {
   Node,
   NodePath,
   Type,
-  Program,
   namedTypes as t,
   visit
 } from 'ast-types';
@@ -14,11 +13,6 @@ import * as js from 'jscodeshift';
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNode = JsNode<Node, any>;
 export type JsNodeType<T extends GenericJsNode> = { new(): T };
-
-const isCollection = (obj: any): obj is Collection =>
-  obj.constructor.name === 'Collection';
-// const isPath = (obj: any): obj is NodePath => obj instanceof NodePath;
-// const isNode = (obj: any): obj is Node => !!obj.type;
 
 export class JsNodeFactory {
   static registeredTypes: {[typeName: string]: JsNodeType<any>} = {};
@@ -412,18 +406,6 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
         this.traverse(p);
       }
     });
-  }
-
-  /**
-   * Finds a node of a specific type amongst the JsCode children.
-   */
-  protected _find(children: GenericJsNode[], type: JsNodeType<any>): GenericJsNode {
-    for (let child of children) {
-      if (child instanceof type) {
-        return child;
-      }
-    }
-    return null;
   }
 }
 

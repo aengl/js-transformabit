@@ -4,6 +4,7 @@ import {
   CallExpression,
   MethodDefinition,
   BlockStatement,
+  MemberExpression,
   Literal,
   Identifier,
   VariableDeclaration,
@@ -19,7 +20,7 @@ import { JsNode, GenericJsNode } from '../JsNode';
 import { DemoEditor } from './editor';
 
 let node: GenericJsNode = (
-  <ReactClassComponent name='MyComponent'>
+  <ReactClassComponent id='MyComponent'>
     <ReactComponentRender>
       {'<h1>Trifork ftw!</h1>'}
     </ReactComponentRender>
@@ -34,5 +35,11 @@ let node: GenericJsNode = (
 // console.log(node.format());
 
 if (node.check(ClassDeclaration)) {
-  console.log(node);
+  let superClass = node.superClass();
+  if (superClass.check(MemberExpression)) {
+    let object = superClass.object();
+    if (object.check(Identifier)) {
+      console.log(object.name);
+    }
+  }
 }
