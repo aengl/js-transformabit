@@ -37,7 +37,7 @@ export class CreateClassToComponent implements Transformation {
         return (callee.property as Identifier).name === "createClass";
       }
     });
-    return createClasses.toArray().length > 0;
+    return createClasses.size() > 0;
   }
 
 

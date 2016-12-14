@@ -1,6 +1,7 @@
 import {
   JsNode,
   JsNodeFactory,
+  JsNodeList,
   GenericJsNode
 } from '../JsNode';
 import * as ast from 'ast-types';
@@ -286,6 +287,14 @@ export class FunctionExpression
       this.getBody(children)
     );
     return super.build(props, children) as FunctionExpression;
+  }
+
+  params(): JsNodeList<Pattern> {
+    return JsNodeList.fromNodes(this.node.params);
+  }
+
+  body(): BlockStatement | GenericExpression {
+    return <BlockStatement | GenericExpression>JsNode.fromNode(this.node.body);
   }
 
   isExpression(props: FunctionExpressionProps): boolean {
@@ -713,8 +722,18 @@ export class MethodDefinition
     return super.build(props, children) as MethodDefinition;
   }
 
-  methodName() {
+  methodName(): string {
     return this.findFirstChildOfType(Identifier).name;
+  }
+
+  methodArgs(): JsNodeList<Pattern> {
+    return this
+      .findFirstChildOfType(FunctionExpression)
+      .params();
+  }
+
+  body() {
+    return this.findFirstChildOfType(FunctionExpression).body();
   }
 
   private getBool(val?: boolean): boolean {
@@ -773,3 +792,7 @@ export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps>
     return nodes;
   }
 }
+
+export type Pattern =
+  Identifier /*| ObjectPattern | ArrayPattern | RestElement |
+  AssignmentPattern*/ | MemberExpression;

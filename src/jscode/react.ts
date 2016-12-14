@@ -31,6 +31,10 @@ function getEventHandlersFromChildren(children: GenericJsNode[]): ReactComponent
     child instanceof ReactComponentEventHandler) as ReactComponentEventHandler[];
 }
 
+/** ----------------------------------------------------------------------------
+ * Stateless Component
+ */
+
 export type ReactStatelessComponentProps = {
   name: string;
 };
@@ -54,6 +58,10 @@ export class ReactStatelessComponent
   }
 }
 
+/** ----------------------------------------------------------------------------
+ * Component (React.createClass(...))
+ */
+
 export type ReactComponentProps = {
   name: string;
 };
@@ -69,7 +77,7 @@ export class ReactComponent
         b.identifier(handler.props.name),
         b.functionExpression(null, [b.identifier('event')], handler.node)
       )
-    );
+      );
     eventHandlers.forEach(handler => handler.method = true);
     // Create render method
     let renderMethod = b.property('init', b.identifier('render'),
@@ -92,6 +100,10 @@ export class ReactComponent
   }
 }
 
+/** ----------------------------------------------------------------------------
+ * Class Component
+ */
+
 export type ReactClassComponentProps = ClassDeclarationProps;
 
 export class ReactClassComponent
@@ -110,7 +122,7 @@ export class ReactClassComponent
         b.identifier(handler.props.name),
         b.functionExpression(null, [b.identifier('event')], handler.node)
       )
-    );
+      );
     // Create AST
     this.node = b.classDeclaration(
       b.identifier(typeof props.id === 'string' ? props.id : props.id.name),
@@ -135,7 +147,7 @@ export class ReactClassComponent
     return this;
   }
 
-  getRenderMethod(): MethodDefinition {
+  getRenderMethod() {
     const methods = this
       .findChildrenOfType(MethodDefinition)
       .filter(node => node.methodName() === 'render');
@@ -143,7 +155,36 @@ export class ReactClassComponent
       return methods.at(0);
     }
   }
+
+  convertToReactComponent() {
+    let methods = this.findChildrenOfType(MethodDefinition, { kind: 'method' });
+    let properties: ast.Property[] = methods.map(method =>
+      b.property('init', b.identifier(method.methodName()),
+        b.functionExpression(
+          null,
+          method.methodArgs().map(m => m.node),
+          method.body().node
+        )
+      )
+    );
+    properties.forEach(property => property.method = true);
+    return this.replace(
+      b.variableDeclaration('const', [
+        b.variableDeclarator(
+          b.identifier(this.id().name),
+          b.callExpression(
+            b.memberExpression(b.identifier('React'), b.identifier('createClass')),
+            [b.objectExpression(properties)]
+          )
+        )
+      ])
+    );
+  }
 }
+
+/** ----------------------------------------------------------------------------
+ * Render Function
+ */
 
 export class ReactComponentRenderProps {
 }
@@ -161,6 +202,10 @@ export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps>
     return super.build(props, children) as ReactComponentRender;
   }
 }
+
+/** ----------------------------------------------------------------------------
+ * Event Handler
+ */
 
 export class ReactComponentEventHandlerProps {
   name: string;

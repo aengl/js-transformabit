@@ -29,7 +29,9 @@ let node = (
     </ReactComponentEventHandler>
   </ReactClassComponent>
 ) as ReactClassComponent;
-console.log(node.format());
+// console.log(node.format());
+
+console.log(node.convertToReactComponent().format());
 
 // Demo: editor
 // new DemoEditor().apply(node, null);

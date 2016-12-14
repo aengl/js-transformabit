@@ -120,9 +120,10 @@ export class JsNodeList<T extends GenericJsNode> {
     return this;
   }
 
-  toArray(): T[] {
-    return this._paths.map(path => JsNode.fromPath(path) as T);
-  }
+  // TODO: find a way to properly type this array or remove the method
+  // toArray(): GenericJsNode[] {
+  //   return this._paths.map(path => JsNode.fromPath(path));
+  // }
 }
 
 /**
@@ -339,12 +340,15 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Replaces the current node with another.
    */
   replace(node: (transformabit.JsNode | Node)): JsNode<T, P> {
-    console.assert(this._path);
     if (node instanceof JsNode) {
-      this._path.replace(node._node);
+      if (this._path) {
+        this._path.replace(node._node);
+      }
       this._node = <T>node._node;
     } else {
-      this._path.replace(<T>node);
+      if (this._path) {
+        this._path.replace(<T>node);
+      }
       this._node = <T>node;
     }
     return this;

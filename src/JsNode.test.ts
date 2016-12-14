@@ -77,16 +77,16 @@ describe('JsNodeList', () => {
     expect(node.format()).toBe('let foo, bar;');
   });
 
-  it('to array', () => {
-    const code = 'let foo, bar; let baz;';
-    const nodes = JsNode.fromModuleCode(code)
-      .findChildrenOfType(Identifier)
-      .toArray();
-    expect(nodes.length).toBe(3);
-    expect(nodes[0].format()).toBe('foo');
-    expect(nodes[1].format()).toBe('bar');
-    expect(nodes[2].format()).toBe('baz');
-  });
+  // it('to array', () => {
+  //   const code = 'let foo, bar; let baz;';
+  //   const nodes = JsNode.fromModuleCode(code)
+  //     .findChildrenOfType(Identifier)
+  //     .toArray();
+  //   expect(nodes.length).toBe(3);
+  //   expect(nodes[0].format()).toBe('foo');
+  //   expect(nodes[1].format()).toBe('bar');
+  //   expect(nodes[2].format()).toBe('baz');
+  // });
 });
 
 describe('JsNode', () => {
