@@ -1,6 +1,7 @@
 import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
 import {
   Statement,
+  MethodDefinition,
   ClassDeclaration,
   ClassDeclarationProps
 } from './js';
@@ -96,6 +97,11 @@ export type ReactClassComponentProps = ClassDeclarationProps;
 export class ReactClassComponent
   extends ClassDeclaration<ast.ClassDeclaration, ReactClassComponentProps> {
 
+  static check(node: GenericJsNode): boolean {
+    return node.check(ClassDeclaration)
+      && node.superClass().format() === 'React.Component';
+  }
+
   build(props: ReactClassComponentProps, children: GenericJsNode[]): ReactClassComponent {
     // Create event handlers
     let eventHandlers = getEventHandlersFromChildren(children)
@@ -129,12 +135,13 @@ export class ReactClassComponent
     return this;
   }
 
-  getRenderBody(): JsNode<ast.FunctionExpression, any> {
-    return null;
-    // TODO
-    // return this
-    //   .findChildrenOfType<ast.MethodDefinition>(t.MethodDefinition)
-    //   .filter(node => node.getMethodName() === 'render');
+  getRenderMethod(): MethodDefinition {
+    const methods = this
+      .findChildrenOfType(MethodDefinition)
+      .filter(node => node.methodName() === 'render');
+    if (methods.size() > 0) {
+      return methods.at(0);
+    }
   }
 }
 

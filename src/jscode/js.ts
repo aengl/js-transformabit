@@ -612,6 +612,10 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
     return super.build(props, children) as ClassDeclaration<T, P>;
   }
 
+  id(): Identifier {
+    return JsNode.fromNode<Identifier>(this.node.id);
+  }
+
   superClass(): GenericExpression {
     return JsNode.fromNode<GenericExpression>(this.node.superClass);
   }
@@ -674,6 +678,8 @@ export enum MethodKind {
   Constructor = <any>'constructor'
 }
 
+export type MethodKindString = 'set' | 'constructor' | 'get' | 'method';
+
 export type MethodDefinitionProps = {
   key: Identifier | string,
   kind: MethodKind,
@@ -688,8 +694,16 @@ export class MethodDefinition
 
   props: MethodDefinitionProps;
 
+  get kind(): MethodKindString {
+    return this.node.kind;
+  }
+
+  set kind(kind: MethodKindString) {
+    this.node.kind = kind;
+  }
+
   build(props: MethodDefinitionProps, children: any[]): MethodDefinition {
-    let kindString = (props.kind.toString() as 'set' | 'constructor' | 'get' | 'method');
+    let kindString = (props.kind.toString() as MethodKindString);
     this.node = b.methodDefinition(
       kindString,
       this.getKey(props),

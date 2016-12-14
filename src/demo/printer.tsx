@@ -19,7 +19,7 @@ import {
 import { JsNode, GenericJsNode } from '../JsNode';
 import { DemoEditor } from './editor';
 
-let node: GenericJsNode = (
+let node = (
   <ReactClassComponent id='MyComponent'>
     <ReactComponentRender>
       {'<h1>Trifork ftw!</h1>'}
@@ -28,18 +28,23 @@ let node: GenericJsNode = (
       {JsNode.fromFunctionBody('return 42;').at(0)}
     </ReactComponentEventHandler>
   </ReactClassComponent>
-) as GenericJsNode;
+) as ReactClassComponent;
+console.log(node.format());
 
-// node = new DemoEditor().apply(node as GenericJsNode, null);
-
+// Demo: editor
+// new DemoEditor().apply(node, null);
 // console.log(node.format());
 
-if (node.check(ClassDeclaration)) {
-  let superClass = node.superClass();
-  if (superClass.check(MemberExpression)) {
-    let object = superClass.object();
-    if (object.check(Identifier)) {
-      console.log(object.name);
-    }
-  }
-}
+// Demo: type guards
+// if (node.check(ClassDeclaration)) {
+//   let superClass = node.superClass();
+//   if (superClass.check(MemberExpression)) {
+//     let object = superClass.object();
+//     if (object.check(Identifier)) {
+//       console.log(object.name);
+//     }
+//   }
+// }
+
+// Demo: type specific methods
+// console.log(node.getRenderMethod().format());
