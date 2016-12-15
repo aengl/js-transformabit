@@ -12,14 +12,12 @@ import {
   AssignmentOperator,
   Identifier,
   ClassDeclaration,
-  GenericClassDeclaration,
   BlockStatement,
   MethodKind,
   ReactClassComponent
 } from '../JsCode';
 
 export class BindWebSocket implements Transformation {
-
   component: string;
   address: string;
 
@@ -32,14 +30,13 @@ export class BindWebSocket implements Transformation {
     return this.getMatchingReactComponents(root).size() > 0;
   }
 
-  private getMatchingReactComponents(root: GenericJsNode): JsNodeList<GenericClassDeclaration> {
-    return root.findChildrenOfType(ClassDeclaration)
-      .filter((k: GenericClassDeclaration) =>
-        k.id().name === this.component && ReactClassComponent.check(k));
+  private getMatchingReactComponents(root: GenericJsNode) {
+    return root.findChildrenOfType(ClassDeclaration, null, true)
+      .filter(k => k.id().name === this.component && ReactClassComponent.check(k));
   }
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
-    const component = this.getMatchingReactComponents(root).at(0);
+    const component = this.getMatchingReactComponents(root).first();
     this.addBindings(component.findConstructor());
     return root;
   }

@@ -18,6 +18,7 @@ import {
 
 import { JsNode, GenericJsNode } from '../JsNode';
 import { DemoEditor } from './editor';
+import { BindWebSocket } from '../transformations/BindWebSocket';
 
 let node = (
   <ReactClassComponent id='MyComponent'>
@@ -32,13 +33,22 @@ let node = (
 // console.log(node.format());
 
 // Demo: format and re-parse
-node = JsNode.fromCode(node.format()).at(0) as any;
+// node = JsNode.fromCode(node.format()).at(0) as any;
 
 // Demo: finding complex components
-console.log(node.findFirstChildOfType(ReactComponentRender).format());
+// console.log(node.findFirstChildOfType(ReactComponentRender).format());
 
 // Demo: editor
 // new DemoEditor().apply(node, null);
+// console.log(node.format());
+
+// Demo: add constructor
+// console.log(node.createConstructor().format());
+
+// Demo: bind web sockets
+// let t = new BindWebSocket();
+// t.configure(['MyComponent', 'foo']);
+// t.apply(node, null);
 // console.log(node.format());
 
 // Demo: type guards

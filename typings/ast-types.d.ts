@@ -909,7 +909,7 @@ export var builders: {
     body: Statement[]
   ) => BlockStatement,
   callExpression: (
-    callee: Expression,
+    callee: Expression | Super,
     args: Expression[]
   ) => CallExpression,
   classBody: (
@@ -963,10 +963,12 @@ export var builders: {
   returnStatement: (
     argument: Expression
   ) => ReturnStatement,
+  super: (
+  ) => Super,
   thisExpression: (
   ) => ThisExpression,
   variableDeclaration: (
-    kind: string,
+  kind: ('var' | 'let' | 'const'),
     declarations: VariableDeclarator[]
   ) => VariableDeclaration,
   variableDeclarator: (

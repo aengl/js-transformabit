@@ -14,8 +14,7 @@
   "devDependencies": {
     "@types/jest": "^16.0.0",
     "@types/js-yaml": "^3.5.28",
-    "jest": "^17.0.3",
-    "ts-jest": "^17.0.3",
+    "jest": "^18.0.0",
     "typescript": "^2.1.4"
   },
   "dependencies": {

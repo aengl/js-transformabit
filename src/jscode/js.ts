@@ -633,6 +633,11 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
       m => m.kind === MethodKind.Constructor.toString()).first();
   }
 
+  createConstructor(): this {
+    this.descend<ClassBody>().createConstructor();
+    return this;
+  }
+
   private getId(value: string | Identifier): ast.Identifier {
     if (typeof(value) === 'string') {
       return new Identifier().build({ name: value }).node;
@@ -666,6 +671,27 @@ export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   build(props: ClassBodyProps, children: any[]): ClassBody {
     this.node = b.classBody(this.asNodeArray(children));
     return super.build(props, children) as ClassBody;
+  }
+
+  createConstructor(): this {
+    this._path.get('body').push( // TODO: should be insertAt(0, ...)?
+      b.methodDefinition('constructor',
+        b.identifier('constructor'),
+        b.functionExpression(null, [],
+          b.blockStatement([
+            b.expressionStatement(
+              b.callExpression(b.super(), [])
+            )
+          ])
+        )
+      )
+    );
+    return this;
+  }
+
+  createMethod(node: ast.Node, index?: number): this {
+    this._path.get('body').push(node);
+    return this;
   }
 
   private asNodeArray(children: any[]): ast.ClassBodyElement[] {
