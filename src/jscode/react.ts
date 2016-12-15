@@ -3,7 +3,8 @@ import {
   Statement,
   MethodDefinition,
   ClassDeclaration,
-  ClassDeclarationProps
+  ClassDeclarationProps,
+  MethodKind
 } from './js';
 import * as ast from 'ast-types';
 
@@ -190,6 +191,11 @@ export class ReactComponentRenderProps {
 }
 
 export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps> {
+  static check(node: GenericJsNode): boolean {
+    return node.check(MethodDefinition)
+      && node.methodName() === 'render';
+  }
+
   build(props: ReactComponentRenderProps, children: string[]): ReactComponentRender {
     if (children.length !== 1) {
       throw new Error('ReactComponentRender requires exactly one child');
@@ -213,6 +219,12 @@ export class ReactComponentEventHandlerProps {
 
 export class ReactComponentEventHandler
   extends JsNode<any, ReactComponentEventHandlerProps> {
+
+  static check(node: GenericJsNode): boolean {
+    return node.check(MethodDefinition)
+      && node.kind === MethodKind.Method.toString()
+      && node.methodName() !== 'render';
+  }
 
   build(props: ReactComponentEventHandlerProps,
     children: Statement[]): ReactComponentEventHandler {
