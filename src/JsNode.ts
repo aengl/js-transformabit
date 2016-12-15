@@ -164,7 +164,8 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return JsNode.fromCollection(js(code, args));
   }
 
-  static fromCode(code: string, args?: Object): JsNodeList<any> {
+  static fromCode<T extends GenericJsNode>(code: string, args?: Object): JsNodeList<T> {
+
     const program = JsNode.fromCollection(js(code, args).find('Program'));
     return JsNodeList.fromNodes((<any>program.node).body);
   }
@@ -179,10 +180,10 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
       .descend();
   }
 
-  static fromFunctionBody(code: string, args?: Object): JsNodeList<any> {
+  static fromFunctionBody<T extends GenericJsNode>(code: string, args?: Object): JsNodeList<T> {
     return JsNode
       .fromCollection(js(`() => {${code}}`, args).find('BlockStatement'))
-      .children();
+      .children<T>();
   }
 
   constructor(props?: P, children?: GenericJsNode[]) {
@@ -286,18 +287,14 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
+    const matchedNode = <T>this.ascend(node => node.check(type));
     if (this._path) {
-      let astType = t[type.name];
-      if (!astType) {
-        throw new InvalidTypeError(type.name);
-      }
-      const closest = js(this._path).closest(astType, attr);
-      if (closest.size() > 0) {
-        // See findFirstChildOfType for details
-        const node = new type();
-        node.path = closest.get();
-        return <T>node;
-      }
+      // We can't just return matchedNode since it will always be a registered
+      // type. In case we are looking for a complex type, we need to explicitly
+      // construct it from the matched node.
+      const node = new type();
+      node.path = matchedNode.path;
+      return node;
     }
   }
 
@@ -335,6 +332,50 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     if (result) {
       return JsNode.fromPath(result);
     }
+  }
+
+  /**
+   * Descends the AST and returns all nodes that satisfies the predicate.
+   */
+  find<T extends GenericJsNode>(predicate: (node: T) => boolean): JsNodeList<T> {
+    let result = new JsNodeList<T>();
+    const self = this._node;
+    visit(this._node, {
+      visitNode: function(p: NodePath) {
+        if (p.node === self) {
+          this.traverse(p)
+        } else {
+          const node = JsNode.fromPath(p);
+          if (predicate === undefined || predicate(<T>node)) {
+            result.push(<T>node);
+          }
+          this.traverse(p);
+        }
+      }
+    });
+    return result;
+  }
+
+  /**
+   * Descends the AST and returns all nodes that satisfies the predicate.
+   */
+  findNodesOfType<T extends GenericJsNode>(type: JsNodeType<T>): JsNodeList<T> {
+    let result = new JsNodeList<T>();
+    const self = this._node;
+    visit(this._node, {
+      visitNode: function(p: NodePath) {
+        if (p.node === self) {
+          this.traverse(p)
+        } else {
+          const node = JsNode.fromPath(p);
+          if (node.check(type)) {
+            result.push(node);
+          }
+          this.traverse(p);
+        }
+      }
+    });
+    return result;
   }
 
   /**

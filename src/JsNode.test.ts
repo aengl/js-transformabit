@@ -163,6 +163,22 @@ describe('JsNode', () => {
     expect(node.format()).toBe('42');
   });
 
+  it('find', () => {
+    const code = 'const foo = 42, bar = 23;';
+    let nodes = JsNode.fromCode(code)
+      .at(0)
+      .find<Identifier>(node => node.check(Identifier));
+    expect(nodes.map(n => n.name).join()).toBe('foo,bar');
+  });
+
+  it('find nodes of type', () => {
+    const code = 'const foo = 42, bar = 23;';
+    let nodes = JsNode.fromCode(code)
+      .at(0)
+      .findNodesOfType(Identifier);
+    expect(nodes.map(n => n.name).join()).toBe('foo,bar');
+  });
+
   it('ascend', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code).findFirstChildOfType(Literal);

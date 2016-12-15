@@ -33,22 +33,22 @@ let node = (
 
 let method = node.findFirstChildOfType(MethodDefinition)
 console.log(method.format());
-console.log(method.findClosestParentOfType(ClassDeclaration));
+console.log(method.findClosestParentOfType(ReactClassComponent).format());
 
 // Demo: editor
 // new DemoEditor().apply(node, null);
 // console.log(node.format());
 
 // Demo: type guards
-// if (node.check(ClassDeclaration)) {
-//   let superClass = node.superClass();
-//   if (superClass.check(MemberExpression)) {
-//     let object = superClass.object();
-//     if (object.check(Identifier)) {
-//       console.log(object.name);
-//     }
-//   }
-// }
+if (node.check(ClassDeclaration)) {
+  let superClass = node.superClass();
+  if (superClass.check(MemberExpression)) {
+    let object = superClass.object();
+    if (object.check(Identifier)) {
+      console.log(object.name);
+    }
+  }
+}
 
 // Demo: type specific methods
 // console.log(node.getRenderMethod().format());
