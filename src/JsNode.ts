@@ -274,18 +274,6 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return node;
   }
 
-  findChildrenOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): JsNodeList<T> {
-    // TODO: rewrite to work properly with complex types
-    let astType = t[type.name];
-    if (!astType) {
-      throw new InvalidTypeError(type.name);
-    }
-    const collection = js(this._node).find(astType, attr);
-    if (collection.size() > 0) {
-      return JsNodeList.fromCollection(collection);
-    }
-  }
-
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     const matchedNode = <T>this.ascend(node => node.check(type));
     if (this._path) {
@@ -359,7 +347,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   /**
    * Descends the AST and returns all nodes that satisfies the predicate.
    */
-  findNodesOfType<T extends GenericJsNode>(type: JsNodeType<T>): JsNodeList<T> {
+  findChildrenOfType<T extends GenericJsNode>(type: JsNodeType<T>): JsNodeList<T> {
     let result = new JsNodeList<T>();
     const self = this._node;
     visit(this._node, {
