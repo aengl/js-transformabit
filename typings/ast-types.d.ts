@@ -630,10 +630,10 @@ export class Def {
 
 export class Path {
   value: Node;
-  parentPath: Path;
+  parentPath: NodePath;
   name: string;
 
-  constructor(value: Path, parentPath?: Path, name?: string);
+  constructor(value: Node, parentPath?: Path, name?: string);
   getValueProperty(name: string): string;
   get(name: string): any;
   each(callback: (childPath: Path) => void, context?: Path): void;
@@ -654,7 +654,7 @@ export class NodePath extends Path {
   parent: NodePath;
   scope: Scope;
 
-  constructor(value: Path, parentPath?: Path, name?: string);
+  constructor(value: Node, parentPath?: Path, name?: string);
 
   prune(): NodePath;
   getValueProperty(name: string): any;

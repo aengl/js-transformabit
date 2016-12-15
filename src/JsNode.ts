@@ -274,7 +274,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return this.type() === type.name;
   }
 
-  findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
+  findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
     const matchedNode = <T>this.descend(node => node.check(type));
     // We can't just return matchedNode since it will always be a registered
     // type. In case we are looking for a complex type, we need to explicitly
@@ -284,7 +284,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     return node;
   }
 
-  findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
+  findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
     const matchedNode = <T>this.ascend(node => node.check(type));
     if (matchedNode) {
       // See findFirstChildOfType()
