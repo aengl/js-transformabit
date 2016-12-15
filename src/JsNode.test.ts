@@ -190,6 +190,12 @@ describe('JsNode', () => {
     expect(node.ascend(node => node.check(Program)).format()).toBe(code);
   });
 
+  it('find parent of type', () => {
+    const code = 'class Foo { bar() { let foo; } }';
+    const node = JsNode.fromModuleCode(code).findFirstChildOfType(VariableDeclaration);
+    expect(node.findParentOfType(ClassBody).format()).toBe('{ bar() { let foo; } }');
+  });
+
   it('get root', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code);
@@ -279,7 +285,7 @@ describe('JsNode', () => {
   it('repairs parent relationship', () => {
     const code = 'class Foo {}';
     const node = JsNode.fromModuleCode(code);
-    node
+    const foo = node
       .findFirstChildOfType(ClassBody)
       .createMethod(
         b.methodDefinition('method',
@@ -293,6 +299,12 @@ describe('JsNode', () => {
       )
       .findChildrenOfType(Identifier)
       .last();
-    expect(node.format()).toBe('foo');
+    expect(foo.format()).toBe('foo');
+    // Here is where it gets interesting: the class was partially constructed,
+    // so we won't be able to traverse all the way to the root since the
+    // constructed tree doesn't magically link to the original AST.
+    // We should silently fix that behind the scenes.
+    // TODO
+    // expect(foo.getRoot().type()).toBe('File');
   });
 });

@@ -296,9 +296,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     const matchedNode = <T>this.ascend(node => node.check(type));
     if (this._path) {
-      // We can't just return matchedNode since it will always be a registered
-      // type. In case we are looking for a complex type, we need to explicitly
-      // construct it from the matched node.
+      // See findFirstChildOfType()
       const node = new type();
       node.path = matchedNode.path;
       return node;
@@ -407,15 +405,26 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   /**
+   * Finds the first parent node of a given type.
+   */
+  findParentOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
+    const matchedNode = <T>this.ascend(node => node.check(type));
+    // See findFirstChildOfType()
+    const node = new type();
+    node.path = matchedNode.path;
+    return node;
+  }
+
+  /**
    * Returns the node at the root of the current AST.
    */
-  getRoot() {
+  getRoot<T extends GenericJsNode>(): T {
     if (this._path) {
       let path = this._path;
       while (path.parent) {
         path = path.parent;
       }
-      return JsNode.fromPath(path);
+      return JsNode.fromPath<T>(path);
     }
   }
 
@@ -518,5 +527,16 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     } else {
       return JsNodeList.fromNodes((<any>this._node)[propertyName]);
     }
+  }
+
+  /**
+   * Repairs the node after modifications occurred somewhere in its AST.
+   *
+   * This re-establishes all parent relationships.
+   */
+  protected repair(): this {
+    // TODO
+    // this.path = JsNode.fromCollection(js(this._node)).path;
+    return this;
   }
 }

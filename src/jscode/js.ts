@@ -674,7 +674,7 @@ export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   }
 
   createConstructor(): this {
-    this._path.get('body').push( // TODO: should be insertAt(0, ...)?
+    this._path.get('body').unshift(
       b.methodDefinition('constructor',
         b.identifier('constructor'),
         b.functionExpression(null, [],
