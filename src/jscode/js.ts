@@ -174,11 +174,11 @@ export type IdentifierProps = {
 @JsNodeFactory.registerType
 export class Identifier extends JsNode<ast.Identifier, IdentifierProps> {
   get name(): string {
-    return this._node.name;
+    return this.node.name;
   }
 
   set name(value: string) {
-    this._node.name = value;
+    this.node.name = value;
   }
 
   build(props: IdentifierProps): Identifier {

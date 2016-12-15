@@ -3,8 +3,7 @@
 import {
   Node,
   NodePath,
-  Type,
-  namedTypes as t
+  Type
 } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 import * as js from 'jscodeshift';
@@ -53,12 +52,6 @@ export class JsNodeFactory {
  */
 export class JsNodeList<T extends GenericJsNode> {
   protected _paths: NodePath[] = [];
-
-  static fromNodes(nodes: Node[]): JsNodeList<any> {
-    const list = new JsNodeList();
-    list._paths = js(nodes).paths();
-    return list;
-  }
 
   static fromPaths(paths: NodePath[]): JsNodeList<any> {
     const list = new JsNodeList();
@@ -162,7 +155,6 @@ export class JsNodeList<T extends GenericJsNode> {
  * Represents a node in the AST tree.
  */
 export class JsNode<T extends Node, P> implements transformabit.JsNode {
-  protected _node: T;
   protected _path: NodePath;
 
   public props: P;
@@ -184,9 +176,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   static fromCode<T extends GenericJsNode>(code: string, args?: Object): JsNodeList<T> {
-
-    const program = JsNode.fromCollection(js(code, args).find('Program'));
-    return JsNodeList.fromNodes((<any>program.node).body);
+    return JsNode
+      .fromCollection(js(code, args).find('Program'))
+      .children<T>();
   }
 
   static fromCollection(collection: Collection): GenericJsNode {
@@ -212,7 +204,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   hasParent(): boolean {
-    return !!this._path && !!this._path.parentPath;
+    return !!this._path && !!this._path.parent;
   }
 
   /**
@@ -220,7 +212,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
    */
   format(): string {
-    return js(this._node).toSource().replace(/\r/g, '');
+    return js(this._path.value).toSource().replace(/\r/g, '');
   }
 
   /**
@@ -234,7 +226,6 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   set path(path: NodePath) {
-    this._node = <T>path.value;
     this._path = path;
   }
 
@@ -245,11 +236,11 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * https://github.com/benjamn/ast-types
    */
   get node(): T {
-    return this._node;
+    return <T>this._path.value;
   }
 
   set node(node: T) {
-    this._node = node;
+    this._path = new NodePath(node);
   }
 
   build(props: P, children?: any[]): JsNode<T, P> {
@@ -268,7 +259,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API
    */
   type(): string {
-    return this._node.type;
+    return this._path.value.type;
   }
 
   /**
@@ -295,7 +286,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
 
   findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>, attr?: {}): T {
     const matchedNode = <T>this.ascend(node => node.check(type));
-    if (this._path) {
+    if (matchedNode) {
       // See findFirstChildOfType()
       const node = new type();
       node.path = matchedNode.path;
@@ -304,11 +295,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   }
 
   findClosestScope(): GenericJsNode {
-    if (this._path) {
-      const scope = this._path.scope && this._path.scope.path;
-      if (scope) {
-        return JsNode.fromPath(scope);
-      }
+    const scope = this._path.scope && this._path.scope.path;
+    if (scope) {
+      return JsNode.fromPath(scope);
     }
   }
 
@@ -318,11 +307,11 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    */
   descend<T extends GenericJsNode>(predicate?: (node: GenericJsNode) => boolean): T {
     let result: NodePath;
-    const self = this._node;
-    visit(this._node, {
+    const self = this.node;
+    visit(this.node, {
       visitNode: function(p: NodePath) {
         if (p.node === self) {
-          this.traverse(p)
+          this.traverse(p);
         } else if (!result) {
           const node = JsNode.fromPath(p);
           if (predicate === undefined || predicate(node)) {
@@ -344,11 +333,11 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    */
   find<T extends GenericJsNode>(predicate: (node: T) => boolean): JsNodeList<T> {
     let result = new JsNodeList<T>();
-    const self = this._node;
-    visit(this._node, {
+    const self = this.node;
+    visit(this.node, {
       visitNode: function(p: NodePath) {
         if (p.node === self) {
-          this.traverse(p)
+          this.traverse(p);
         } else {
           const node = JsNode.fromPath(p);
           if (predicate === undefined || predicate(<T>node)) {
@@ -369,11 +358,11 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     includeSelf: boolean = false): JsNodeList<T> {
 
     let result = new JsNodeList<T>();
-    const self = this._node;
-    visit(this._node, {
+    const self = this.node;
+    visit(this.node, {
       visitNode: function(p: NodePath) {
         if (p.node === self && !includeSelf) {
-          this.traverse(p)
+          this.traverse(p);
         } else {
           const node = JsNode.fromPath(p);
           if (node.check(type) && (!predicate || predicate(node))) {
@@ -391,7 +380,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * predicate callback.
    */
   ascend<T extends GenericJsNode>(predicate?: (node: GenericJsNode) => boolean): T {
-    if (this._path) {
+    if (this._path.parent) {
       let currentPath = this._path.parent;
       if (predicate) {
         while (currentPath && !predicate(JsNode.fromPath(currentPath))) {
@@ -419,7 +408,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Returns the node at the root of the current AST.
    */
   getRoot<T extends GenericJsNode>(): T {
-    if (this._path) {
+    if (this._path.parent) {
       let path = this._path;
       while (path.parent) {
         path = path.parent;
@@ -431,17 +420,12 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   /**
    * Replaces the current node with another.
    */
-  replace(node: (transformabit.JsNode | Node)): this {
-    if (node instanceof JsNode) {
-      if (this._path) {
-        this._path.replace(node._node);
-      }
-      this._node = <T>node._node;
+  replace(node: (GenericJsNode | Node)): this {
+    let astNode = (node instanceof JsNode) ? node.node : node;
+    if (!this._path.parent) {
+      this._path = new NodePath(astNode);
     } else {
-      if (this._path) {
-        this._path.replace(<T>node);
-      }
-      this._node = <T>node;
+      this._path.replace(astNode);
     }
     return this;
   }
@@ -450,7 +434,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Removes the sub-tree from the AST that has this node at the root.
    */
   remove(): void {
-    if (this._path) {
+    if (this._path.parent) {
       this._path.prune();
     }
   }
@@ -459,9 +443,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Returns child nodes.
    */
   children<T extends GenericJsNode>(): JsNodeList<T> {
-    const self = this._node;
+    const self = this.node;
     let children = new JsNodeList<T>();
-    visit(this._node, {
+    visit(this.node, {
       visitNode: function(p: NodePath) {
         if (p.parent && p.parent.node === self) {
           children.push(JsNode.fromPath<T>(p));
@@ -476,8 +460,8 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Removes child nodes.
    */
   removeChildren(predicate?: (node: GenericJsNode) => boolean): this {
-    const self = this._node;
-    visit(this._node, {
+    const self = this.node;
+    visit(this.node, {
       visitNode: function(p: NodePath) {
         if (p.parent && p.parent.node === self) {
           const node = JsNode.fromPath(p);
@@ -495,7 +479,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Removes all child matching descendants.
    */
   removeDescendants(predicate: (node: GenericJsNode) => boolean): this {
-    visit(this._node, {
+    visit(this.node, {
       visitNode: function(p: NodePath) {
         const node = JsNode.fromPath(p);
         if (predicate(node)) {
@@ -511,22 +495,14 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Gets the node that wraps a property of the current node.
    */
   protected getNode<T extends GenericJsNode>(propertyName: string): T {
-    if (this._path) {
-      return JsNode.fromPath<T>(this._path.get(propertyName));
-    } else {
-      return JsNode.fromNode<T>((<any>this._node)[propertyName]);
-    }
+    return JsNode.fromPath<T>(this._path.get(propertyName));
   }
 
   /**
    * Get a list of nodes that wrap a property of the current node.
    */
   protected getNodes<T extends GenericJsNode>(propertyName: string): JsNodeList<T> {
-    if (this._path) {
-      return JsNodeList.fromPaths(this._path.get(propertyName));
-    } else {
-      return JsNodeList.fromNodes((<any>this._node)[propertyName]);
-    }
+    return JsNodeList.fromPaths(this._path.get(propertyName));
   }
 
   /**
@@ -536,7 +512,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    */
   protected repair(): this {
     // TODO
-    // this.path = JsNode.fromCollection(js(this._node)).path;
+    // this.path = JsNode.fromCollection(js(this.node)).path;
     return this;
   }
 }
