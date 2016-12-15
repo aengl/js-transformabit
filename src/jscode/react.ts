@@ -158,7 +158,8 @@ export class ReactClassComponent
   }
 
   convertToReactComponent() {
-    let methods = this.findChildrenOfType(MethodDefinition, { kind: 'method' });
+    let methods = this.findChildrenOfType(MethodDefinition,
+      node => node.kind === MethodKind.Method.toString());
     let properties: ast.Property[] = methods.map(method =>
       b.property('init', b.identifier(method.methodName()),
         b.functionExpression(

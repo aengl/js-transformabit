@@ -561,9 +561,9 @@ export interface ObjectMethod {
   key: Literal | Identifier | Expression;
   params: Pattern[];
   body: BlockStatement;
-  computed: Boolean;
-  generator: Boolean;
-  async: Boolean;
+  computed: boolean;
+  generator: boolean;
+  async: boolean;
   decorators: Decorator[];
 }
 
@@ -571,7 +571,7 @@ export interface ObjectProperty {
   type: 'ObjectProperty';
   key: Literal | Identifier | Expression;
   value: Expression | Pattern;
-  computed: Boolean;
+  computed: boolean;
 }
 
 export interface SpreadProperty {
@@ -608,7 +608,7 @@ export class Type {
 }
 
 export class Field {
-  constructor(name: string, type: ConvertibleToType, defaultFn: Function, hidden?: Boolean);
+  constructor(name: string, type: ConvertibleToType, defaultFn: Function, hidden?: boolean);
   toString(): string;
   getValue(obj: Node): any;
 }
@@ -677,7 +677,7 @@ export class Scope {
 
   path: NodePath;
   node: Node;
-  isGlobal: Boolean;
+  isGlobal: boolean;
   depth: number;
   parent: NodePath;
   bindings: any; // TODO
@@ -820,8 +820,8 @@ export var namedTypes: {
   NumberLiteralTypeAnnotation: Type,
   StringTypeAnnotation: Type,
   StringLiteralTypeAnnotation: Type,
-  BooleanTypeAnnotation: Type,
-  BooleanLiteralTypeAnnotation: Type,
+  booleanTypeAnnotation: Type,
+  booleanLiteralTypeAnnotation: Type,
   TypeAnnotation: Type,
   NullableTypeAnnotation: Type,
   NullLiteralTypeAnnotation: Type,
@@ -886,7 +886,7 @@ export var namedTypes: {
   StringLiteral: Type,
   NumericLiteral: Type,
   NullLiteral: Type,
-  BooleanLiteral: Type,
+  booleanLiteral: Type,
   RegExpLiteral: Type,
   ObjectMethod: Type,
   ObjectProperty: Type,
@@ -900,7 +900,7 @@ export var builders: {
   arrowFunctionExpression: (
     params: Pattern[],
     body: BlockStatement | Expression,
-    expression?: Boolean
+    expression?: boolean
   ) => ArrowFunctionExpression;
   assignmentExpression: (
     operator: string, left: Pattern, right: Expression
@@ -933,13 +933,13 @@ export var builders: {
     body: (BlockStatement | Expression)
   ) => FunctionExpression,
   literal: (
-    value: (String | Boolean | Number | RegExp),
+    value: (String | boolean | Number | RegExp),
     regex?: any
   ) => Literal,
   memberExpression: (
     object: Expression,
     property: (Identifier | Expression),
-    computed?: Boolean
+    computed?: boolean
   ) => MemberExpression,
   methodDefinition: (
     kind: ('constructor' | 'method' | 'get' | 'set'),

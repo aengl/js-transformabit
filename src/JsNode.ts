@@ -347,7 +347,9 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
   /**
    * Descends the AST and returns all nodes that satisfies the predicate.
    */
-  findChildrenOfType<T extends GenericJsNode>(type: JsNodeType<T>): JsNodeList<T> {
+  findChildrenOfType<T extends GenericJsNode>(
+    type: JsNodeType<T>, predicate?: (node: T) => boolean): JsNodeList<T> {
+
     let result = new JsNodeList<T>();
     const self = this._node;
     visit(this._node, {
@@ -356,7 +358,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
           this.traverse(p)
         } else {
           const node = JsNode.fromPath(p);
-          if (node.check(type)) {
+          if (node.check(type) && (!predicate || predicate(node))) {
             result.push(node);
           }
           this.traverse(p);
