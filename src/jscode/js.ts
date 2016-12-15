@@ -628,6 +628,11 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
     return this.getNode<GenericExpression>('superClass');
   }
 
+  findConstructor(): MethodDefinition {
+    return this.findChildrenOfType(MethodDefinition,
+      m => m.kind === MethodKind.Constructor.toString()).first();
+  }
+
   private getId(value: string | Identifier): ast.Identifier {
     if (typeof(value) === 'string') {
       return new Identifier().build({ name: value }).node;

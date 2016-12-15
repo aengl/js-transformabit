@@ -40,11 +40,7 @@ export class BindWebSocket implements Transformation {
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
     const component = this.getMatchingReactComponents(root).at(0);
-    component.findChildrenOfType(MethodDefinition).forEach(m => {
-      if (m.kind === MethodKind.Constructor.toString()) {
-        this.addBindings(m);
-      }
-    });
+    this.addBindings(component.findConstructor());
     return root;
   }
 

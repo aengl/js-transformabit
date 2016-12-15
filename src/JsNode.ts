@@ -80,6 +80,15 @@ export class JsNodeList<T extends GenericJsNode> {
   }
 
   /**
+   * Returns the first element, or undefined if the collection is empty.
+   */
+  first(): T {
+    if (this.size() > 0) {
+      return this.at(0);
+    }
+  }
+
+  /**
    * If the node represents a collection of nodes, this method will pick the
    * node at a specified index.
    */
