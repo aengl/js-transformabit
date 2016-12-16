@@ -82,15 +82,18 @@ export type VariableDeclarationProps = {
 };
 
 @JsNodeFactory.registerType
-export class VariableDeclaration
-  extends JsNode<ast.VariableDeclaration, VariableDeclarationProps> {
+export class VariableDeclaration<T extends ast.VariableDeclaration, P extends VariableDeclarationProps>
+  extends JsNode<T, P> {
 
-  build(props: VariableDeclarationProps,
-    children: any[] = []): VariableDeclaration {
+  build(props: P, children: any[]): VariableDeclaration<T, P> {
 
     let declarators = this.getDeclarators(props, children);
-    this.node = b.variableDeclaration(props.kind || 'var', declarators);
-    return super.build(props, children) as VariableDeclaration;
+    this.node = <T>b.variableDeclaration(props.kind || 'var', declarators);
+    return super.build(props, children) as VariableDeclaration<T, P>;
+  }
+
+  declarations() {
+    return this.getNodes<VariableDeclarator>('declarations');
   }
 
   private getDeclarators(props: VariableDeclarationProps,
@@ -113,6 +116,9 @@ export class VariableDeclaration
   }
 }
 
+export type GenericVariableDeclaration =
+  VariableDeclaration<ast.VariableDeclaration, VariableDeclarationProps>;
+
 /*========================================================================
                             Variable Declarator
 =========================================================================*/
@@ -128,6 +134,10 @@ export class VariableDeclarator
   propTypes: {
     children: GenericExpression
   };
+
+  id(): Identifier {
+    return this.getNode<Identifier>('id');
+  }
 
   build(props: VariableDeclaratorProps, children: GenericExpression[] = []): VariableDeclarator {
     let identifier = new Identifier().build({ name: props.name }).node;
@@ -394,6 +404,10 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
         ast.FunctionExpression | ast.ArrowFunctionExpression | ast.Literal
     );
     return super.build(props, children) as Property;
+  }
+
+  key(): Identifier {
+    return this.getNode<Identifier>('key');
   }
 
   private getValue(props: PropertyProps, children: any[]): ast.Node {

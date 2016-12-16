@@ -53,6 +53,12 @@ export class JsNodeFactory {
 export class JsNodeList<T extends GenericJsNode> {
   protected _paths: NodePath[] = [];
 
+  static fromPath(path: NodePath): JsNodeList<any> {
+    const list = new JsNodeList();
+    list._paths = path.map(p => p);
+    return list;
+  }
+
   static fromPaths(paths: NodePath[]): JsNodeList<any> {
     const list = new JsNodeList();
     list._paths = paths;
@@ -525,7 +531,7 @@ export class JsNode<T extends Node, P> {
    * Get a list of nodes that wrap a property of the current node.
    */
   protected getNodes<T extends GenericJsNode>(propertyName: string): JsNodeList<T> {
-    return JsNodeList.fromPaths(this._path.get(propertyName));
+    return JsNodeList.fromPath(this._path.get(propertyName));
   }
 
   /**
@@ -537,6 +543,12 @@ export class JsNode<T extends Node, P> {
     // TODO
     // this.path = JsNode.fromCollection(js(this.node)).path;
     return this;
+  }
+
+  protected morph<T extends GenericJsNode>(type: JsNodeType<T>): T {
+    let node = new type();
+    node.path = this.path;
+    return node;
   }
 }
 

@@ -3,7 +3,11 @@ import {
   GenericStatement,
   MethodDefinition,
   ClassDeclaration,
-  ClassDeclarationProps
+  ClassDeclarationProps,
+  ObjectExpression,
+  VariableDeclaration,
+  BlockStatement,
+  Property
 } from './js';
 import * as ast from 'ast-types';
 
@@ -67,11 +71,11 @@ export type ReactComponentProps = {
 };
 
 export class ReactComponent
-  extends JsNode<ast.VariableDeclaration, ReactComponentProps> {
+  extends VariableDeclaration<ast.VariableDeclaration, ReactComponentProps> {
 
   build(props: ReactComponentProps, children: GenericJsNode[]): ReactComponent {
     // Create event handlers
-    let eventHandlers = getEventHandlersFromChildren(children)
+    const eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.property(
         'init',
         b.identifier(handler.props.name),
@@ -80,7 +84,7 @@ export class ReactComponent
       );
     eventHandlers.forEach(handler => handler.method = true);
     // Create render method
-    let renderMethod = b.property('init', b.identifier('render'),
+    const renderMethod = b.property('init', b.identifier('render'),
       b.functionExpression(null, [], b.blockStatement([
         b.returnStatement(getRenderBodyFromChildren(children))
       ]))
@@ -97,6 +101,33 @@ export class ReactComponent
       )
     ]);
     return super.build(props, children) as ReactComponent;
+  }
+
+  convertToReactClassComponent() {
+    const methods = this
+      .findFirstChildOfType(ObjectExpression)
+      .children<Property>()
+      .map(prop => b.methodDefinition(
+        'method',
+        b.identifier(prop.key().name),
+        b.functionExpression(
+          null,
+          [],
+          prop.findFirstChildOfType(BlockStatement).node
+        )
+      ));
+    const className = this.declarations().first().id().name;
+    this.replace(
+      b.classDeclaration(
+        b.identifier(className),
+        b.classBody(methods),
+        b.memberExpression(
+          b.identifier('React'),
+          b.identifier('Component')
+        )
+      )
+    );
+    return this.morph(ReactClassComponent);
   }
 }
 
@@ -168,7 +199,7 @@ export class ReactClassComponent
       )
     );
     properties.forEach(property => property.method = true);
-    return this.replace(
+    this.replace(
       b.variableDeclaration('const', [
         b.variableDeclarator(
           b.identifier(this.id().name),
@@ -179,6 +210,7 @@ export class ReactClassComponent
         )
       ])
     );
+    return this.morph(ReactComponent);
   }
 }
 

@@ -51,9 +51,11 @@ export interface File {
   comments?: any; // No idea what that is for
 }
 
+export type SourceType = 'script' | 'module';
+
 export interface Program extends BaseNode {
   type: 'Program';
-  sourceType: 'script' | 'module';
+  sourceType: SourceType;
   body: Array<Statement | ModuleDeclaration>;
 }
 
@@ -189,10 +191,12 @@ export interface FunctionDeclaration extends BaseFunction, BaseDeclaration {
   body: BlockStatement;
 }
 
+export type VariableKind = 'var' | 'let' | 'const';
+
 export interface VariableDeclaration extends BaseDeclaration {
   type: 'VariableDeclaration';
   declarations: Array<VariableDeclarator>;
-  kind: 'var' | 'let' | 'const';
+  kind: VariableKind;
 }
 
 export interface VariableDeclarator extends BaseNode {
@@ -221,11 +225,13 @@ export interface ArrayExpression extends BaseExpression {
   elements: Array<Expression | SpreadElement>;
 }
 
+export type PropertyKind = 'init' | 'get' | 'set';
+
 export interface Property extends BaseNode {
   type: 'Property';
   key: Expression;
   value: Expression | Pattern; // Could be an AssignmentProperty
-  kind: 'init' | 'get' | 'set';
+  kind: PropertyKind;
   method: boolean;
   shorthand: boolean;
   computed: boolean;
@@ -445,11 +451,13 @@ export interface ClassBody extends BaseNode {
   body: Array<MethodDefinition>;
 }
 
+export type MethodKind = 'constructor' | 'method' | 'get' | 'set';
+
 export interface MethodDefinition extends BaseNode {
   type: 'MethodDefinition';
   key: Expression;
   value: FunctionExpression;
-  kind: 'constructor' | 'method' | 'get' | 'set';
+  kind: MethodKind;
   computed: boolean;
   static: boolean;
 }
@@ -555,9 +563,11 @@ export interface Decorator {
   expression: Expression;
 }
 
+export type ObjectMethodKind = 'method' | 'get' | 'set';
+
 export interface ObjectMethod {
   type: 'ObjectMethod';
-  kind: 'method' | 'get' | 'set';
+  kind: ObjectMethodKind;
   key: Literal | Identifier | Expression;
   params: Pattern[];
   body: BlockStatement;
@@ -636,17 +646,17 @@ export class Path {
   constructor(value: Node, parentPath?: Path, name?: string);
   getValueProperty(name: string): string;
   get(name: string): any;
-  each(callback: (childPath: Path) => void, context?: Path): void;
-  map(callback: (childPath: Path) => Path, context?: Path): Array<Path>;
-  filter(callback: (childPath: Path) => boolean, context?: Path): Array<Path>;
+  each(callback: (childPath: NodePath) => void, context?: Path): void;
+  map(callback: (childPath: NodePath) => NodePath, context?: Path): NodePath[];
+  filter(callback: (childPath: NodePath) => boolean, context?: Path): NodePath[];
   shift(): void;
-  unshift(...nodes: Array<Path>): void;
-  push(...nodes: Array<Path>): void;
-  pop(): Path;
+  unshift(...nodes: NodePath[]): void;
+  push(...nodes: NodePath[]): void;
+  pop(): NodePath;
   insertAt(index: number, node: Node): Path;
   insertBefore(node: Node): Path;
   insertAfter(node: Node): Path;
-  replace(replacement: Node): Array<Path>;
+  replace(replacement: Node): Path[];
 }
 
 export class NodePath extends Path {
@@ -942,7 +952,7 @@ export var builders: {
     computed?: boolean
   ) => MemberExpression,
   methodDefinition: (
-    kind: ('constructor' | 'method' | 'get' | 'set'),
+    kind: MethodKind,
     key: (Literal | Identifier | Expression),
     value: Function, static?: boolean
   ) => MethodDefinition,
@@ -954,7 +964,7 @@ export var builders: {
     properties: (Property | ObjectMethod | ObjectProperty | SpreadProperty)[]
   ) => ObjectExpression,
   property: (
-    kind: ('init' | 'get' | 'set'),
+    kind: PropertyKind,
     key: (Literal | Identifier | Expression),
     value: (Expression | Pattern)) => Property;
   identifier: (
@@ -968,7 +978,7 @@ export var builders: {
   thisExpression: (
   ) => ThisExpression,
   variableDeclaration: (
-  kind: ('var' | 'let' | 'const'),
+  kind: VariableKind,
     declarations: VariableDeclarator[]
   ) => VariableDeclaration,
   variableDeclarator: (

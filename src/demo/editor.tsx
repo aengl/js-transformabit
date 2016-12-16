@@ -2,7 +2,7 @@ import { Transformation } from '../Transformation';
 import { GenericJsNode } from '../JsNode';
 import { Project } from '../Project';
 import { MethodDefinition } from '../jscode/js';
-import { ReactClassComponent } from '../jscode/react';
+import { ReactComponent, ReactClassComponent } from '../jscode/react';
 
 export class DemoEditor implements Transformation {
   constructor() {
@@ -23,10 +23,9 @@ export class DemoEditor implements Transformation {
   //   return root;
   // }
 
-  apply(root: GenericJsNode, project: Project): GenericJsNode {
+  apply(root: GenericJsNode, project: Project): ReactComponent {
     if (root.check(ReactClassComponent)) {
-      root.convertToReactComponent();
+      return root.convertToReactComponent();
     }
-    return root;
   }
 }
