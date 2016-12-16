@@ -4,7 +4,6 @@ import {
   MethodDefinition,
   BlockStatement,
   VariableDeclaration,
-  VariableDeclarator,
   ReturnStatement,
   Literal,
   ClassBody,

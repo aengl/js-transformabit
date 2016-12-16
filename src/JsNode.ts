@@ -154,7 +154,7 @@ export class JsNodeList<T extends GenericJsNode> {
 /**
  * Represents a node in the AST tree.
  */
-export class JsNode<T extends Node, P> implements transformabit.JsNode {
+export class JsNode<T extends Node, P> {
   protected _path: NodePath;
 
   public props: P;
@@ -537,5 +537,15 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
     // TODO
     // this.path = JsNode.fromCollection(js(this.node)).path;
     return this;
+  }
+}
+
+// Use global augmentation to resolve JsCode types
+declare global {
+  namespace JSX {
+    interface Element extends GenericJsNode {}
+    interface ElementAttributesProperty {
+      props: any;
+    }
   }
 }

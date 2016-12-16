@@ -48,35 +48,27 @@ export class BindWebSocket implements Transformation {
   }
 
   private addHandlers(ctor: MethodDefinition) {
-    ctor.insertAfter(
-      <MethodDefinition key={"onMessage"} kind={MethodKind.Method}>
-      </MethodDefinition> as MethodDefinition
-    );
-    ctor.insertAfter(
-      <MethodDefinition key={"onOpen"} kind={MethodKind.Method}>
-      </MethodDefinition> as MethodDefinition
-    );
-    ctor.insertAfter(
-      <MethodDefinition key={"onError"} kind={MethodKind.Method}>
-      </MethodDefinition> as MethodDefinition
-    );
+    ctor.insertAfter(<MethodDefinition key={"onMessage"} kind={MethodKind.Method} />);
+    ctor.insertAfter(<MethodDefinition key={"onOpen"} kind={MethodKind.Method} />);
+    ctor.insertAfter(<MethodDefinition key={"onError"} kind={MethodKind.Method} />);
   }
 
   private addConnection(ctor: MethodDefinition) {
-    const socketObject = (<MemberExpression object="this" property="connection" />) as MemberExpression;
-    const newWebsocket = (
-      <NewExpression callee={new Identifier({ name: "WebSocket" })}>
-        <Literal value={"wss://" + this.address} />
-      </NewExpression>
-    ) as NewExpression;
     ctor
       .body<BlockStatement>()
       .appendStatement(
         <ExpressionStatement>
           <AssignmentExpression
             operator={AssignmentOperator.Equals}
-            left={socketObject}
-            right={newWebsocket} />
+            left={
+              <MemberExpression object="this" property="connection">
+              </MemberExpression> as MemberExpression
+            }
+            right={
+              <NewExpression callee={new Identifier({ name: "WebSocket" })}>
+                <Literal value={"wss://" + this.address} />
+              </NewExpression> as NewExpression
+            } />
         </ExpressionStatement> as ExpressionStatement
       );
   }
