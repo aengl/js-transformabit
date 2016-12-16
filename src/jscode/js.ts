@@ -634,7 +634,7 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
   }
 
   createConstructor(): this {
-    this.descend<ClassBody>().createConstructor();
+    this.findFirstChildOfType(ClassBody).createConstructor();
     return this;
   }
 

@@ -46,10 +46,10 @@ let node = (
 // console.log(node.createConstructor().format());
 
 // Demo: bind web sockets
-// let t = new BindWebSocket();
-// t.configure(['MyComponent', 'foo']);
-// t.apply(node, null);
-// console.log(node.format());
+let t = new BindWebSocket();
+t.configure(['MyComponent', 'foo']);
+t.apply(node, null);
+console.log(node.format());
 
 // Demo: type guards
 // if (node.check(ClassDeclaration)) {
