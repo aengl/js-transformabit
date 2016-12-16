@@ -14,7 +14,6 @@ import {
   JsCode,
   ClassDeclaration,
   MethodDefinition,
-  MethodKind,
   MemberExpression as MemberExpressionCode,
   CallExpression as CallExpressionCode,
   VariableDeclaration as VariableDeclarationCode
@@ -70,7 +69,7 @@ export class CreateClassToComponent implements Transformation {
       const property = prop as Property;
       if (property.value.type === "FunctionExpression") {
         let method = (
-          <MethodDefinition key={(property.key as Identifier).name} kind={MethodKind.Method}>
+          <MethodDefinition key={(property.key as Identifier).name} kind='method'>
             {JsNode.fromNode(property.value)}
           </MethodDefinition>
         ) as GenericJsNode;

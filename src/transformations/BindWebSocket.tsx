@@ -13,7 +13,6 @@ import {
   Identifier,
   ClassDeclaration,
   BlockStatement,
-  MethodKind,
   ReactClassComponent
 } from '../JsCode';
 
@@ -48,9 +47,9 @@ export class BindWebSocket implements Transformation {
   }
 
   private addHandlers(ctor: MethodDefinition) {
-    ctor.insertAfter(<MethodDefinition key={"onMessage"} kind={MethodKind.Method} />);
-    ctor.insertAfter(<MethodDefinition key={"onOpen"} kind={MethodKind.Method} />);
-    ctor.insertAfter(<MethodDefinition key={"onError"} kind={MethodKind.Method} />);
+    ctor.insertAfter(<MethodDefinition key={"onMessage"} kind='method' />);
+    ctor.insertAfter(<MethodDefinition key={"onOpen"} kind='method' />);
+    ctor.insertAfter(<MethodDefinition key={"onError"} kind='method' />);
   }
 
   private addConnection(ctor: MethodDefinition) {

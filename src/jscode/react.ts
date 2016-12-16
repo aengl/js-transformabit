@@ -1,10 +1,9 @@
 import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
 import {
-  Statement,
+  GenericStatement,
   MethodDefinition,
   ClassDeclaration,
-  ClassDeclarationProps,
-  MethodKind
+  ClassDeclarationProps
 } from './js';
 import * as ast from 'ast-types';
 
@@ -158,14 +157,13 @@ export class ReactClassComponent
   }
 
   convertToReactComponent() {
-    let methods = this.findChildrenOfType(MethodDefinition,
-      node => node.kind === MethodKind.Method.toString());
+    let methods = this.findChildrenOfType(MethodDefinition, node => node.kind === 'method');
     let properties: ast.Property[] = methods.map(method =>
       b.property('init', b.identifier(method.methodName()),
         b.functionExpression(
           null,
           method.methodArgs().map(m => m.node),
-          method.body().node
+          method.body().node as ast.BlockStatement
         )
       )
     );
@@ -223,12 +221,12 @@ export class ReactComponentEventHandler
 
   static check(node: GenericJsNode): boolean {
     return node.check(MethodDefinition)
-      && node.kind === MethodKind.Method.toString()
+      && node.kind === 'method'
       && node.methodName() !== 'render';
   }
 
   build(props: ReactComponentEventHandlerProps,
-    children: Statement[]): ReactComponentEventHandler {
+    children: GenericStatement[]): ReactComponentEventHandler {
 
     this.node = b.blockStatement(children.map(child => child.node));
     return super.build(props, children);

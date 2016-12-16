@@ -76,19 +76,9 @@ export type GenericStatement = Statement<ast.Statement, StatementProps>;
                             Variable Delcaration
 =========================================================================*/
 
-/**
- * Right now, string enums are a bit of a hack but will become properly
- * supported in the future: https://github.com/Microsoft/TypeScript/issues/1206
- */
-export enum VariableKind {
-  Let = <any>'let',
-  Const = <any>'const',
-  Var = <any>'var'
-}
-
 export type VariableDeclarationProps = {
   name?: string,
-  kind?: VariableKind
+  kind?: ast.VariableKind
 };
 
 @JsNodeFactory.registerType
@@ -98,9 +88,8 @@ export class VariableDeclaration
   build(props: VariableDeclarationProps,
     children: any[] = []): VariableDeclaration {
 
-    let kindString = props.kind || VariableKind.Var;
     let declarators = this.getDeclarators(props, children);
-    this.node = b.variableDeclaration(kindString.toString(), declarators);
+    this.node = b.variableDeclaration(props.kind || 'var', declarators);
     return super.build(props, children) as VariableDeclaration;
   }
 
@@ -636,8 +625,9 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
   }
 
   findConstructor(): MethodDefinition {
-    return this.findChildrenOfType(MethodDefinition,
-      m => m.kind === MethodKind.Constructor.toString()).first();
+    return this
+      .findChildrenOfType(MethodDefinition, m => m.kind === 'method')
+      .first();
   }
 
   createConstructor(): this {
@@ -717,18 +707,9 @@ export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
                             Method Definition
 =========================================================================*/
 
-export enum MethodKind {
-  Method = <any>'method',
-  Get = <any>'get',
-  Set = <any>'set',
-  Constructor = <any>'constructor'
-}
-
-export type MethodKindString = 'set' | 'constructor' | 'get' | 'method';
-
 export type MethodDefinitionProps = {
   key: Identifier | string,
-  kind: MethodKind,
+  kind: ast.MethodKind,
   computed?: boolean,
   staticMethod?: boolean,
   expression?: FunctionExpression
@@ -740,18 +721,17 @@ export class MethodDefinition
 
   props: MethodDefinitionProps;
 
-  get kind(): MethodKindString {
+  get kind(): ast.MethodKind {
     return this.node.kind;
   }
 
-  set kind(kind: MethodKindString) {
+  set kind(kind: ast.MethodKind) {
     this.node.kind = kind;
   }
 
   build(props: MethodDefinitionProps, children: any[]): MethodDefinition {
-    let kindString = (props.kind.toString() as MethodKindString);
     this.node = b.methodDefinition(
-      kindString,
+      props.kind,
       this.getKey(props),
       this.getFunction(props, children),
       this.getBool(props.staticMethod)

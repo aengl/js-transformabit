@@ -2,7 +2,6 @@ import {
   JsCode,
   VariableDeclaration,
   VariableDeclarator,
-  VariableKind,
   Literal,
   Identifier,
   CallExpression,
@@ -20,24 +19,23 @@ import {
   ObjectExpression,
   FunctionExpression,
   MethodDefinition,
-  MethodKind,
   NewExpression
 } from '../JsCode';
 
 describe('jscode/js', () => {
 
   it('VariableDeclaration', () => {
-    let foo = <VariableDeclaration name="foo" kind={VariableKind.Let}></VariableDeclaration>;
+    let foo = <VariableDeclaration name="foo" kind='let'></VariableDeclaration>;
     expect(foo.format()).toBe("let foo;");
 
     let bar = new VariableDeclaration({ name: "bar" }, []);
     expect(bar.format()).toBe("var bar;");
 
-    let letbar = new VariableDeclaration({ name: "bar", kind: VariableKind.Let }, []);
+    let letbar = new VariableDeclaration({ name: "bar", kind: 'let' }, []);
     expect(letbar.format()).toBe("let bar;");
 
     let foobar = (
-      <VariableDeclaration kind={VariableKind.Let}>
+      <VariableDeclaration kind='let'>
         <VariableDeclarator name="foo" />
         <VariableDeclarator name="bar" />
       </VariableDeclaration>
@@ -45,11 +43,11 @@ describe('jscode/js', () => {
 
     expect(foobar.format()).toBe("let foo, bar;");
 
-    let age = <VariableDeclaration name="age" kind={VariableKind.Let}><Literal value={3} /></VariableDeclaration>;
+    let age = <VariableDeclaration name="age" kind='let'><Literal value={3} /></VariableDeclaration>;
     expect(age.format()).toBe("let age = 3;");
 
     let bananasInPajamas = (
-      <VariableDeclaration kind={VariableKind.Const}>
+      <VariableDeclaration kind='const'>
         <VariableDeclarator name="b1">
           <Literal value={1} />
         </VariableDeclarator>
@@ -107,7 +105,7 @@ describe('jscode/js', () => {
 
     let simpleBlock = (
       <BlockStatement>
-        <VariableDeclaration name="num" kind={VariableKind.Let}>
+        <VariableDeclaration name="num" kind='let'>
           <Literal value={3} />
         </VariableDeclaration>
       </BlockStatement>
@@ -131,7 +129,7 @@ describe('jscode/js', () => {
     let blockWithNoParams = (
       <FunctionDeclaration name="foo">
         <BlockStatement>
-          <VariableDeclaration name="num" kind={VariableKind.Let}>
+          <VariableDeclaration name="num" kind='let'>
             <Literal value={3} />
           </VariableDeclaration>
         </BlockStatement>
@@ -144,7 +142,7 @@ describe('jscode/js', () => {
         <Identifier name="bar" />
         <Identifier name="baz" />
         <BlockStatement>
-          <VariableDeclaration name="num" kind={VariableKind.Let}>
+          <VariableDeclaration name="num" kind='let'>
             <Literal value={3} />
           </VariableDeclaration>
         </BlockStatement>
@@ -258,13 +256,13 @@ describe('jscode/js', () => {
 
   it('MethodDefinition', () => {
       let empty = (
-        <MethodDefinition key="bar" kind={MethodKind.Method}>
+        <MethodDefinition key="bar" kind='method'>
         </MethodDefinition>
       );
       expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
 
       let notEmpty = (
-        <MethodDefinition key="foo" kind={MethodKind.Method}>
+        <MethodDefinition key="foo" kind='method'>
           <FunctionExpression>
             <BlockStatement>
               <ReturnStatement>
@@ -287,7 +285,7 @@ describe('jscode/js', () => {
       let withMethod = (
       <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
 
-        <MethodDefinition key="foo" kind={MethodKind.Method}>
+        <MethodDefinition key="foo" kind='method'>
           <FunctionExpression>
             <BlockStatement>
               <ReturnStatement>
@@ -303,7 +301,7 @@ describe('jscode/js', () => {
 
       let withTwoMethods = (
         <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
-        <MethodDefinition key="bar" kind={MethodKind.Method}>
+        <MethodDefinition key="bar" kind='method'>
           <FunctionExpression>
             <BlockStatement>
               <ReturnStatement>
@@ -312,7 +310,7 @@ describe('jscode/js', () => {
             </BlockStatement>
           </FunctionExpression>
           </MethodDefinition>
-          <MethodDefinition key="foo" kind={MethodKind.Method}>
+          <MethodDefinition key="foo" kind='method'>
             <FunctionExpression>
               <BlockStatement>
                 <ReturnStatement>
@@ -337,7 +335,7 @@ describe('jscode/js', () => {
     let blockWithNoParams = (
       <FunctionExpression>
         <BlockStatement>
-          <VariableDeclaration name="num" kind={VariableKind.Let}>
+          <VariableDeclaration name="num" kind='let'>
             <Literal value={3}/>
           </VariableDeclaration>
         </BlockStatement>
