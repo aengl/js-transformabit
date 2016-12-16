@@ -421,7 +421,7 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
    * Replaces the current node with another.
    */
   replace(node: (GenericJsNode | Node)): this {
-    let astNode = (node instanceof JsNode) ? node.node : node;
+    let astNode = this.toAstNode(node);
     if (!this._path.parent) {
       this._path = new NodePath(astNode);
     } else {
@@ -489,6 +489,29 @@ export class JsNode<T extends Node, P> implements transformabit.JsNode {
       }
     });
     return this;
+  }
+
+  /**
+   * Inserts a new node as a sibling of the current node.
+   */
+  insertBefore(node: (GenericJsNode | Node)): this {
+    this._path.insertBefore(this.toAstNode(node));
+    return this;
+  }
+
+  /**
+   * Inserts a new node as a sibling of the current node.
+   */
+  insertAfter(node: (GenericJsNode | Node)): this {
+    this._path.insertAfter(this.toAstNode(node));
+    return this;
+  }
+
+  /**
+   * Helper to unwrap a node to an ast-types node.
+   */
+  protected toAstNode(node: (GenericJsNode | Node)): Node {
+    return (node instanceof JsNode) ? node.node : node;
   }
 
   /**

@@ -4,6 +4,7 @@ import {
   MethodDefinition,
   BlockStatement,
   VariableDeclaration,
+  VariableDeclarator,
   ReturnStatement,
   Literal,
   ClassBody,
@@ -247,6 +248,25 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code);
     node.removeDescendants(node => node.check(ReturnStatement));
     expect(node.format()).toBe('class Foo { bar() {} baz() {} }');
+  });
+
+  it('insert before/after', () => {
+    const code = 'let foo; let bar;';
+    let baz = b.variableDeclaration('let', [
+      b.variableDeclarator(b.identifier('baz'), null)
+    ]);
+    expect(JsNode.fromModuleCode(code)
+      .findFirstChildOfType(VariableDeclaration)
+      .insertAfter(baz)
+      .getRoot()
+      .format()
+    ).toBe('let foo;\nlet baz;\nlet bar;');
+    expect(JsNode.fromModuleCode(code)
+      .findFirstChildOfType(VariableDeclaration)
+      .insertBefore(baz)
+      .getRoot()
+      .format()
+    ).toBe('let baz;\nlet foo;let bar;');
   });
 
   it('append method to class body', () => {

@@ -1,5 +1,5 @@
 import { Transformation } from '../Transformation';
-import { GenericJsNode, JsNodeList } from '../JsNode';
+import { GenericJsNode } from '../JsNode';
 import { Project } from '../Project';
 import {
   JsCode,
@@ -42,47 +42,42 @@ export class BindWebSocket implements Transformation {
       component.createConstructor();
       ctor = component.findConstructor();
     }
-    this.addBindings(ctor);
+    this.addHandlers(ctor);
+    this.addConnection(ctor);
     return root;
   }
 
-  private addBindings(ctor: GenericJsNode) {
-    const onMessage = (
+  private addHandlers(ctor: MethodDefinition) {
+    ctor.insertAfter(
       <MethodDefinition key={"onMessage"} kind={MethodKind.Method}>
-      </MethodDefinition>
-    ) as MethodDefinition;
-
-    const onOpen = (
+      </MethodDefinition> as MethodDefinition
+    );
+    ctor.insertAfter(
       <MethodDefinition key={"onOpen"} kind={MethodKind.Method}>
-      </MethodDefinition>
-    ) as MethodDefinition;
-
-    const onError = (
+      </MethodDefinition> as MethodDefinition
+    );
+    ctor.insertAfter(
       <MethodDefinition key={"onError"} kind={MethodKind.Method}>
-      </MethodDefinition>
-    ) as MethodDefinition;
+      </MethodDefinition> as MethodDefinition
+    );
+  }
 
-    ctor.path.insertAfter(onMessage.node);
-    ctor.path.insertAfter(onOpen.node);
-    ctor.path.insertAfter(onError.node);
-
-    ctor.findChildrenOfType(BlockStatement).forEach(bs => {
-      let socketObject = (<MemberExpression object="this" property="connection" />) as MemberExpression;
-      let newWebsocket = (
-        <NewExpression callee={new Identifier({ name: "WebSocket" })}>
-          <Literal value={"wss://" + this.address} />
-        </NewExpression>
-      ) as NewExpression;
-      let socketCall = (
+  private addConnection(ctor: MethodDefinition) {
+    const socketObject = (<MemberExpression object="this" property="connection" />) as MemberExpression;
+    const newWebsocket = (
+      <NewExpression callee={new Identifier({ name: "WebSocket" })}>
+        <Literal value={"wss://" + this.address} />
+      </NewExpression>
+    ) as NewExpression;
+    ctor
+      .body<BlockStatement>()
+      .appendStatement(
         <ExpressionStatement>
           <AssignmentExpression
             operator={AssignmentOperator.Equals}
             left={socketObject}
-            right={newWebsocket}
-            />
-        </ExpressionStatement>
-      ) as ExpressionStatement;
-      bs.node.body.push(socketCall.node);
-    });
+            right={newWebsocket} />
+        </ExpressionStatement> as ExpressionStatement
+      );
   }
 }

@@ -62,11 +62,15 @@ export type StatementProps = {
 };
 
 @JsNodeFactory.registerType
-export class Statement extends JsNode<ast.Statement, StatementProps> {
-  build(props: StatementProps): Statement {
+export class Statement<T extends ast.Statement, P extends StatementProps>
+  extends JsNode<T, P> {
+
+  build(props: P, children: any[]): Statement<T, P> {
     return super.build(props);
   }
 }
+
+export type GenericStatement = Statement<ast.Statement, StatementProps>;
 
 /*========================================================================
                             Variable Delcaration
@@ -353,13 +357,17 @@ export type BlockStatementProps = {
 
 @JsNodeFactory.registerType
 export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> {
-  build(props: BlockStatementProps, children: Statement[]): BlockStatement {
+  build(props: BlockStatementProps, children: GenericStatement[]): BlockStatement {
     let statements: ast.Statement[] = [];
     for (let child of children) {
       statements.push(child.node);
     }
     this.node = b.blockStatement(statements);
-    return super.build(props, children);
+    return super.build(props, children) as BlockStatement;
+  }
+
+  appendStatement(node: (ast.Statement | GenericStatement)) {
+    this.node.body.push(<ast.Statement>this.toAstNode(node));
   }
 }
 
@@ -483,14 +491,13 @@ function getSingleExpression(children: GenericExpression[],
                             Expression Statement
 =========================================================================*/
 
-export type ExpressionStatementProps = {
-};
+export type ExpressionStatementProps = StatementProps;
 
 @JsNodeFactory.registerType
 export class ExpressionStatement
-  extends JsNode<ast.ExpressionStatement, ExpressionStatementProps> {
+  extends Statement<ast.ExpressionStatement, ExpressionStatementProps> {
 
-  build(props: ExpressionStatementProps, children: GenericExpression[]): ExpressionStatement {
+  build(props: ExpressionStatementProps, children: any[]): ExpressionStatement {
     this.node = b.expressionStatement(
       getSingleExpression(children, false, ExpressionStatement.name));
     return super.build(props, children);
@@ -762,8 +769,8 @@ export class MethodDefinition
       .params();
   }
 
-  body() {
-    return this.findFirstChildOfType(FunctionExpression).body();
+  body<T extends GenericJsNode>() {
+    return <T>this.findFirstChildOfType(FunctionExpression).body();
   }
 
   private getBool(val?: boolean): boolean {
