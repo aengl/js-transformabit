@@ -537,10 +537,10 @@ export class JsNode<T extends Node, P> {
     return JsNodeList.fromPath(this._path.get(propertyName));
   }
 
-  protected getNodeOrIdentifier(obj: (string | GenericJsNode)): Expression {
-    return (typeof obj === 'string') ? builders.identifier(obj) : <Expression>obj.node;
-  }
-
+  /**
+   * Returns the AST node if the argument is a JsNode. Calls the fallback
+   * callback, otherwise.
+   */
   protected getNodeOrFallback<T extends Node>(obj: (string | GenericJsNode),
     fallback: (s: string) => T): T {
 

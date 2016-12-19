@@ -212,7 +212,7 @@ export class CallExpression
 
   build(props: CallExpressionProps, children: any[] = []): CallExpression {
     let args = this.getArgs(children);
-    this.node = b.callExpression(this.getNodeOrIdentifier(props.callee), args);
+    this.node = b.callExpression(this.getNodeOrFallback(props.callee, b.identifier), args);
     return super.build(props, children) as this;
   }
 
@@ -410,12 +410,12 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
   private getValue(props: PropertyProps, children: any[]) {
 
     if (props.value) {
-      return this.getNodeOrFallback(props.value, s => b.literal(s));
+      return this.getNodeOrFallback(props.value, b.literal);
     }
     if (children.length < 1) {
       throw new Error("Must supplu value in either props or as a child");
     } else {
-      return this.getNodeOrFallback(children[0], s => b.literal(s));
+      return this.getNodeOrFallback(children[0], b.literal);
     }
   }
 
@@ -555,9 +555,10 @@ export class MemberExpression
     if (!props.object || props.object === 'this') {
       object = b.thisExpression();
     } else {
-      object = this.getNodeOrIdentifier(props.object);
+      object = this.getNodeOrFallback(props.object, b.identifier);
     }
-    this.node = b.memberExpression(object, this.getNodeOrIdentifier(props.property));
+    this.node = b.memberExpression(object,
+      this.getNodeOrFallback(props.property, b.identifier));
     return super.build(props, children) as this;
   }
 
@@ -595,16 +596,16 @@ export class AssignmentExpression
 
   private getLeft(props: AssignmentExpressionProps, children: any[]) {
     if (children.length > 0) {
-      return this.getNodeOrFallback(children[0], s => b.identifier(s));
+      return this.getNodeOrFallback(children[0], b.identifier);
     }
-    return this.getNodeOrFallback(props.left, s => b.identifier(s));
+    return this.getNodeOrFallback(props.left, b.identifier);
   }
 
   private getRight(props: AssignmentExpressionProps, children: any[]) {
     if (children.length > 1) {
-      return this.getNodeOrFallback(children[1], s => b.literal(s));
+      return this.getNodeOrFallback(children[1], b.literal);
     }
-    return this.getNodeOrFallback(props.right, s => b.literal(s));
+    return this.getNodeOrFallback(props.right, b.literal);
   }
 }
 
@@ -623,9 +624,9 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
 
   build(props: P, children: any[]): ClassDeclaration<T, P> {
     this.node = <T>b.classDeclaration(
-      <ast.Identifier>this.getNodeOrIdentifier(props.id),
+      this.getNodeOrFallback(props.id, b.identifier),
       new ClassBody().build({}, children).node,
-      props.superClass ? this.getNodeOrIdentifier(props.superClass) : null
+      props.superClass ? this.getNodeOrFallback(props.superClass, b.identifier) : null
     );
     return super.build(props, children) as this;
   }
@@ -795,7 +796,9 @@ export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps>
     children: JsNode<NewExpressionChild, any>[]): NewExpression {
 
     this.node = ast.builders.newExpression(
-      this.getNodeOrIdentifier(props.callee), this.getArgs(children));
+      this.getNodeOrFallback(props.callee, b.identifier),
+      this.getArgs(children)
+    );
     return super.build(props, children) as this;
   }
 
