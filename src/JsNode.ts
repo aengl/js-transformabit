@@ -3,7 +3,9 @@
 import {
   Node,
   NodePath,
-  Type
+  Type,
+  Expression,
+  builders
 } from 'ast-types';
 import { Collection } from 'jscodeshift-collection';
 import * as js from 'jscodeshift';
@@ -532,6 +534,16 @@ export class JsNode<T extends Node, P> {
    */
   protected getNodes<T extends GenericJsNode>(propertyName: string): JsNodeList<T> {
     return JsNodeList.fromPath(this._path.get(propertyName));
+  }
+
+  protected getNodeOrIdentifier(obj: (string | GenericJsNode)): Expression {
+    return (typeof obj === 'string') ? builders.identifier(obj) : <Expression>obj.node;
+  }
+
+  protected getNodeOrFallback<T extends Node>(obj: (string | GenericJsNode),
+    fallback: (s: string) => T): T {
+
+    return (typeof obj === 'string') ? <T>fallback(obj) : <T>obj.node;
   }
 
   /**

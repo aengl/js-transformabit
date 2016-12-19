@@ -15,7 +15,6 @@ import {
   AssignmentOperator,
   ClassDeclaration,
   Property,
-  PropertyKind,
   ObjectExpression,
   FunctionExpression,
   MethodDefinition,
@@ -61,17 +60,17 @@ describe('jscode/js', () => {
   });
 
   it('Literal', () => {
-    expect(new Literal({ value: 8 }).format()).toBe('8');
-    expect(new Literal({ value: true }).format()).toBe('true');
-    expect(new Literal({ value: "Hello" }).format()).toBe('"Hello"');
+    expect(Literal.fromValue(8).format()).toBe('8');
+    expect(Literal.fromValue(true).format()).toBe('true');
+    expect(Literal.fromValue('Hello').format()).toBe('"Hello"');
   });
 
   it('CallExpression', () => {
-    let foo = <CallExpression callee={new Identifier({ name: "foo" })} />;
+    let foo = <CallExpression callee='foo' />;
     expect(foo.format()).toBe("foo()");
 
     let isTall = (
-      <CallExpression callee={new Identifier({ name: "isTall" })}>
+      <CallExpression callee='isTall'>
         <Literal value={193} />
         <Identifier name="isMale" />
       </CallExpression>
@@ -80,13 +79,13 @@ describe('jscode/js', () => {
     expect(isTall.format()).toBe("isTall(193, isMale)");
 
     let toString = (
-      <CallExpression callee={new Identifier({ name: "toString" })}>
+      <CallExpression callee='toString'>
         {isTall}
       </CallExpression>
     );
     expect(toString.format()).toBe("toString(isTall(193, isMale))");
 
-    let thisFoo = <MemberExpression object={new ThisExpression({}, [])} property={new Identifier({ name: "foo" })} />;
+    let thisFoo = <MemberExpression object={new ThisExpression({})} property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
     let memberCall = (
       <CallExpression callee={thisFoo as MemberExpression}>
@@ -154,7 +153,7 @@ describe('jscode/js', () => {
   it('ExpressionStatement', () => {
     let call = (
       <ExpressionStatement>
-        <CallExpression callee={new Identifier({ name: "foo" })} />
+        <CallExpression callee='foo' />
       </ExpressionStatement>
     );
     expect(call.format()).toBe("foo();");
@@ -177,7 +176,7 @@ describe('jscode/js', () => {
 
     let func = (
       <ReturnStatement>
-        <CallExpression callee={new Identifier({ name: "toInt" })}>
+        <CallExpression callee='toInt'>
           <Identifier name="approx" />
         </CallExpression>
       </ReturnStatement>
@@ -199,20 +198,20 @@ describe('jscode/js', () => {
 
   it('MemberExpression', () => {
     let thisFoo = <MemberExpression
-      object={new ThisExpression({}, [])}
-      property={new Identifier({ name: "foo" })} />;
+      object={new ThisExpression({})}
+      property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
 
-    let noThis = <MemberExpression property={new Identifier({ name: "bar" })} />;
+    let noThis = <MemberExpression property='bar' />;
     expect(noThis.format()).toBe("this.bar");
 
     // this.prototype.func.foo
     let thisprototype = new MemberExpression(
-      { property: new Identifier({ name: "prototype" }) }, []);
+      { property: 'prototype' });
     let prototypefunc = new MemberExpression(
-      { object: thisprototype, property: new Identifier({ name: "func" }) }, []);
+      { object: thisprototype, property: 'func' });
     let funcfoo = new MemberExpression(
-      { object: prototypefunc, property: new Identifier({ name: "foo" }) }, []);
+      { object: prototypefunc, property: 'foo' });
     expect(funcfoo.format()).toBe("this.prototype.func.foo");
   });
 
@@ -220,14 +219,13 @@ describe('jscode/js', () => {
     let variable = (
       <AssignmentExpression
         operator={AssignmentOperator.Equals}
-        left={new Identifier({ name: "foo" })}
-        right={new Literal({ value: "foo" })}
-        />
+        left='foo'
+        right='foo' />
     );
     expect(variable.format()).toBe("foo = \"foo\"");
 
     let limitFunc = (
-      <CallExpression callee={new Identifier({ name: "limit" })}>
+      <CallExpression callee='limit'>
         <Literal value={4} />
       </CallExpression>
     );
@@ -235,21 +233,20 @@ describe('jscode/js', () => {
     let fromFunc = (
       <AssignmentExpression
         operator={AssignmentOperator.MultiplyEquals}
-        left={new Identifier({ name: "foo" })}
+        left='foo'
         right={limitFunc as CallExpression}
         />
     );
     expect(fromFunc.format()).toBe("foo *= limit(4)");
 
     let thisLevel = <MemberExpression
-      object={new ThisExpression({}, [])}
-      property={new Identifier({ name: "level" })} />;
+      object={new ThisExpression({})}
+      property='level' />;
     let memberAndIdentifier = (
       <AssignmentExpression
         operator={AssignmentOperator.Equals}
         left={thisLevel as MemberExpression}
-        right={new Identifier({ name: "level" })}
-        />
+        right={Identifier.fromName('level')} />
     );
     expect(memberAndIdentifier.format()).toBe("this.level = level");
   });
@@ -277,13 +274,13 @@ describe('jscode/js', () => {
 
   it('ClassDeclaration', () => {
       let empty = (
-        <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+        <ClassDeclaration id="Foo" superClass='Bar'>
         </ClassDeclaration>
       );
       expect(empty.format()).toBe("class Foo extends Bar {}");
 
       let withMethod = (
-      <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+      <ClassDeclaration id="Foo" superClass='Bar'>
 
         <MethodDefinition key="foo" kind='method'>
           <FunctionExpression>
@@ -300,7 +297,7 @@ describe('jscode/js', () => {
       expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
 
       let withTwoMethods = (
-        <ClassDeclaration id="Foo" superClass={new Identifier({name: "Bar"})}>
+        <ClassDeclaration id="Foo" superClass='Bar'>
         <MethodDefinition key="bar" kind='method'>
           <FunctionExpression>
             <BlockStatement>
@@ -346,7 +343,7 @@ describe('jscode/js', () => {
 
     it('Property', () => {
      let valAsChild = (
-      <Property key="render" kind={PropertyKind.Init}>
+      <Property key="render" kind='init'>
         <FunctionExpression/>
       </Property>
     );
@@ -354,7 +351,7 @@ describe('jscode/js', () => {
 
     let one = <Literal value={1}/> as Literal;
     let valAsProp = (
-       <Property key="num" kind={PropertyKind.Init} value={one}>
+      <Property key="num" kind='init' value={one}>
       </Property>
     );
     expect(valAsProp.format()).toBe("num: 1");
@@ -368,10 +365,10 @@ describe('jscode/js', () => {
 
      let abc1 = (
       <ObjectExpression>
-         <Property key="a" kind={PropertyKind.Init} value={new Literal({value: "a"})}/>
-         <Property key="b" kind={PropertyKind.Init} value={new Literal({value: "b"})}/>
-         <Property key="c" kind={PropertyKind.Init} value={new Literal({value: "c"})}/>
-         <Property key="one" kind={PropertyKind.Init} value={new Literal({value:  1})}/>
+         <Property key="a" kind='init'>a</Property>
+         <Property key="b" kind='init'>b</Property>
+         <Property key="c" kind='init'>c</Property>
+         <Property key="one" kind='init' value={Literal.fromValue(1)}/>
        </ObjectExpression>
      );
     expect(abc1.format().replace(/\s/g, "")).toBe(`{a:"a",b:"b",c:"c",one:1}`);
@@ -379,13 +376,13 @@ describe('jscode/js', () => {
 
    it('NewExpression', () => {
      let newEmpty = (
-       <NewExpression callee={new Identifier({name: "Object"})}>
+       <NewExpression callee='Object'>
        </NewExpression>
      );
      expect(newEmpty.format()).toBe("new Object()");
 
      let fewArgs = (
-       <NewExpression callee={new Identifier({name: "Thing"})}>
+       <NewExpression callee='Thing'>
           <Literal value={3}/>
           <Identifier name="bar"/>
           <Literal value="foo"/>

@@ -64,7 +64,7 @@ export class BindWebSocket implements Transformation {
               </MemberExpression> as MemberExpression
             }
             right={
-              <NewExpression callee={new Identifier({ name: "WebSocket" })}>
+              <NewExpression callee='WebSocket'>
                 <Literal value={"wss://" + this.address} />
               </NewExpression> as NewExpression
             } />
