@@ -17,8 +17,8 @@ export type FileProps = {
 
 @JsNodeFactory.registerType
 export class File extends JsNode<ast.File, FileProps> {
-  build(props: FileProps): File {
-    return super.build(props) as this;
+  build(props: FileProps, children: any[]): File {
+    return super.build(props, children) as this;
   }
 }
 
@@ -31,8 +31,8 @@ export type ProgramProps = {
 
 @JsNodeFactory.registerType
 export class Program extends JsNode<ast.Program, ProgramProps> {
-  build(props: ProgramProps): Program {
-    return super.build(props) as this;
+  build(props: ProgramProps, children: any[]): Program {
+    return super.build(props, children) as this;
   }
 }
 
@@ -66,7 +66,7 @@ export class Statement<T extends ast.Statement, P extends StatementProps>
   extends JsNode<T, P> {
 
   build(props: P, children: any[]): Statement<T, P> {
-    return super.build(props) as this;
+    return super.build(props, children) as this;
   }
 }
 
@@ -161,12 +161,12 @@ export type LiteralProps = {
 @JsNodeFactory.registerType
 export class Literal extends JsNode<ast.Literal, LiteralProps> {
   static fromValue(value: any) {
-    return new Literal({ value: value });
+    return new Literal().build({ value: value }, []);
   }
 
-  build(props: LiteralProps): Literal {
+  build(props: LiteralProps, children: any[]): Literal {
     this.node = b.literal(props.value);
-    return super.build(props) as this;
+    return super.build(props, children) as this;
   }
 }
 
@@ -181,7 +181,7 @@ export type IdentifierProps = ExpressionProps & {
 @JsNodeFactory.registerType
 export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
   static fromName(name: string) {
-    return new Identifier({ name: name });
+    return new Identifier().build({ name: name }, []);
   }
 
   get name(): string {
@@ -325,10 +325,10 @@ export class FunctionExpression
     }
     if (!props.id) {
       return null;
-    } else if (props.id.constructor.name === "Identifier") {
-      return (props.id as Identifier).node;
+    } else if (props.id === 'string') {
+      return new Identifier().build({name: props.id}, []).node;
     } else {
-      return new Identifier({name: <string>props.id}).node;
+      return (props.id as Identifier).node;
     }
   }
 
@@ -348,7 +348,7 @@ export class FunctionExpression
         return children[index].node as ast.BlockStatement;
       }
     }
-    return new BlockStatement({}, []).node;
+    return new BlockStatement().build({}, []).node;
   }
 }
 
@@ -421,7 +421,7 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
 
   private getKey(props: PropertyProps): ast.Expression {
     if (props.key.constructor.name === "String") {
-      return new Identifier({name: <string>props.key}).node;
+      return new Identifier().build({name: <string>props.key}, []).node;
     } else {
       return (props.key as Identifier).node;
     }
@@ -530,6 +530,10 @@ export type ThisExpressionProps = ExpressionProps;
 @JsNodeFactory.registerType
 export class ThisExpression
   extends Expression<ast.ThisExpression, ThisExpressionProps> {
+
+  static create() {
+    return new ThisExpression().build({}, []);
+  }
 
   build(props: ThisExpressionProps, children: any[]): ThisExpression {
     this.node = b.thisExpression();
@@ -760,7 +764,7 @@ export class MethodDefinition
 
   private getKey(props: MethodDefinitionProps): ast.Expression {
     if (props.key.constructor.name === "String") {
-      return new Identifier({name: <string>props.key}).node;
+      return new Identifier().build({name: <string>props.key}, []).node;
     }
     return (props.key as Identifier).node;
   }
@@ -772,7 +776,7 @@ export class MethodDefinition
       return props.expression.node;
     }
     if (children.length === 0) {
-      return new FunctionExpression({}, []).node;
+      return new FunctionExpression().build({}, []).node;
     }
     return (children[0] as FunctionExpression).node;
   }

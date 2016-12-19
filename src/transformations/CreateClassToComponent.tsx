@@ -77,7 +77,10 @@ export class CreateClassToComponent implements Transformation {
       }
     }
     const reactComponent = <MemberExpressionCode object="React" property="Component"/> as MemberExpressionCode;
-    let component = new ClassDeclaration({id: (varDec.id as Identifier).name, superClass: reactComponent}, body);
+    let component = new ClassDeclaration().build({
+      id: (varDec.id as Identifier).name,
+      superClass: reactComponent
+    }, body);
     return component;
   }
 }

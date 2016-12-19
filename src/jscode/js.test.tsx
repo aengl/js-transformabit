@@ -26,10 +26,10 @@ describe('jscode/js', () => {
     let foo = <VariableDeclaration name="foo" kind='let'></VariableDeclaration>;
     expect(foo.format()).toBe("let foo;");
 
-    let bar = new VariableDeclaration({ name: "bar" }, []);
+    let bar = new VariableDeclaration().build({ name: "bar" }, []);
     expect(bar.format()).toBe("var bar;");
 
-    let letbar = new VariableDeclaration({ name: "bar", kind: 'let' }, []);
+    let letbar = new VariableDeclaration().build({ name: "bar", kind: 'let' }, []);
     expect(letbar.format()).toBe("let bar;");
 
     let foobar = (
@@ -191,13 +191,12 @@ describe('jscode/js', () => {
   it('ThisExpression', () => {
     let ths = <ThisExpression />;
     expect(ths.format()).toBe("this");
-    let thss = new ThisExpression({}, []);
-    expect(thss.format()).toBe("this");
+    expect(ThisExpression.create().format()).toBe("this");
   });
 
   it('MemberExpression', () => {
     let thisFoo = <MemberExpression
-      object={new ThisExpression({})}
+      object={ThisExpression.create()}
       property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
 
@@ -205,12 +204,12 @@ describe('jscode/js', () => {
     expect(noThis.format()).toBe("this.bar");
 
     // this.prototype.func.foo
-    let thisprototype = new MemberExpression(
-      { property: 'prototype' });
-    let prototypefunc = new MemberExpression(
-      { object: thisprototype, property: 'func' });
-    let funcfoo = new MemberExpression(
-      { object: prototypefunc, property: 'foo' });
+    let thisprototype = new MemberExpression().build(
+      { property: 'prototype' }, []);
+    let prototypefunc = new MemberExpression().build(
+      { object: thisprototype, property: 'func' }, []);
+    let funcfoo = new MemberExpression().build(
+      { object: prototypefunc, property: 'foo' }, []);
     expect(funcfoo.format()).toBe("this.prototype.func.foo");
   });
 
@@ -239,7 +238,7 @@ describe('jscode/js', () => {
     expect(fromFunc.format()).toBe("foo *= limit(4)");
 
     let thisLevel = <MemberExpression
-      object={new ThisExpression({})}
+      object={ThisExpression.create()}
       property='level' />;
     let memberAndIdentifier = (
       <AssignmentExpression

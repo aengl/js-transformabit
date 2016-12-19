@@ -205,13 +205,6 @@ export class JsNode<T extends Node, P> {
       .children<T>();
   }
 
-  constructor(props?: P, children?: GenericJsNode[]) {
-    // TODO: remove this constructor completely
-    if (props || children) {
-      this.build(props || <P>{}, children || []);
-    }
-  }
-
   hasParent(): boolean {
     return !!this._path && !!this._path.parent;
   }
@@ -252,7 +245,7 @@ export class JsNode<T extends Node, P> {
     this._path = new NodePath(node);
   }
 
-  build(props: P, children?: any[]): JsNode<T, P> {
+  build(props: P, children: any[]): JsNode<T, P> {
     this.props = props;
     if (!this.node || !this.node.type) {
       throw new Error(`${this.constructor.name}.build() did not assign a valid node`);
