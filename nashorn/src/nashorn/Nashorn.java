@@ -1,13 +1,24 @@
 package nashorn;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 public class Nashorn {
+  static String readFile(String path, Charset encoding) throws IOException {
+    byte[] encoded = Files.readAllBytes(Paths.get(path));
+    return new String(encoded, encoding);
+  }
+  
   public static void main(String... args) throws Throwable {
     ScriptEngineManager engineManager = new ScriptEngineManager();
     ScriptEngine engine = engineManager.getEngineByName("nashorn");
-    engine.eval("function sum(a, b) { return a + b; }");
-    System.out.println(engine.eval("sum(1, 2);"));
+    String source = Nashorn.readFile("../main.js", Charset.forName("UTF-8"));
+    System.out.println(source);
+    engine.eval(source);
+    System.out.println(engine.eval("test(1,2)"));
   }
 }

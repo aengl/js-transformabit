@@ -10,7 +10,7 @@
     "test": "jest",
     "test-watch": "jest --watch",
     "demo-watch": "nodemon -e js ./dist/demo/printer.js",
-    "bundle": "rollup -c"
+    "bundle": "webpack"
   },
   "devDependencies": {
     "@types/jest": "^16.0.0",
@@ -19,7 +19,7 @@
     "jest": "^18.0.0",
     "js-yaml": "^3.7.0",
     "jscodeshift": "^0.3.30",
-    "rollup": "^0.37.0",
-    "typescript": "^2.1.4"
+    "typescript": "^2.1.4",
+    "webpack": "^2.2.0-rc.1"
   }
 }
