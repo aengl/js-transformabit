@@ -54,6 +54,7 @@ export class JsNodeFactory {
  */
 export class JsNodeList<T extends GenericJsNode> {
   protected _paths: NodePath[] = [];
+  protected _type: JsNodeType<T>;
 
   static fromPath(path: NodePath): JsNodeList<any> {
     const list = new JsNodeList();
@@ -71,6 +72,10 @@ export class JsNodeList<T extends GenericJsNode> {
     const list = new JsNodeList();
     list._paths = collection.paths();
     return list;
+  }
+
+  constructor(type?: JsNodeType<T>) {
+    this._type = type;
   }
 
   /**
@@ -104,25 +109,22 @@ export class JsNodeList<T extends GenericJsNode> {
    * node at a specified index.
    */
   at(index: number): T {
-    if (index >= this._paths.length) {
-      throw new Error('Index out of bounds');
-    }
-    return <T>JsNode.fromPath(this._paths[index]);
+    return this.getTypedNode(index);
   }
 
   map(func: (node: T, index?: number) => any): any[] {
     return this._paths.map((value, index, array) =>
-      func(<T>JsNode.fromPath(value), index));
+      func(this.getTypedNode(index), index));
   }
 
   filter(predicate: (node: T, index?: number) => boolean): JsNodeList<T> {
     return JsNodeList.fromPaths(this._paths.filter((value, index, array) =>
-      predicate(<T>JsNode.fromPath(value), index)));
+      predicate(this.getTypedNode(index), index)));
   }
 
   forEach(func: (node: T, index?: number) => any): void {
     this._paths.forEach((value, index, array) =>
-      func(<T>JsNode.fromPath(value), index));
+      func(this.getTypedNode(index), index));
   }
 
   /**
@@ -131,7 +133,7 @@ export class JsNodeList<T extends GenericJsNode> {
    */
   has(func: (node: T, index?: number) => any): boolean {
     for (let i = 0; i < this._paths.length; i++) {
-      if (func(<T>JsNode.fromPath(this._paths[i]), i)) {
+      if (func(this.getTypedNode(i), i)) {
         return true;
       }
     }
@@ -157,6 +159,18 @@ export class JsNodeList<T extends GenericJsNode> {
   // toArray(): GenericJsNode[] {
   //   return this._paths.map(path => JsNode.fromPath(path));
   // }
+
+  protected getTypedNode(index: number): T {
+    if (index >= this._paths.length) {
+      throw new Error('Index out of bounds');
+    }
+    if (this._type) {
+      const node = new this._type();
+      node.path =  this._paths[index];
+      return node;
+    }
+    return <T>JsNode.fromPath(this._paths[index]);
+  }
 }
 
 /**
@@ -359,16 +373,17 @@ export class JsNode<T extends Node, P> {
     type: JsNodeType<T>, predicate?: (node: T) => boolean,
     includeSelf: boolean = false): JsNodeList<T> {
 
-    let result = new JsNodeList<T>();
+    let result = new JsNodeList<T>(type);
     const self = this.node;
+    const node = new type();
     visit(this.node, {
       visitNode: function(p: NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else {
-          const node = JsNode.fromPath(p);
+          node.path = p;
           if (node.check(type) && (!predicate || predicate(node))) {
-            result.push(node);
+            result.pushPath(p);
           }
           this.traverse(p);
         }

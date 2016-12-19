@@ -4,9 +4,11 @@ import {
   MethodDefinition,
   ClassDeclaration,
   ClassDeclarationProps,
+  CallExpression,
   ObjectExpression,
   VariableDeclaration,
   BlockStatement,
+  MemberExpression,
   Property
 } from './js';
 import * as ast from 'ast-types';
@@ -72,6 +74,16 @@ export type ReactComponentProps = {
 
 export class ReactComponent
   extends VariableDeclaration<ast.VariableDeclaration, ReactComponentProps> {
+
+  static check(node: GenericJsNode): boolean {
+    if (node.check(VariableDeclaration)) {
+      const callExp = node.findFirstChildOfType(CallExpression);
+      if (callExp) {
+        return callExp.callee().format() === 'React.createClass';
+      }
+    }
+    return false;
+  }
 
   build(props: ReactComponentProps, children: GenericJsNode[]): ReactComponent {
     // Create event handlers

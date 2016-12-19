@@ -216,6 +216,10 @@ export class CallExpression
     return super.build(props, children) as this;
   }
 
+  callee() {
+    return this.getNode('callee');
+  }
+
   private getArgs(children: any[]): ast.Expression[] {
     let args: ast.Expression[] = [];
     for (const child of children) {
