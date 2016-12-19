@@ -2,3 +2,5 @@
 /dist
 .vscode
 npm-debug.log
+/nashorn/nbproject/private/
+/nashorn/build/
