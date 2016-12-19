@@ -1,25 +1,25 @@
 {
   "name": "js-transformabit",
   "version": "0.1.0",
-  "description": "A collection of utilities for writing JS editors for Atomist.",
+  "description": "A JS/React code transformation library.",
   "main": "index.js",
   "scripts": {
-    "install-typings": "install-typings",
+    "install-typings": "./install-typings.sh",
     "build": "tsc",
     "build-watch": "tsc -w",
     "test": "jest",
     "test-watch": "jest --watch",
-    "demo-watch": "nodemon -e js ./dist/demo/printer.js"
+    "demo-watch": "nodemon -e js ./dist/demo/printer.js",
+    "bundle": "rollup -c"
   },
   "devDependencies": {
     "@types/jest": "^16.0.0",
     "@types/js-yaml": "^3.5.28",
-    "jest": "^18.0.0",
-    "typescript": "^2.1.4"
-  },
-  "dependencies": {
     "@types/node": "^6.0.52",
+    "jest": "^18.0.0",
     "js-yaml": "^3.7.0",
-    "jscodeshift": "^0.3.30"
+    "jscodeshift": "^0.3.30",
+    "rollup": "^0.37.0",
+    "typescript": "^2.1.4"
   }
 }
