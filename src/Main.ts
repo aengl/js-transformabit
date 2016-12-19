@@ -1,6 +1,2 @@
-// export * from './JsNode';
-// export * from './JsCode';
-
-module.exports = function sum(a: number, b: number) {
-  return a + b;
-};
+export * from './JsNode';
+export * from './JsCode';
