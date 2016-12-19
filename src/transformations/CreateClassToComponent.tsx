@@ -12,7 +12,6 @@ export class CreateClassToComponent implements Transformation {
   }
 
   apply(root: GenericJsNode, project: Project): GenericJsNode {
-    let comps = root.findChildrenOfType(ReactComponent);
     root
       .findChildrenOfType(ReactComponent)
       .forEach(c => c.convertToReactClassComponent());
