@@ -81,7 +81,7 @@ export class ReactComponent
         b.identifier(handler.props.name),
         b.functionExpression(null, [b.identifier('event')], handler.node)
       )
-      );
+    );
     eventHandlers.forEach(handler => handler.method = true);
     // Create render method
     const renderMethod = b.property('init', b.identifier('render'),
@@ -100,7 +100,7 @@ export class ReactComponent
         )
       )
     ]);
-    return super.build(props, children) as ReactComponent;
+    return this;
   }
 
   convertToReactClassComponent() {

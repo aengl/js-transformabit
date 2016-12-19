@@ -640,7 +640,7 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
 
   findConstructor(): MethodDefinition {
     return this
-      .findChildrenOfType(MethodDefinition, m => m.kind === 'method')
+      .findChildrenOfType(MethodDefinition, m => m.kind === 'constructor')
       .first();
   }
 
