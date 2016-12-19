@@ -206,8 +206,9 @@ export class JsNode<T extends Node, P> {
   }
 
   constructor(props?: P, children?: GenericJsNode[]) {
+    // TODO: remove this constructor completely
     if (props || children) {
-      this.build(props, children);
+      this.build(props || <P>{}, children || []);
     }
   }
 

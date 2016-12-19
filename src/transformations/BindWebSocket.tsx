@@ -9,8 +9,6 @@ import {
   AssignmentExpression,
   NewExpression,
   Literal,
-  AssignmentOperator,
-  Identifier,
   ClassDeclaration,
   BlockStatement,
   ReactClassComponent
@@ -57,17 +55,12 @@ export class BindWebSocket implements Transformation {
       .body<BlockStatement>()
       .appendStatement(
         <ExpressionStatement>
-          <AssignmentExpression
-            operator={AssignmentOperator.Equals}
-            left={
-              <MemberExpression object="this" property="connection">
-              </MemberExpression> as MemberExpression
-            }
-            right={
-              <NewExpression callee='WebSocket'>
-                <Literal value={"wss://" + this.address} />
-              </NewExpression> as NewExpression
-            } />
+          <AssignmentExpression>
+            <MemberExpression object="this" property="connection" />
+            <NewExpression callee='WebSocket'>
+              <Literal value={"wss://" + this.address} />
+            </NewExpression>
+          </AssignmentExpression>
         </ExpressionStatement> as ExpressionStatement
       );
   }

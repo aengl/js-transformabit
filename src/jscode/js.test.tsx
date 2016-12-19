@@ -12,7 +12,6 @@ import {
   ThisExpression,
   MemberExpression,
   AssignmentExpression,
-  AssignmentOperator,
   ClassDeclaration,
   Property,
   ObjectExpression,
@@ -85,7 +84,7 @@ describe('jscode/js', () => {
     );
     expect(toString.format()).toBe("toString(isTall(193, isMale))");
 
-    let thisFoo = <MemberExpression object={new ThisExpression({})} property='foo' />;
+    let thisFoo = <MemberExpression object='this' property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
     let memberCall = (
       <CallExpression callee={thisFoo as MemberExpression}>
@@ -218,7 +217,7 @@ describe('jscode/js', () => {
   it('AssignmentExpression', () => {
     let variable = (
       <AssignmentExpression
-        operator={AssignmentOperator.Equals}
+        operator='='
         left='foo'
         right='foo' />
     );
@@ -232,7 +231,7 @@ describe('jscode/js', () => {
 
     let fromFunc = (
       <AssignmentExpression
-        operator={AssignmentOperator.MultiplyEquals}
+        operator='*='
         left='foo'
         right={limitFunc as CallExpression}
         />
@@ -244,7 +243,7 @@ describe('jscode/js', () => {
       property='level' />;
     let memberAndIdentifier = (
       <AssignmentExpression
-        operator={AssignmentOperator.Equals}
+        operator='='
         left={thisLevel as MemberExpression}
         right={Identifier.fromName('level')} />
     );
@@ -349,10 +348,8 @@ describe('jscode/js', () => {
     );
     expect(valAsChild.format()).toBe("render: function() {}");
 
-    let one = <Literal value={1}/> as Literal;
     let valAsProp = (
-      <Property key="num" kind='init' value={one}>
-      </Property>
+      <Property key="num" kind='init' value={Literal.fromValue(1)} />
     );
     expect(valAsProp.format()).toBe("num: 1");
   });
@@ -376,8 +373,7 @@ describe('jscode/js', () => {
 
    it('NewExpression', () => {
      let newEmpty = (
-       <NewExpression callee='Object'>
-       </NewExpression>
+       <NewExpression callee='Object' />
      );
      expect(newEmpty.format()).toBe("new Object()");
 
