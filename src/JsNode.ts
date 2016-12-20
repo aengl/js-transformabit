@@ -5,13 +5,13 @@ import {
   NodePath,
   Type
 } from 'ast-types';
-import { Collection } from 'jscodeshift-collection';
-import * as js from 'jscodeshift';
+
+const recast = require('recast');
 
 // Important! Even though recast just re-exports types from ast-types, JS will
 // consider them to be different objects. When jscodeshift gets a NodePath that
 // was created in ast-types instead of recast, it won't recognise it and fail.
-const visit = require('recast').visit;
+const visit = recast.visit;
 
 export type TypeIdentifier = (Node | Type | string);
 export type GenericJsNode = JsNode<Node, any>;
@@ -66,11 +66,12 @@ export class JsNodeList<T extends GenericJsNode> {
     return list;
   }
 
-  static fromCollection(collection: Collection): JsNodeList<any> {
-    const list = new JsNodeList();
-    list._paths = collection.paths();
-    return list;
-  }
+  // for jscodeshift
+  // static fromCollection(collection: Collection): JsNodeList<any> {
+  //   const list = new JsNodeList();
+  //   list._paths = collection.paths();
+  //   return list;
+  // }
 
   constructor(type?: JsNodeType<T>) {
     this._type = type;
@@ -192,29 +193,37 @@ export class JsNode<T extends Node, P> {
   }
 
   static fromModuleCode(code: string, args?: Object): GenericJsNode {
-    return JsNode.fromCollection(js(code, args));
+    return JsNode.parse(code, args);
   }
 
   static fromCode<T extends GenericJsNode>(code: string, args?: Object): JsNodeList<T> {
     return JsNode
-      .fromCollection(js(code, args).find('Program'))
+      .parse(code, args)
+      .descend(n => n.node.type === 'Program')
       .children<T>();
   }
 
-  static fromCollection(collection: Collection): GenericJsNode {
-    return JsNode.fromPath(collection.get());
-  }
+  // for jscodeshift
+  // static fromCollection(collection: Collection): GenericJsNode {
+  //   return JsNode.fromPath(collection.get());
+  // }
 
   static fromExpressionStatement(code: string, args?: Object): GenericJsNode {
     return JsNode
-      .fromCollection(js(`() => ${code}`, args).find('ArrowFunctionExpression'))
+      .parse(`() => ${code}`, args)
+      .descend(n => n.node.type === 'ArrowFunctionExpression')
       .descend();
   }
 
   static fromFunctionBody<T extends GenericJsNode>(code: string, args?: Object): JsNodeList<T> {
     return JsNode
-      .fromCollection(js(`() => {${code}}`, args).find('BlockStatement'))
+      .parse(`() => {${code}}`, args)
+      .descend(n => n.node.type === 'BlockStatement')
       .children<T>();
+  }
+
+  static parse(code: string, args?: Object) {
+    return JsNode.fromPath(new NodePath(recast.parse(code, args)));
   }
 
   hasParent(): boolean {
@@ -226,7 +235,7 @@ export class JsNode<T extends Node, P> {
 
    */
   format(): string {
-    return js(this._path.value).toSource().replace(/\r/g, '');
+    return recast.print(this._path.value).code.replace(/\r/g, '');
   }
 
   /**
