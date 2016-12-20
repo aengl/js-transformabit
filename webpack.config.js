@@ -5,8 +5,8 @@ module.exports = {
   output: {
     filename: 'index.js',
     pathinfo: true,
-    library: 'test',
-    libraryTarget: 'var'
+    library: 'lib',
+    libraryTarget: 'this'
   },
   node: {
     fs: 'empty',

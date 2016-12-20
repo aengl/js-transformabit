@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A JS/React code transformation library.",
   "main": "index.js",
+  "typings": "index",
   "scripts": {
     "install-typings": "./install-typings.sh",
     "build": "tsc",
@@ -13,7 +14,7 @@
     "bundle": "webpack"
   },
   "devDependencies": {
-    "@types/jest": "^16.0.0",
+    "@types/jest": "^16.0.2",
     "@types/js-yaml": "^3.5.28",
     "@types/node": "^6.0.52",
     "babel-core": "^6.21.0",
