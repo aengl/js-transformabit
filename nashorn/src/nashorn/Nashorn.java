@@ -16,7 +16,7 @@ public class Nashorn {
   public static void main(String... args) throws Throwable {
     ScriptEngineManager engineManager = new ScriptEngineManager();
     ScriptEngine engine = engineManager.getEngineByName("nashorn");
-    String source = Nashorn.readFile("../main.js", Charset.forName("UTF-8"));
+    String source = Nashorn.readFile("../index.js", Charset.forName("UTF-8"));
     engine.eval(source);
     System.out.println(engine.eval("test"));
   }

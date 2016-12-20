@@ -1,15 +1,17 @@
+const webpack = require('webpack');
+
 module.exports = {
   entry: './dist/Main.js',
   output: {
-    filename: 'main.js',
+    filename: 'index.js',
     pathinfo: true,
     library: 'test',
     libraryTarget: 'var'
   },
   node: {
     fs: 'empty',
-    module: 'empty',
-    net: 'empty'
+    net: 'empty',
+    module: 'empty'
   },
   module: {
     loaders: [
@@ -17,9 +19,17 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         query: {
-          presets: ['es2015']
+          presets: ['es2015'],
+          plugins: ['transform-object-assign']
         }
       }
     ]
-  }
+  },
+  // plugins: [
+  //   new webpack.optimize.UglifyJsPlugin({
+  //     compress: {
+  //       warnings: false
+  //     }
+  //   })
+  // ]
 };

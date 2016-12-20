@@ -1,8 +1,8 @@
-.vscode/
-node_modules/
-src/
-tests/
-typings/
+/.vscode
+/node_modules
+/src
+/tests
+/typings
 *.yml
 *.sh
 Makefile
