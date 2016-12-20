@@ -3,7 +3,7 @@ const webpack = require('webpack');
 module.exports = {
   entry: './dist/Main.js',
   output: {
-    filename: 'index.js',
+    filename: './dist/index.js',
     pathinfo: true,
     library: 'lib',
     libraryTarget: 'this'
@@ -12,6 +12,9 @@ module.exports = {
     fs: 'empty',
     net: 'empty',
     module: 'empty'
+  },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js']
   },
   module: {
     loaders: [
@@ -22,6 +25,15 @@ module.exports = {
           presets: ['es2015'],
           plugins: ['transform-object-assign']
         }
+      },
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        query: {
+          compilerOptions: {
+            noImplicitAny: false
+          }
+        }
       }
     ]
   },
@@ -31,5 +43,8 @@ module.exports = {
         warnings: false
       }
     })
-  ]
+  ],
+  performance: {
+    hints: false
+  }
 };

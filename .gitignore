@@ -1,7 +1,9 @@
 /node_modules
+/build
 /dist
 /.vscode
+/npm-debug.log
+
+# Nashorn
 /nashorn/nbproject/private/
 /nashorn/build/
-npm-debug.log
-index.js

@@ -1,6 +1,7 @@
 build:
 	./install-typings.sh
 	tsc
+	npm run bundle
 
 setup:
 	npm install
