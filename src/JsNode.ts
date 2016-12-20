@@ -1,20 +1,12 @@
-/// <reference path="../typings/jscodeshift.d.ts" />
-
-import {
-  Node,
-  NodePath,
-  Type
-} from 'ast-types';
-
-const recast = require('recast');
+import { ast, recast } from '../deps/bundle';
 
 // Important! Even though recast just re-exports types from ast-types, JS will
-// consider them to be different objects. When jscodeshift gets a NodePath that
+// consider them to be different objects. When jscodeshift gets a ast.NodePath that
 // was created in ast-types instead of recast, it won't recognise it and fail.
 const visit = recast.visit;
 
-export type TypeIdentifier = (Node | Type | string);
-export type GenericJsNode = JsNode<Node, any>;
+export type TypeIdentifier = (ast.Node | ast.Type | string);
+export type GenericJsNode = JsNode<ast.Node, any>;
 export type JsNodeType<T extends GenericJsNode> = {
   new(): T,
   check?: (node: GenericJsNode) => boolean
@@ -51,16 +43,16 @@ export class JsNodeFactory {
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
 export class JsNodeList<T extends GenericJsNode> {
-  protected _paths: NodePath[] = [];
+  protected _paths: ast.NodePath[] = [];
   protected _type: JsNodeType<T>;
 
-  static fromPath(path: NodePath): JsNodeList<any> {
+  static fromPath(path: ast.NodePath): JsNodeList<any> {
     const list = new JsNodeList();
     list._paths = path.map(p => p);
     return list;
   }
 
-  static fromPaths(paths: NodePath[]): JsNodeList<any> {
+  static fromPaths(paths: ast.NodePath[]): JsNodeList<any> {
     const list = new JsNodeList();
     list._paths = paths;
     return list;
@@ -144,7 +136,7 @@ export class JsNodeList<T extends GenericJsNode> {
     return this;
   }
 
-  pushPath(path: NodePath): this {
+  pushPath(path: ast.NodePath): this {
     this._paths.push(path);
     return this;
   }
@@ -175,18 +167,18 @@ export class JsNodeList<T extends GenericJsNode> {
 /**
  * Represents a node in the AST tree.
  */
-export class JsNode<T extends Node, P> {
-  protected _path: NodePath;
+export class JsNode<T extends ast.Node, P> {
+  protected _path: ast.NodePath;
 
   public props: P;
 
-  static fromNode<T extends GenericJsNode>(astNode: Node): T {
+  static fromNode<T extends GenericJsNode>(astNode: ast.Node): T {
     let node = JsNodeFactory.create<T>(astNode.type.toString());
     node.node = astNode;
     return node;
   }
 
-  static fromPath<T extends GenericJsNode>(path: NodePath): T {
+  static fromPath<T extends GenericJsNode>(path: ast.NodePath): T {
     const node = JsNodeFactory.create<T>(path.value.type.toString());
     node.path = path;
     return node;
@@ -223,7 +215,7 @@ export class JsNode<T extends Node, P> {
   }
 
   static parse(code: string, args?: Object) {
-    return JsNode.fromPath(new NodePath(recast.parse(code, args)));
+    return JsNode.fromPath(new ast.NodePath(recast.parse(code, args)));
   }
 
   hasParent(): boolean {
@@ -244,11 +236,11 @@ export class JsNode<T extends Node, P> {
    * For more information about Paths, see:
    * https://github.com/benjamn/ast-types
    */
-  get path(): NodePath {
+  get path(): ast.NodePath {
     return this._path;
   }
 
-  set path(path: NodePath) {
+  set path(path: ast.NodePath) {
     this._path = path;
   }
 
@@ -263,7 +255,7 @@ export class JsNode<T extends Node, P> {
   }
 
   set node(node: T) {
-    this._path = new NodePath(node);
+    this._path = new ast.NodePath(node);
   }
 
   build(props: P, children: any[]): JsNode<T, P> {
@@ -329,10 +321,10 @@ export class JsNode<T extends Node, P> {
    * predicate callback.
    */
   descend<T extends GenericJsNode>(predicate?: (node: GenericJsNode) => boolean): T {
-    let result: NodePath;
+    let result: ast.NodePath;
     const self = this.node;
     visit(this.node, {
-      visitNode: function(p: NodePath) {
+      visitNode: function(p: ast.NodePath) {
         if (p.node === self) {
           this.traverse(p);
         } else if (!result) {
@@ -358,7 +350,7 @@ export class JsNode<T extends Node, P> {
     let result = new JsNodeList<T>();
     const self = this.node;
     visit(this.node, {
-      visitNode: function(p: NodePath) {
+      visitNode: function(p: ast.NodePath) {
         if (p.node === self) {
           this.traverse(p);
         } else {
@@ -384,7 +376,7 @@ export class JsNode<T extends Node, P> {
     const self = this.node;
     const node = new type();
     visit(this.node, {
-      visitNode: function(p: NodePath) {
+      visitNode: function(p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else {
@@ -444,10 +436,10 @@ export class JsNode<T extends Node, P> {
   /**
    * Replaces the current node with another.
    */
-  replace(node: (GenericJsNode | Node)): this {
+  replace(node: (GenericJsNode | ast.Node)): this {
     let astNode = this.toAstNode(node);
     if (!this._path.parent) {
-      this._path = new NodePath(astNode);
+      this._path = new ast.NodePath(astNode);
     } else {
       this._path.replace(astNode);
     }
@@ -470,7 +462,7 @@ export class JsNode<T extends Node, P> {
     const self = this.node;
     let children = new JsNodeList<T>();
     visit(this.node, {
-      visitNode: function(p: NodePath) {
+      visitNode: function(p: ast.NodePath) {
         if (p.parent && p.parent.node === self) {
           children.push(JsNode.fromPath<T>(p));
         }
@@ -486,7 +478,7 @@ export class JsNode<T extends Node, P> {
   removeChildren(predicate?: (node: GenericJsNode) => boolean): this {
     const self = this.node;
     visit(this.node, {
-      visitNode: function(p: NodePath) {
+      visitNode: function(p: ast.NodePath) {
         if (p.parent && p.parent.node === self) {
           const node = JsNode.fromPath(p);
           if (predicate === undefined || predicate(node)) {
@@ -504,7 +496,7 @@ export class JsNode<T extends Node, P> {
    */
   removeDescendants(predicate: (node: GenericJsNode) => boolean): this {
     visit(this.node, {
-      visitNode: function(p: NodePath) {
+      visitNode: function(p: ast.NodePath) {
         const node = JsNode.fromPath(p);
         if (predicate(node)) {
           p.prune();
@@ -518,7 +510,7 @@ export class JsNode<T extends Node, P> {
   /**
    * Inserts a new node as a sibling of the current node.
    */
-  insertBefore(node: (GenericJsNode | Node)): this {
+  insertBefore(node: (GenericJsNode | ast.Node)): this {
     this._path.insertBefore(this.toAstNode(node));
     return this;
   }
@@ -526,7 +518,7 @@ export class JsNode<T extends Node, P> {
   /**
    * Inserts a new node as a sibling of the current node.
    */
-  insertAfter(node: (GenericJsNode | Node)): this {
+  insertAfter(node: (GenericJsNode | ast.Node)): this {
     this._path.insertAfter(this.toAstNode(node));
     return this;
   }
@@ -534,7 +526,7 @@ export class JsNode<T extends Node, P> {
   /**
    * Helper to unwrap a node to an ast-types node.
    */
-  protected toAstNode(node: (GenericJsNode | Node)): Node {
+  protected toAstNode(node: (GenericJsNode | ast.Node)): ast.Node {
     return (node instanceof JsNode) ? node.node : node;
   }
 
@@ -556,7 +548,7 @@ export class JsNode<T extends Node, P> {
    * Returns the AST node if the argument is a JsNode. Calls the fallback
    * callback, otherwise.
    */
-  protected getNodeOrFallback<T extends Node>(obj: (string | GenericJsNode),
+  protected getNodeOrFallback<T extends ast.Node>(obj: (string | GenericJsNode),
     fallback: (s: string) => T): T {
 
     return (typeof obj === 'string') ? <T>fallback(obj) : <T>obj.node;

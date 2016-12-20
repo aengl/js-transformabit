@@ -1,20 +1,16 @@
 const webpack = require('webpack');
 
 module.exports = {
-  entry: './dist/Main.js',
+  entry: './index.js',
   output: {
-    filename: './dist/index.js',
+    filename: './bundle.js',
     pathinfo: true,
-    library: 'lib',
-    libraryTarget: 'this'
+    libraryTarget: 'commonjs2'
   },
   node: {
     fs: 'empty',
     net: 'empty',
     module: 'empty'
-  },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js']
   },
   module: {
     loaders: [
@@ -24,15 +20,6 @@ module.exports = {
         query: {
           presets: ['es2015'],
           plugins: ['transform-object-assign']
-        }
-      },
-      {
-        test: /\.tsx?$/,
-        loader: 'ts-loader',
-        query: {
-          compilerOptions: {
-            noImplicitAny: false
-          }
         }
       }
     ]

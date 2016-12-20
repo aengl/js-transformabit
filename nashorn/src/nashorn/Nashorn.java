@@ -16,8 +16,7 @@ public class Nashorn {
   public static void main(String... args) throws Throwable {
     ScriptEngineManager engineManager = new ScriptEngineManager();
     ScriptEngine engine = engineManager.getEngineByName("nashorn");
-    String source = Nashorn.readFile("../dist/index.js", Charset.forName("UTF-8"));
+    String source = Nashorn.readFile("../deps/bundle.js", Charset.forName("UTF-8"));
     engine.eval(source);
-    System.out.println(engine.eval("lib.JsNode.parse('let foo;').format()"));
   }
 }

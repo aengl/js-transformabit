@@ -4,7 +4,7 @@ import {
   JsNodeList,
   GenericJsNode
 } from '../JsNode';
-import * as ast from 'ast-types';
+import { ast } from '../../deps/bundle';
 
 const b = ast.builders;
 

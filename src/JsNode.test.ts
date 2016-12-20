@@ -10,7 +10,7 @@ import {
   Program,
   File
 } from './JsCode';
-import * as ast from 'ast-types';
+import { ast } from '../deps/bundle';
 
 const b = ast.builders;
 

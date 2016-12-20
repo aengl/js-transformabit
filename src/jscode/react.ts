@@ -11,7 +11,7 @@ import {
   MemberExpression,
   Property
 } from './js';
-import * as ast from 'ast-types';
+import { ast } from '../../deps/bundle';
 
 const b = ast.builders;
 

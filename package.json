@@ -2,29 +2,21 @@
   "name": "js-transformabit",
   "version": "0.1.0",
   "description": "A JS/React code transformation library.",
-  "main": "./dist/index.js",
-  "typings": "./dist/index",
+  "main": "./dist/Main.js",
+  "typings": "./dist/Main",
   "scripts": {
     "build": "tsc",
     "build-watch": "tsc -w",
     "test": "jest",
     "test-watch": "jest --watch",
-    "demo-watch": "nodemon -e js ./dist/demo/printer.js",
-    "bundle": "webpack"
+    "demo-watch": "nodemon -e js ./dist/demo/printer.js"
   },
   "devDependencies": {
     "@types/jest": "^16.0.2",
     "@types/js-yaml": "^3.5.28",
     "@types/node": "^6.0.52",
-    "babel-core": "^6.21.0",
-    "babel-loader": "^6.2.10",
-    "babel-plugin-transform-object-assign": "^6.8.0",
-    "babel-preset-es2015": "^6.18.0",
     "jest": "^18.0.0",
     "js-yaml": "^3.7.0",
-    "recast": "^0.11.18",
-    "ts-loader": "^1.3.3",
-    "typescript": "^2.1.4",
-    "webpack": "^2.2.0-rc.1"
+    "typescript": "^2.1.4"
   }
 }
