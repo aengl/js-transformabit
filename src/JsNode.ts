@@ -8,8 +8,9 @@ const visit = recast.visit;
 export type TypeIdentifier = (ast.Node | ast.Type | string);
 export type GenericJsNode = JsNode<ast.Node, any>;
 export type JsNodeType<T extends GenericJsNode> = {
-  new(): T,
-  check?: (node: GenericJsNode) => boolean
+  new(): T;
+  name: string;
+  check?: (node: GenericJsNode) => boolean;
 };
 
 export class InvalidTypeError extends Error {
