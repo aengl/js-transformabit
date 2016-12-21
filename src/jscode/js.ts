@@ -452,6 +452,15 @@ export class ObjectExpression
 
   private getProperties(children: any[]): ast.Property[] {
     let nodes = Array<ast.Property>();
+    if (children[0] instanceof Array) {
+      let props = new Array<ast.Property>();
+      for (const p of children[0]) {
+        if (p instanceof Property) {
+          props.push(p.node as ast.Property);
+        }
+      }
+      return props;
+    }
     for (let jsnode of children) {
       if (jsnode.constructor.name !== "Property") {
         throw new Error("Children of Object Expression must be all of Property");
@@ -586,7 +595,7 @@ export class MemberExpression
 export type AssignmentExpressionProps = {
   operator?: ast.AssignmentOperator,
   left?: string | Identifier | MemberExpression,
-  right?: string | Identifier | Literal | CallExpression | NewExpression
+  right?: string | Identifier | Literal | CallExpression | NewExpression | ObjectExpression
 };
 
 @JsNodeFactory.registerType
@@ -827,6 +836,8 @@ export type Pattern =
 /*========================================================================
                             Binary Expression
 =========================================================================*/
+
+export type BinaryOperator = ast.BinaryOperator;
 export type BinaryExpressionProps = ExpressionProps & {
     left: Identifier,
     operator: string,
