@@ -17,7 +17,10 @@ import {
   ObjectExpression,
   FunctionExpression,
   MethodDefinition,
-  NewExpression
+  NewExpression,
+  ImportSpecifier,
+  ImportDeclaration,
+  BinaryExpression
 } from '../JsCode';
 
 describe('jscode/js', () => {
@@ -386,4 +389,80 @@ describe('jscode/js', () => {
      expect(fewArgs.format()).toBe("new Thing(3, bar, \"foo\")");
 
    });
+
+      it('BinaryExpression', () => {
+      let doubleEquals = (
+        <BinaryExpression
+          left={<Identifier name="foo"/> as Identifier}
+          operator="=="
+          right={<Identifier name="bar"/> as Identifier}
+        />
+      )
+      expect(doubleEquals.format()).toBe("foo == bar");
+
+          let tripleNotEquals = (
+        <BinaryExpression
+          left={<Identifier name="foo"/> as Identifier}
+          operator="!=="
+          right={<Identifier name="bar"/> as Identifier}
+        />
+      )
+      expect(tripleNotEquals.format()).toBe("foo !== bar");
+    });
+
+    it('ImportDeclaration', () => {
+      let foo = (
+        <ImportSpecifier
+          imported={<Identifier name="Foo"/> as Identifier}
+          local={<Identifier name="Foo" /> as Identifier}
+        />
+      );
+
+      let bar = (
+        <ImportSpecifier
+          imported={<Identifier name="Bar"/> as Identifier}
+          local={<Identifier name="Bar" /> as Identifier}
+        />
+      );
+
+      let one = (
+        <ImportDeclaration source={<Literal value="Foo"/> as Literal}>
+          {foo}
+        </ImportDeclaration>
+      );
+      expect(one.format()).toBe("import { Foo } from \"Foo\";");
+
+      let two = (
+        <ImportDeclaration source={<Literal value="Foo"/> as Literal}>
+          {foo}
+          {bar}
+        </ImportDeclaration>
+      );
+      expect(two.format()).toBe("import { Foo, Bar } from \"Foo\";");
+
+      let specifiers = [foo, bar];
+      let asArray = (
+        <ImportDeclaration source={<Literal value="Foo"/> as Literal}>
+          {specifiers}
+        </ImportDeclaration>
+      );
+      expect(asArray.format()).toBe("import { Foo, Bar } from \"Foo\";");
+
+      let barAsBaz = (
+        <ImportSpecifier
+          imported={<Identifier name="Bar"/> as Identifier}
+          local={<Identifier name="Baz" /> as Identifier}
+        />
+      );
+      let alias = (
+        <ImportDeclaration source={<Literal value="Code"/> as Literal}>
+          {barAsBaz}
+        </ImportDeclaration>
+      );
+      expect(alias.format()).toBe("import { Bar as Baz } from \"Code\";");
+
+    });
 });
+
+
+ 

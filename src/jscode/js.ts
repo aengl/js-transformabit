@@ -822,3 +822,79 @@ export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps>
 export type Pattern =
   Identifier /*| ObjectPattern | ArrayPattern | RestElement |
   AssignmentPattern*/ | MemberExpression;
+
+
+/*========================================================================
+                            Binary Expression
+=========================================================================*/
+export type BinaryExpressionProps = ExpressionProps & {
+    left: Identifier,
+    operator: string,
+    right:  Identifier
+}
+
+@JsNodeFactory.registerType
+export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpressionProps> {
+  build(props: BinaryExpressionProps, children: GenericJsNode[]): BinaryExpression {
+    this.node = ast.builders.binaryExpression(
+      props.operator,
+      props.left.node,
+      props.right.node
+    );
+    return super.build(props, children) as this;
+  }
+}
+
+/*========================================================================
+                            Import Specifier
+=========================================================================*/
+
+export type ImportSpecifierProps = {
+  imported: Identifier,
+  local: Identifier
+};
+
+@JsNodeFactory.registerType
+export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifierProps> {
+  props: ImportSpecifierProps;
+  build(props: ImportSpecifierProps, children: GenericJsNode[]): ImportSpecifier {
+    this.node = ast.builders.importSpecifier(
+      props.imported.node,
+      props.local.node
+    )
+    return super.build(props, children) as this;
+  }
+}
+
+/*========================================================================
+                            Import Declaration
+=========================================================================*/
+
+export type ImportDeclarationProps = {
+  source: Literal
+};
+
+@JsNodeFactory.registerType
+export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDeclarationProps> {
+  props: ImportDeclarationProps;
+  build(props: ImportDeclarationProps, children: GenericJsNode[]): ImportDeclaration {
+    this.node = ast.builders.importDeclaration(
+      this.getSpecifiers(children, new Array<ast.Node>()),
+      props.source.node
+    )
+    return super.build(props, children) as this;
+  }
+
+  private getSpecifiers(children: GenericJsNode[], nodes: ast.Node[]): ast.Node[] {
+    for (const child of children) {
+      if (child instanceof ImportSpecifier) {
+        nodes.push(child.node);
+      } else if (child instanceof Array) {
+        nodes = this.getSpecifiers(child, nodes);
+      } else {
+        throw new Error("Import Delcaration child must be Import Specifiers or arrays of Import Specifiers");
+      }
+    }
+    return nodes;
+  }
+}

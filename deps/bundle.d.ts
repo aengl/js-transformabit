@@ -905,6 +905,19 @@ export declare namespace ast {
   };
 
   export var builders: {
+    importDeclaration: (
+      speicifiers: Node[],
+      source: Literal
+    ) => ImportDeclaration;
+    importSpecifier: (
+      imported: Identifier,
+      local: Identifier
+    ) => ImportSpecifier;
+    binaryExpression: (
+      operator: string,
+      left: SimpleLiteral | RegExpLiteral | Identifier,
+      right: SimpleLiteral | RegExpLiteral | Identifier
+    ) => BinaryExpression;
     arrowFunctionExpression: (
       params: Pattern[],
       body: BlockStatement | Expression,
