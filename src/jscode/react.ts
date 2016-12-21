@@ -8,7 +8,6 @@ import {
   ObjectExpression,
   VariableDeclaration,
   BlockStatement,
-  MemberExpression,
   Property
 } from './js';
 import { ast } from '../../deps/bundle';
