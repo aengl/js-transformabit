@@ -146,10 +146,9 @@ export class JsNodeList<T extends GenericJsNode> {
     return this;
   }
 
-  // TODO: find a way to properly type this array or remove the method
-  // toArray(): GenericJsNode[] {
-  //   return this._paths.map(path => JsNode.fromPath(path));
-  // }
+  nodes<T extends ast.Node>(): T[] {
+    return this._paths.map(p => <T>p.value);
+  }
 
   protected getTypedNode(index: number): T {
     if (index >= this._paths.length) {

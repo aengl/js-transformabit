@@ -96,4 +96,29 @@ describe('jscode/react', () => {
     }
 });`);
   });
+
+  it('ReactComponent -> ReactClassComponent', () => {
+    let component = (
+      <ReactComponent name='Foo'>
+        <ReactComponentRender>
+          {'<div>bar!</div>'}
+        </ReactComponentRender>
+        <ReactComponentEventHandler name='bar'>
+          <ReturnStatement>
+            <Literal value={42} />
+          </ReturnStatement>
+        </ReactComponentEventHandler>
+      </ReactComponent>
+    ) as ReactComponent;
+    expect(component.convertToReactClassComponent().format()).toBe(
+`class Foo extends React.Component {
+    render() {
+        return <div>bar!</div>;
+    }
+
+    bar(event) {
+        return 42;
+    }
+}`);
+  });
 });

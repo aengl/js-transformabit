@@ -253,99 +253,99 @@ describe('jscode/js', () => {
   });
 
   it('MethodDefinition', () => {
-      let empty = (
-        <MethodDefinition key="bar" kind='method'>
-        </MethodDefinition>
-      );
-      expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
+    let empty = (
+      <MethodDefinition key="bar" kind='method'>
+      </MethodDefinition>
+    );
+    expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
 
-      let notEmpty = (
-        <MethodDefinition key="foo" kind='method'>
-          <FunctionExpression>
-            <BlockStatement>
-              <ReturnStatement>
-                <Literal value={true}/>
-              </ReturnStatement>
-            </BlockStatement>
-          </FunctionExpression>
-        </MethodDefinition>
-      );
-      expect(notEmpty.format().replace(/\n([\s]*)/g, "")).toBe("foo() {return true;}");
-    });
+    let notEmpty = (
+      <MethodDefinition key="foo" kind='method'>
+        <FunctionExpression>
+          <BlockStatement>
+            <ReturnStatement>
+              <Literal value={true} />
+            </ReturnStatement>
+          </BlockStatement>
+        </FunctionExpression>
+      </MethodDefinition>
+    );
+    expect(notEmpty.format().replace(/\n([\s]*)/g, "")).toBe("foo() {return true;}");
+  });
 
   it('ClassDeclaration', () => {
-      let empty = (
-        <ClassDeclaration id="Foo" superClass='Bar'>
-        </ClassDeclaration>
-      );
-      expect(empty.format()).toBe("class Foo extends Bar {}");
+    let empty = (
+      <ClassDeclaration id="Foo" superClass='Bar'>
+      </ClassDeclaration>
+    );
+    expect(empty.format()).toBe("class Foo extends Bar {}");
 
-      let withMethod = (
+    let withMethod = (
       <ClassDeclaration id="Foo" superClass='Bar'>
 
         <MethodDefinition key="foo" kind='method'>
           <FunctionExpression>
             <BlockStatement>
               <ReturnStatement>
-                <Literal value={true}/>
+                <Literal value={true} />
               </ReturnStatement>
             </BlockStatement>
           </FunctionExpression>
         </MethodDefinition>
 
       </ClassDeclaration>
-      );
-      expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
+    );
+    expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
 
-      let withTwoMethods = (
-        <ClassDeclaration id="Foo" superClass='Bar'>
+    let withTwoMethods = (
+      <ClassDeclaration id="Foo" superClass='Bar'>
         <MethodDefinition key="bar" kind='method'>
           <FunctionExpression>
             <BlockStatement>
               <ReturnStatement>
-                <Literal value={true}/>
+                <Literal value={true} />
               </ReturnStatement>
             </BlockStatement>
           </FunctionExpression>
-          </MethodDefinition>
-          <MethodDefinition key="foo" kind='method'>
-            <FunctionExpression>
-              <BlockStatement>
-                <ReturnStatement>
-                  <Literal value={true}/>
-                </ReturnStatement>
-              </BlockStatement>
-            </FunctionExpression>
-          </MethodDefinition>
+        </MethodDefinition>
+        <MethodDefinition key="foo" kind='method'>
+          <FunctionExpression>
+            <BlockStatement>
+              <ReturnStatement>
+                <Literal value={true} />
+              </ReturnStatement>
+            </BlockStatement>
+          </FunctionExpression>
+        </MethodDefinition>
 
-        </ClassDeclaration>
-      );
-      expect(withTwoMethods.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
-    });
+      </ClassDeclaration>
+    );
+    expect(withTwoMethods.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
+  });
 
   it('FunctionExpression', () => {
-    let empty = <FunctionExpression/>;
-     expect(empty.format()).toBe("function() {}");
+    let empty = <FunctionExpression />;
+    expect(empty.format()).toBe("function() {}");
 
-     // let gen = <FunctionExpression generator={true}/> as FunctionExpression
-     // expect(gen.format()).toBe("function*() {}");
+    // let gen = <FunctionExpression generator={true}/> as FunctionExpression
+    // expect(gen.format()).toBe("function*() {}");
 
     let blockWithNoParams = (
       <FunctionExpression>
         <BlockStatement>
           <VariableDeclaration name="num" kind='let'>
-            <Literal value={3}/>
+            <Literal value={3} />
           </VariableDeclaration>
         </BlockStatement>
       </FunctionExpression>
     );
-     expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}");
+    expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}");
   });
 
-    it('Property', () => {
-     let valAsChild = (
+  it('Property', () => {
+    let valAsChild = (
       <Property key="render" kind='init'>
-        <FunctionExpression/>
+        <FunctionExpression />
       </Property>
     );
     expect(valAsChild.format()).toBe("render: function() {}");
@@ -358,111 +358,111 @@ describe('jscode/js', () => {
 
   it('ObjectExpression', () => {
     let empty = (
-       <ObjectExpression/>
+      <ObjectExpression />
     );
     expect(empty.format()).toBe("{}");
 
-     let abc1 = (
+    let abc1 = (
       <ObjectExpression>
-         <Property key="a" kind='init'>a</Property>
-         <Property key="b" kind='init'>b</Property>
-         <Property key="c" kind='init'>c</Property>
-         <Property key="one" kind='init' value={Literal.fromValue(1)}/>
-       </ObjectExpression>
-     );
+        <Property key="a" kind='init'>a</Property>
+        <Property key="b" kind='init'>b</Property>
+        <Property key="c" kind='init'>c</Property>
+        <Property key="one" kind='init' value={Literal.fromValue(1)} />
+      </ObjectExpression>
+    );
     expect(abc1.format().replace(/\s/g, "")).toBe(`{a:"a",b:"b",c:"c",one:1}`);
-   });
+  });
 
-   it('NewExpression', () => {
-     let newEmpty = (
-       <NewExpression callee='Object' />
-     );
-     expect(newEmpty.format()).toBe("new Object()");
+  it('NewExpression', () => {
+    let newEmpty = (
+      <NewExpression callee='Object' />
+    );
+    expect(newEmpty.format()).toBe("new Object()");
 
-     let fewArgs = (
-       <NewExpression callee='Thing'>
-          <Literal value={3}/>
-          <Identifier name="bar"/>
-          <Literal value="foo"/>
-       </NewExpression>
-     );
-     expect(fewArgs.format()).toBe("new Thing(3, bar, \"foo\")");
+    let fewArgs = (
+      <NewExpression callee='Thing'>
+        <Literal value={3} />
+        <Identifier name="bar" />
+        <Literal value="foo" />
+      </NewExpression>
+    );
+    expect(fewArgs.format()).toBe("new Thing(3, bar, \"foo\")");
 
-   });
+  });
 
-      it('BinaryExpression', () => {
-      let doubleEquals = (
-        <BinaryExpression
-          left={<Identifier name="foo"/> as Identifier}
-          operator="=="
-          right={<Identifier name="bar"/> as Identifier}
+  it('BinaryExpression', () => {
+    let doubleEquals = (
+      <BinaryExpression
+        left={<Identifier name="foo" /> as Identifier}
+        operator="=="
+        right={<Identifier name="bar" /> as Identifier}
         />
-      )
-      expect(doubleEquals.format()).toBe("foo == bar");
+    )
+    expect(doubleEquals.format()).toBe("foo == bar");
 
-          let tripleNotEquals = (
-        <BinaryExpression
-          left={<Identifier name="foo"/> as Identifier}
-          operator="!=="
-          right={<Identifier name="bar"/> as Identifier}
+    let tripleNotEquals = (
+      <BinaryExpression
+        left={<Identifier name="foo" /> as Identifier}
+        operator="!=="
+        right={<Identifier name="bar" /> as Identifier}
         />
-      )
-      expect(tripleNotEquals.format()).toBe("foo !== bar");
-    });
+    )
+    expect(tripleNotEquals.format()).toBe("foo !== bar");
+  });
 
-    it('ImportDeclaration', () => {
-      let foo = (
-        <ImportSpecifier
-          imported={<Identifier name="Foo"/> as Identifier}
-          local={<Identifier name="Foo" /> as Identifier}
+  it('ImportDeclaration', () => {
+    let foo = (
+      <ImportSpecifier
+        imported={<Identifier name="Foo" /> as Identifier}
+        local={<Identifier name="Foo" /> as Identifier}
         />
-      );
+    );
 
-      let bar = (
-        <ImportSpecifier
-          imported={<Identifier name="Bar"/> as Identifier}
-          local={<Identifier name="Bar" /> as Identifier}
+    let bar = (
+      <ImportSpecifier
+        imported={<Identifier name="Bar" /> as Identifier}
+        local={<Identifier name="Bar" /> as Identifier}
         />
-      );
+    );
 
-      let one = (
-        <ImportDeclaration source={<Literal value="Foo"/> as Literal}>
-          {foo}
-        </ImportDeclaration>
-      );
-      expect(one.format()).toBe("import { Foo } from \"Foo\";");
+    let one = (
+      <ImportDeclaration source={<Literal value="Foo" /> as Literal}>
+        {foo}
+      </ImportDeclaration>
+    );
+    expect(one.format()).toBe("import { Foo } from \"Foo\";");
 
-      let two = (
-        <ImportDeclaration source={<Literal value="Foo"/> as Literal}>
-          {foo}
-          {bar}
-        </ImportDeclaration>
-      );
-      expect(two.format()).toBe("import { Foo, Bar } from \"Foo\";");
+    let two = (
+      <ImportDeclaration source={<Literal value="Foo" /> as Literal}>
+        {foo}
+        {bar}
+      </ImportDeclaration>
+    );
+    expect(two.format()).toBe("import { Foo, Bar } from \"Foo\";");
 
-      let specifiers = [foo, bar];
-      let asArray = (
-        <ImportDeclaration source={<Literal value="Foo"/> as Literal}>
-          {specifiers}
-        </ImportDeclaration>
-      );
-      expect(asArray.format()).toBe("import { Foo, Bar } from \"Foo\";");
+    let specifiers = [foo, bar];
+    let asArray = (
+      <ImportDeclaration source={<Literal value="Foo" /> as Literal}>
+        {specifiers}
+      </ImportDeclaration>
+    );
+    expect(asArray.format()).toBe("import { Foo, Bar } from \"Foo\";");
 
-      let barAsBaz = (
-        <ImportSpecifier
-          imported={<Identifier name="Bar"/> as Identifier}
-          local={<Identifier name="Baz" /> as Identifier}
+    let barAsBaz = (
+      <ImportSpecifier
+        imported={<Identifier name="Bar" /> as Identifier}
+        local={<Identifier name="Baz" /> as Identifier}
         />
-      );
-      let alias = (
-        <ImportDeclaration source={<Literal value="Code"/> as Literal}>
-          {barAsBaz}
-        </ImportDeclaration>
-      );
-      expect(alias.format()).toBe("import { Bar as Baz } from \"Code\";");
+    );
+    let alias = (
+      <ImportDeclaration source={<Literal value="Code" /> as Literal}>
+        {barAsBaz}
+      </ImportDeclaration>
+    );
+    expect(alias.format()).toBe("import { Bar as Baz } from \"Code\";");
 
-    });
+  });
 });
 
 
- 
+

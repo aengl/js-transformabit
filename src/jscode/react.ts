@@ -4,6 +4,7 @@ import {
   MethodDefinition,
   ClassDeclaration,
   ClassDeclarationProps,
+  FunctionExpression,
   CallExpression,
   ObjectExpression,
   VariableDeclaration,
@@ -123,7 +124,7 @@ export class ReactComponent
         b.identifier(prop.key().name),
         b.functionExpression(
           null,
-          [],
+          prop.findFirstChildOfType(FunctionExpression).params().nodes<ast.Pattern>(),
           prop.findFirstChildOfType(BlockStatement).node
         )
       ));
