@@ -9,4 +9,5 @@ export interface Transformation {
 
 export type TransformationClass<T extends Transformation> = {
   new(): T
+  name: string;
 };

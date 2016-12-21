@@ -9,7 +9,6 @@ export type TypeIdentifier = (ast.Node | ast.Type | string);
 export type GenericJsNode = JsNode<ast.Node, any>;
 export type JsNodeType<T extends GenericJsNode> = {
   new(): T;
-  name: string;
   check?: (node: GenericJsNode) => boolean;
 };
 
