@@ -8,8 +8,7 @@
     "build": "tsc",
     "build-watch": "tsc -w",
     "test": "jest",
-    "test-watch": "jest --watch",
-    "demo-watch": "nodemon -e js ./dist/demo/printer.js"
+    "test-watch": "jest --watch"
   },
   "devDependencies": {
     "@types/jest": "^16.0.2",

@@ -1,22 +1,22 @@
 {
-    "compileOnSave": true,
-    "compilerOptions": {
-        "outDir": "./dist/",
-        "noImplicitAny": true,
-        "noUnusedLocals": true,
-        "sourceMap": true,
-        "declaration": true,
-        "removeComments": true,
-        "experimentalDecorators": true,
-        "module": "commonjs",
-        "jsx": "react",
-        "reactNamespace": "JsCode",
-        "target": "es5",
-        "lib": [
-            "es6"
-        ]
-    },
-    "include": [
-        "src/**/*"
+  "compileOnSave": true,
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "jsx": "react",
+    "reactNamespace": "JsCode",
+    "target": "es5",
+    "lib": [
+      "es6"
     ]
+  },
+  "include": [
+    "src/**/*"
+  ]
 }
