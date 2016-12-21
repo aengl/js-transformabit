@@ -3,6 +3,7 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "noImplicitAny": true,
+        "noUnusedLocals": true,
         "sourceMap": true,
         "declaration": true,
         "removeComments": true,
