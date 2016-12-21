@@ -218,6 +218,10 @@ export class JsNode<T extends ast.Node, P> {
     return JsNode.fromPath(new ast.NodePath(recast.parse(code, args)));
   }
 
+  get sourceLocation() {
+    return this.node.loc;
+  }
+
   hasParent(): boolean {
     return !!this._path && !!this._path.parent;
   }

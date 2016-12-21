@@ -592,6 +592,7 @@ export class MemberExpression
                             Assignment Expression
 =========================================================================*/
 
+export type AssignmentOperator = ast.AssignmentOperator;
 export type AssignmentExpressionProps = {
   operator?: ast.AssignmentOperator,
   left?: string | Identifier | MemberExpression,
@@ -601,6 +602,14 @@ export type AssignmentExpressionProps = {
 @JsNodeFactory.registerType
 export class AssignmentExpression
   extends JsNode<ast.AssignmentExpression, AssignmentExpressionProps> {
+
+  get operator() {
+    return this.node.operator;
+  }
+
+  set operator(value: AssignmentOperator) {
+    this.node.operator = value;
+  }
 
   build(props: AssignmentExpressionProps, children: any[]): AssignmentExpression {
     let operator = props.operator || '=';
@@ -681,7 +690,12 @@ export type ClassBodyProps = {
 @JsNodeFactory.registerType
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   build(props: ClassBodyProps, children: any[]): ClassBody {
-    this.node = b.classBody(this.asNodeArray(children));
+    this.node = b.classBody(
+      children
+        // TODO: do something more meaningful here
+        .map(c => (c instanceof JsNode) ? c.node : null)
+        .filter(c => c)
+    );
     return super.build(props, children) as this;
   }
 
@@ -704,17 +718,6 @@ export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   createMethod(node: ast.Node, index?: number): this {
     this._path.get('body').push(node);
     return this;
-  }
-
-  private asNodeArray(children: any[]): ast.ClassBodyElement[] {
-    if (children.length < 1) {
-      return [];
-    }
-    let nodes = Array<ast.ClassBodyElement>();
-    for (let n of children) {
-      nodes.push(n.node as ast.ClassBodyElement);
-    }
-    return nodes;
   }
 }
 
@@ -846,6 +849,14 @@ export type BinaryExpressionProps = ExpressionProps & {
 
 @JsNodeFactory.registerType
 export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpressionProps> {
+  get operator() {
+    return this.node.operator;
+  }
+
+  set operator(value: BinaryOperator) {
+    this.node.operator = value;
+  }
+
   build(props: BinaryExpressionProps, children: GenericJsNode[]): BinaryExpression {
     this.node = ast.builders.binaryExpression(
       props.operator,
