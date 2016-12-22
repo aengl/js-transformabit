@@ -690,13 +690,13 @@ export type ClassBodyProps = {
 @JsNodeFactory.registerType
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   build(props: ClassBodyProps, children: any[]): ClassBody {
-    this.node = b.classBody(
-      children
-        // TODO: do something more meaningful here
-        .map(c => (c instanceof JsNode) ? c.node : null)
-        .filter(c => c)
-    );
-    return super.build(props, children) as this;
+    // this.node = b.classBody(
+    //   children
+    //     .map(c => (c instanceof JsNode) ? c.node : null)
+    //     .filter(c => c)
+    // );
+    // return super.build(props, children) as this;
+    throw new Error('ClassBody is created implicitly when creating a ClassDeclaration');
   }
 
   createConstructor(): this {
