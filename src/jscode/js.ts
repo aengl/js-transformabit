@@ -651,7 +651,11 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
   build(props: P, children: any[]): ClassDeclaration<T, P> {
     this.node = <T>b.classDeclaration(
       this.getNodeOrFallback(props.id, b.identifier),
-      new ClassBody().build({}, children).node,
+      b.classBody(
+         children
+           .map(c => (c instanceof JsNode) ? c.node : null)
+           .filter(c => c)
+      ),
       props.superClass ? this.getNodeOrFallback(props.superClass, b.identifier) : null
     );
     return super.build(props, children) as this;
