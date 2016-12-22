@@ -568,7 +568,7 @@ export class MemberExpression
   extends Expression<ast.MemberExpression, MemberExpressionProps> {
 
   build(props: MemberExpressionProps, children: any[]): MemberExpression {
-    let object: ast.Node;
+    let object: ast.Expression;
     if (!props.object || props.object === 'this') {
       object = b.thisExpression();
     } else {
@@ -648,14 +648,10 @@ export type ClassDeclarationProps = {
 export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDeclarationProps>
   extends JsNode<T, P> {
 
-  build(props: P, children: any[]): ClassDeclaration<T, P> {
+  build(props: P, children: JsNode<ast.ClassBodyElement, any>[]): ClassDeclaration<T, P> {
     this.node = <T>b.classDeclaration(
       this.getNodeOrFallback(props.id, b.identifier),
-      b.classBody(
-         children
-           .map(c => (c instanceof JsNode) ? c.node : null)
-           .filter(c => c)
-      ),
+      b.classBody(children.map(c => c.node)),
       props.superClass ? this.getNodeOrFallback(props.superClass, b.identifier) : null
     );
     return super.build(props, children) as this;
@@ -771,7 +767,7 @@ export class MethodDefinition
       .params();
   }
 
-  body<T extends GenericJsNode>() {
+  body<T extends GenericExpression>() {
     return <T>this.findFirstChildOfType(FunctionExpression).body();
   }
 
@@ -849,7 +845,7 @@ export type BinaryExpressionProps = ExpressionProps & {
     left: Identifier,
     operator: string,
     right:  Identifier
-}
+};
 
 @JsNodeFactory.registerType
 export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpressionProps> {
@@ -887,7 +883,7 @@ export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifier
     this.node = ast.builders.importSpecifier(
       props.imported.node,
       props.local.node
-    )
+    );
     return super.build(props, children) as this;
   }
 }
@@ -907,7 +903,7 @@ export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDecla
     this.node = ast.builders.importDeclaration(
       this.getSpecifiers(children, new Array<ast.Node>()),
       props.source.node
-    )
+    );
     return super.build(props, children) as this;
   }
 

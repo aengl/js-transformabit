@@ -8,31 +8,126 @@ export declare namespace ast {
    * https://github.com/DefinitelyTyped/DefinitelyTyped
    */
 
-  interface BaseNode {
-    // Every leaf interface that extends BaseNode must specify a type property.
-    // The type property should be a string literal. For example, Identifier
-    // has: `type: 'Identifier'`
+  export type SourceType = 'script' | 'module';
 
+  export type VariableKind = 'var' | 'let' | 'const';
+
+  export type PropertyKind = 'init' | 'get' | 'set';
+
+  export type ObjectMethodKind = 'method' | 'get' | 'set';
+
+  export type UnaryOperator =
+    '-' | '+' | '!' | '~' | 'typeof' | 'void' | 'delete';
+
+  export type BinaryOperator =
+    '==' | '!=' | '===' | '!==' | '<' | '<=' | '>' | '>=' | '<<' |
+    '>>' | '>>>' | '+' | '-' | '*' | '/' | '%' | '**' | '|' | '^' | '&' | 'in' |
+    'instanceof';
+
+  export type LogicalOperator = '||' | '&&';
+
+  export type AssignmentOperator =
+    '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '**=' | '<<=' | '>>=' | '>>>=' |
+    '|=' | '^=' | '&=';
+
+  export type UpdateOperator = '++' | '--';
+
+  export type MethodKind = 'constructor' | 'method' | 'get' | 'set';
+
+  export type Pattern =
+    Identifier | ObjectPattern | ArrayPattern | RestElement |
+    AssignmentPattern | MemberExpression;
+
+  export type Function =
+    FunctionDeclaration | FunctionExpression | ArrowFunctionExpression;
+
+  export type Declaration =
+    FunctionDeclaration | VariableDeclaration | ClassDeclaration;
+
+  export type Statement =
+    ExpressionStatement | BlockStatement | EmptyStatement |
+    DebuggerStatement | WithStatement | ReturnStatement | LabeledStatement |
+    BreakStatement | ContinueStatement | IfStatement | SwitchStatement |
+    ThrowStatement | TryStatement | WhileStatement | DoWhileStatement |
+    ForStatement | ForInStatement | ForOfStatement | Declaration;
+
+  export type Expression =
+    ThisExpression | ArrayExpression | ObjectExpression | FunctionExpression |
+    ArrowFunctionExpression | YieldExpression | Literal | UnaryExpression |
+    UpdateExpression | BinaryExpression | AssignmentExpression |
+    LogicalExpression | MemberExpression | ConditionalExpression |
+    CallExpression | NewExpression | SequenceExpression | TemplateLiteral |
+    TaggedTemplateExpression | ClassExpression | MetaProperty | Identifier |
+    AwaitExpression;
+
+  export type Class = ClassDeclaration | ClassExpression;
+
+  export type ClassBodyElement =
+    MethodDefinition | VariableDeclarator | ClassPropertyDefinition | ClassProperty;
+
+  export type CallExpression = SimpleCallExpression | NewExpression;
+
+  export type Literal = SimpleLiteral | RegExpLiteral;
+
+  export type ModuleDeclaration =
+    ImportDeclaration | ExportNamedDeclaration | ExportDefaultDeclaration |
+    ExportAllDeclaration;
+
+  export type ModuleSpecifier =
+    ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier |
+    ExportSpecifier;
+
+  export interface Node {
+    type: string;
     leadingComments?: Array<Comment>;
     trailingComments?: Array<Comment>;
     loc?: SourceLocation;
     range?: [number, number];
   }
 
-  export type Node =
-    Identifier | Literal | Program | Function | SwitchCase | CatchClause |
-    File | VariableDeclarator | Statement | Expression | Property |
-    AssignmentProperty | Super | TemplateElement | SpreadElement | Pattern |
-    ClassBody | Class | MethodDefinition | ModuleDeclaration | ModuleSpecifier;
+  interface BasePattern extends Node {}
+  interface BaseStatement extends Node {}
+  interface BaseDeclaration extends BaseStatement {}
+  interface BaseModuleDeclaration extends Node {}
 
-  export interface Comment {
-    value: string;
+  interface BaseModuleSpecifier extends Node {
+    local: Identifier;
   }
 
-  interface SourceLocation {
+  interface BaseClass extends Node {
+    superClass?: Expression;
+    body: ClassBody;
+  }
+
+  interface BaseFunction extends Node {
+    params: Array<Pattern>;
+    generator?: boolean;
+    async?: boolean;
+    // The body is either BlockStatement or Expression because arrow functions
+    // can have a body that's either. FunctionDeclarations and
+    // FunctionExpressions have only BlockStatement bodies.
+    body: BlockStatement | Expression;
+  }
+
+  interface BaseForXStatement extends BaseStatement {
+    left: VariableDeclaration | Expression;
+    right: Expression;
+    body: Statement;
+  }
+
+  interface BaseCallExpression extends BaseExpression {
+    callee: Expression | Super;
+    arguments: Array<Expression | SpreadElement>;
+  }
+
+  export interface SourceLocation {
     source?: string;
     start: Position;
     end: Position;
+  }
+
+  export interface Comment {
+    value: string;
   }
 
   export interface Position {
@@ -49,35 +144,11 @@ export declare namespace ast {
     comments?: any; // No idea what that is for
   }
 
-  export type SourceType = 'script' | 'module';
-
-  export interface Program extends BaseNode {
+  export interface Program extends Node {
     type: 'Program';
     sourceType: SourceType;
     body: Array<Statement | ModuleDeclaration>;
   }
-
-  interface BaseFunction extends BaseNode {
-    params: Array<Pattern>;
-    generator?: boolean;
-    async?: boolean;
-    // The body is either BlockStatement or Expression because arrow functions
-    // can have a body that's either. FunctionDeclarations and
-    // FunctionExpressions have only BlockStatement bodies.
-    body: BlockStatement | Expression;
-  }
-
-  export type Function =
-    FunctionDeclaration | FunctionExpression | ArrowFunctionExpression;
-
-
-  export type Statement =
-    ExpressionStatement | BlockStatement | EmptyStatement |
-    DebuggerStatement | WithStatement | ReturnStatement | LabeledStatement |
-    BreakStatement | ContinueStatement | IfStatement | SwitchStatement |
-    ThrowStatement | TryStatement | WhileStatement | DoWhileStatement |
-    ForStatement | ForInStatement | ForOfStatement | Declaration;
-  interface BaseStatement extends BaseNode { }
 
   export interface EmptyStatement extends BaseStatement {
     type: 'EmptyStatement';
@@ -165,12 +236,6 @@ export declare namespace ast {
     body: Statement;
   }
 
-  interface BaseForXStatement extends BaseStatement {
-    left: VariableDeclaration | Expression;
-    right: Expression;
-    body: Statement;
-  }
-
   export interface ForInStatement extends BaseForXStatement {
     type: 'ForInStatement';
   }
@@ -179,17 +244,11 @@ export declare namespace ast {
     type: 'DebuggerStatement';
   }
 
-  export type Declaration =
-    FunctionDeclaration | VariableDeclaration | ClassDeclaration;
-  interface BaseDeclaration extends BaseStatement { }
-
   export interface FunctionDeclaration extends BaseFunction, BaseDeclaration {
     type: 'FunctionDeclaration';
     id: Identifier;
     body: BlockStatement;
   }
-
-  export type VariableKind = 'var' | 'let' | 'const';
 
   export interface VariableDeclaration extends BaseDeclaration {
     type: 'VariableDeclaration';
@@ -197,22 +256,13 @@ export declare namespace ast {
     kind: VariableKind;
   }
 
-  export interface VariableDeclarator extends BaseNode {
+  export interface VariableDeclarator extends Node {
     type: 'VariableDeclarator';
     id: Pattern;
     init?: Expression;
   }
 
-  type Expression =
-    ThisExpression | ArrayExpression | ObjectExpression | FunctionExpression |
-    ArrowFunctionExpression | YieldExpression | Literal | UnaryExpression |
-    UpdateExpression | BinaryExpression | AssignmentExpression |
-    LogicalExpression | MemberExpression | ConditionalExpression |
-    CallExpression | NewExpression | SequenceExpression | TemplateLiteral |
-    TaggedTemplateExpression | ClassExpression | MetaProperty | Identifier |
-    AwaitExpression;
-
-  export interface BaseExpression extends BaseNode { }
+  export interface BaseExpression extends Node { }
 
   export interface ThisExpression extends BaseExpression {
     type: 'ThisExpression';
@@ -223,9 +273,7 @@ export declare namespace ast {
     elements: Array<Expression | SpreadElement>;
   }
 
-  export type PropertyKind = 'init' | 'get' | 'set';
-
-  export interface Property extends BaseNode {
+  export interface Property extends Node {
     type: 'Property';
     key: Expression;
     value: Expression | Pattern; // Could be an AssignmentProperty
@@ -288,12 +336,6 @@ export declare namespace ast {
     consequent: Expression;
   }
 
-  interface BaseCallExpression extends BaseExpression {
-    callee: Expression | Super;
-    arguments: Array<Expression | SpreadElement>;
-  }
-  export type CallExpression = SimpleCallExpression | NewExpression;
-
   export interface SimpleCallExpression extends BaseCallExpression {
     type: 'CallExpression';
   }
@@ -309,37 +351,30 @@ export declare namespace ast {
     computed: boolean;
   }
 
-  export type Pattern =
-    Identifier | ObjectPattern | ArrayPattern | RestElement |
-    AssignmentPattern | MemberExpression;
-  interface BasePattern extends BaseNode { }
-
-  export interface SwitchCase extends BaseNode {
+  export interface SwitchCase extends Node {
     type: 'SwitchCase';
     test?: Expression;
     consequent: Array<Statement>;
   }
 
-  export interface CatchClause extends BaseNode {
+  export interface CatchClause extends Node {
     type: 'CatchClause';
     param: Pattern;
     body: BlockStatement;
   }
 
-  export interface Identifier extends BaseNode, BaseExpression, BasePattern {
+  export interface Identifier extends Node, BaseExpression, BasePattern {
     type: 'Identifier';
     name: string;
   }
 
-  export type Literal = SimpleLiteral | RegExpLiteral;
-
-  export interface SimpleLiteral extends BaseNode, BaseExpression {
+  export interface SimpleLiteral extends Node, BaseExpression {
     type: 'Literal';
     value: string | boolean | number | null;
     raw: string;
   }
 
-  export interface RegExpLiteral extends BaseNode, BaseExpression {
+  export interface RegExpLiteral extends Node, BaseExpression {
     type: 'Literal';
     value: RegExp;
     regex: {
@@ -349,31 +384,15 @@ export declare namespace ast {
     raw: string;
   }
 
-  export type UnaryOperator =
-    '-' | '+' | '!' | '~' | 'typeof' | 'void' | 'delete';
-
-  export type BinaryOperator =
-    '==' | '!=' | '===' | '!==' | '<' | '<=' | '>' | '>=' | '<<' |
-    '>>' | '>>>' | '+' | '-' | '*' | '/' | '%' | '**' | '|' | '^' | '&' | 'in' |
-    'instanceof';
-
-  export type LogicalOperator = '||' | '&&';
-
-  export type AssignmentOperator =
-    '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '**=' | '<<=' | '>>=' | '>>>=' |
-    '|=' | '^=' | '&=';
-
-  export type UpdateOperator = '++' | '--';
-
   export interface ForOfStatement extends BaseForXStatement {
     type: 'ForOfStatement';
   }
 
-  export interface Super extends BaseNode {
+  export interface Super extends Node {
     type: 'Super';
   }
 
-  export interface SpreadElement extends BaseNode {
+  export interface SpreadElement extends Node {
     type: 'SpreadElement';
     argument: Expression;
   }
@@ -402,7 +421,7 @@ export declare namespace ast {
     quasi: TemplateLiteral;
   }
 
-  export interface TemplateElement extends BaseNode {
+  export interface TemplateElement extends Node {
     type: 'TemplateElement';
     tail: boolean;
     value: {
@@ -438,20 +457,12 @@ export declare namespace ast {
     right: Expression;
   }
 
-  export type Class = ClassDeclaration | ClassExpression;
-  interface BaseClass extends BaseNode {
-    superClass?: Expression;
-    body: ClassBody;
-  }
-
-  export interface ClassBody extends BaseNode {
+  export interface ClassBody extends Node {
     type: 'ClassBody';
     body: Array<MethodDefinition>;
   }
 
-  export type MethodKind = 'constructor' | 'method' | 'get' | 'set';
-
-  export interface MethodDefinition extends BaseNode {
+  export interface MethodDefinition extends Node {
     type: 'MethodDefinition';
     key: Expression;
     value: FunctionExpression;
@@ -474,18 +485,6 @@ export declare namespace ast {
     type: 'MetaProperty';
     meta: Identifier;
     property: Identifier;
-  }
-
-  export type ModuleDeclaration =
-    ImportDeclaration | ExportNamedDeclaration | ExportDefaultDeclaration |
-    ExportAllDeclaration;
-  interface BaseModuleDeclaration extends BaseNode { }
-
-  export type ModuleSpecifier =
-    ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier |
-    ExportSpecifier;
-  interface BaseModuleSpecifier extends BaseNode {
-    local: Identifier;
   }
 
   export interface ImportDeclaration extends BaseModuleDeclaration {
@@ -534,16 +533,13 @@ export declare namespace ast {
     argument: Expression;
   }
 
-  export interface ClassProperty extends BaseNode {
+  export interface ClassProperty extends Node {
     type: 'ClassProperty';
     key: Literal | Identifier | Expression;
     computed: boolean;
   }
 
-  type ClassBodyElement =
-    MethodDefinition | VariableDeclarator | ClassPropertyDefinition | ClassProperty;
-
-  export interface ClassPropertyDefinition extends BaseNode {
+  export interface ClassPropertyDefinition extends Node {
     type: 'ClassProperty';
     definition: ClassBodyElement;
   }
@@ -560,8 +556,6 @@ export declare namespace ast {
     type: 'Decorator';
     expression: Expression;
   }
-
-  export type ObjectMethodKind = 'method' | 'get' | 'set';
 
   export interface ObjectMethod {
     type: 'ObjectMethod';

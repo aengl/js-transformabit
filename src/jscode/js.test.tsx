@@ -397,7 +397,7 @@ describe('jscode/js', () => {
         operator="=="
         right={<Identifier name="bar" /> as Identifier}
         />
-    )
+    );
     expect(doubleEquals.format()).toBe("foo == bar");
 
     let tripleNotEquals = (
@@ -406,7 +406,7 @@ describe('jscode/js', () => {
         operator="!=="
         right={<Identifier name="bar" /> as Identifier}
         />
-    )
+    );
     expect(tripleNotEquals.format()).toBe("foo !== bar");
   });
 
