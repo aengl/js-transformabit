@@ -270,7 +270,6 @@ export class JsNode<T extends ast.Node, P> {
     if (!this.node || !this.node.type) {
       throw new Error(`${this.constructor.name}.build() did not assign a valid node`);
     }
-    // console.warn(this.constructor.name, this.node);
     return this;
   }
 
