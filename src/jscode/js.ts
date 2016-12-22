@@ -767,8 +767,8 @@ export class MethodDefinition
       .params();
   }
 
-  body<T extends GenericExpression>() {
-    return <T>this.findFirstChildOfType(FunctionExpression).body();
+  body() {
+    return this.findFirstChildOfType(FunctionExpression).body();
   }
 
   private getBool(val?: boolean): boolean {

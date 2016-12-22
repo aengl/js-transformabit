@@ -221,6 +221,10 @@ export class JsNode<T extends ast.Node, P> {
     return this.node.loc;
   }
 
+  set sourceLocation(value: ast.SourceLocation) {
+    this.node.loc = value;
+  }
+
   hasParent(): boolean {
     return !!this._path && !!this._path.parent;
   }

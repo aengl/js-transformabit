@@ -4,8 +4,12 @@ export declare namespace ast {
    *
    * https://github.com/benjamn/ast-types
    *
-   * A large part of this file is taken from the estree type definitions:
-   * https://github.com/DefinitelyTyped/DefinitelyTyped
+   * Some of the work is based on the estree type definitions:
+   * https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/estree
+   */
+
+  /* ---------------------------------------------------------------------------
+   * Enums
    */
 
   export type SourceType = 'script' | 'module';
@@ -33,6 +37,10 @@ export declare namespace ast {
   export type UpdateOperator = '++' | '--';
 
   export type MethodKind = 'constructor' | 'method' | 'get' | 'set';
+
+  /* ---------------------------------------------------------------------------
+   * Union types
+   */
 
   export type Pattern =
     Identifier | ObjectPattern | ArrayPattern | RestElement |
@@ -77,6 +85,13 @@ export declare namespace ast {
     ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier |
     ExportSpecifier;
 
+  export type ObjectExpressionProperty =
+    Property | ObjectMethod | ObjectProperty | SpreadProperty;
+
+  /* ---------------------------------------------------------------------------
+   * Common interfaces
+   */
+
   export interface Node {
     type: string;
     leadingComments?: Array<Comment>;
@@ -85,9 +100,29 @@ export declare namespace ast {
     range?: [number, number];
   }
 
+  export interface SourceLocation {
+    source?: string;
+    start: Position;
+    end: Position;
+  }
+
+  export interface Comment {
+    value: string;
+  }
+
+  export interface Position {
+    /** >= 1 */
+    line: number;
+    /** >= 0 */
+    column: number;
+  }
+
   interface BasePattern extends Node {}
+
   interface BaseStatement extends Node {}
+
   interface BaseDeclaration extends BaseStatement {}
+
   interface BaseModuleDeclaration extends Node {}
 
   interface BaseModuleSpecifier extends Node {
@@ -120,22 +155,9 @@ export declare namespace ast {
     arguments: Array<Expression | SpreadElement>;
   }
 
-  export interface SourceLocation {
-    source?: string;
-    start: Position;
-    end: Position;
-  }
-
-  export interface Comment {
-    value: string;
-  }
-
-  export interface Position {
-    /** >= 1 */
-    line: number;
-    /** >= 0 */
-    column: number;
-  }
+  /* ---------------------------------------------------------------------------
+   * Nodes
+   */
 
   export interface File {
     type: 'File';
@@ -544,9 +566,6 @@ export declare namespace ast {
     definition: ClassBodyElement;
   }
 
-  type ObjectExpressionProperty =
-    Property | ObjectMethod | ObjectProperty | SpreadProperty;
-
   export interface ObjectExpression extends BaseExpression {
     type: 'ObjectExpression';
     properties: ObjectExpressionProperty[];
@@ -580,6 +599,10 @@ export declare namespace ast {
     type: 'SpreadProperty';
     argument: Expression;
   }
+
+  /* ---------------------------------------------------------------------------
+   * ast-types API
+   */
 
   type ConvertibleToType = (Type | Def | Node | Array<Type | Def | Node>);
 
