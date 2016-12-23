@@ -2,8 +2,8 @@ import { GenericJsNode } from './JsNode';
 
 export interface Transformation {
   configure(...args: any[]): void;
-  check?(root: GenericJsNode, project: any): boolean;
-  apply(root: GenericJsNode, project: any): GenericJsNode;
+  check?(root: GenericJsNode): boolean;
+  apply(root: GenericJsNode): GenericJsNode;
 }
 
 export type TransformationClass<T extends Transformation> = {
