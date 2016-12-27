@@ -1,8 +1,4 @@
-node_modules
 /build
 /dist
-/npm-debug.log
-
-# Nashorn
 /nashorn/nbproject/private/
 /nashorn/build/
