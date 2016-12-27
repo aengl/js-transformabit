@@ -1,5 +1,5 @@
 build:
-	tsc
+	npm run build
 
 setup:
 	npm install
