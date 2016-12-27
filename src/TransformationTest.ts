@@ -32,7 +32,7 @@ export class TransformationTest {
     const name = transformation.constructor.name;
 
     transformation.configure(config.params);
-    const checkWasTrue = transformation.check(node, null);
+    const checkWasTrue = transformation.check(node);
 
     if (config.output !== false && !checkWasTrue) {
       throw new Error(`Transformation '${name}' is not applicable to test case ` +
@@ -45,7 +45,7 @@ export class TransformationTest {
     if (checkWasTrue) {
       const output: string = fs.readFileSync(
         `./tests/${name}/${config.output}`).toString();
-      const result = transformation.apply(node, null).format();
+      const result = transformation.apply(node).format();
       if (result !== output) {
         throw new Error(`Test case '${testCaseName}' failed for transformation ` +
           `'${name}', expecting:\n${output}\nreceived:\n${result}\n`);
