@@ -295,33 +295,6 @@ export class JsNode<T extends ast.Node, P> {
     return this.type() === type.name;
   }
 
-  findFirstChildOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
-    const matchedNode = <T>this.descend(node => node.check(type));
-    // We can't just return matchedNode since it will always be a registered
-    // type. In case we are looking for a complex type, we need to explicitly
-    // construct it from the matched node.
-    const node = new type();
-    node.path = matchedNode.path;
-    return node;
-  }
-
-  findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
-    const matchedNode = <T>this.ascend(node => node.check(type));
-    if (matchedNode) {
-      // See findFirstChildOfType()
-      const node = new type();
-      node.path = matchedNode.path;
-      return node;
-    }
-  }
-
-  findClosestScope(): GenericJsNode {
-    const scope = this._path.scope && this._path.scope.path;
-    if (scope) {
-      return JsNode.fromPath(scope);
-    }
-  }
-
   /**
    * Descends the AST and returns the next node that satisfies the
    * predicate callback.
@@ -352,17 +325,43 @@ export class JsNode<T extends ast.Node, P> {
   /**
    * Descends the AST and returns all nodes that satisfies the predicate.
    */
-  find<T extends GenericJsNode>(predicate: (node: T) => boolean): JsNodeList<T> {
+  find<T extends GenericJsNode>(predicate: (node: T) => boolean,
+    includeSelf: boolean = false): JsNodeList<T> {
+
     let result = new JsNodeList<T>();
     const self = this.node;
     visit(this.node, {
       visitNode: function(p: ast.NodePath) {
-        if (p.node === self) {
+        if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else {
           const node = JsNode.fromPath(p);
           if (predicate === undefined || predicate(<T>node)) {
             result.push(<T>node);
+          }
+          this.traverse(p);
+        }
+      }
+    });
+    return result;
+  }
+
+  findFirstChildOfType<T extends GenericJsNode>(
+    type: JsNodeType<T>, predicate?: (node: T) => boolean,
+    includeSelf: boolean = false): T {
+
+    let result: T;
+    const self = this.node;
+    const node = new type();
+    visit(this.node, {
+      visitNode: function(p: ast.NodePath) {
+        if (p.node === self && !includeSelf) {
+          this.traverse(p);
+        } else {
+          node.path = p;
+          if (node.check(type) && (!predicate || predicate(node))) {
+            result = node;
+            return false;
           }
           this.traverse(p);
         }
@@ -397,6 +396,25 @@ export class JsNode<T extends ast.Node, P> {
     return result;
   }
 
+  findClosestParentOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
+    const matchedNode = <T>this.ascend(node => node.check(type));
+    if (matchedNode) {
+      // We can't just return matchedNode since it will always be a registered
+      // type. In case we are looking for a complex type, we need to explicitly
+      // construct it from the matched node.
+      const node = new type();
+      node.path = matchedNode.path;
+      return node;
+    }
+  }
+
+  findClosestScope(): GenericJsNode {
+    const scope = this._path.scope && this._path.scope.path;
+    if (scope) {
+      return JsNode.fromPath(scope);
+    }
+  }
+
   /**
    * Ascends the AST and returns the first parent node that satisfies the
    * predicate callback.
@@ -420,7 +438,7 @@ export class JsNode<T extends ast.Node, P> {
    */
   findParentOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
     const matchedNode = <T>this.ascend(node => node.check(type));
-    // See findFirstChildOfType()
+    // See findClosestParentOfType()
     const node = new type();
     node.path = matchedNode.path;
     return node;
