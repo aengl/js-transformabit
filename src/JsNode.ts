@@ -367,7 +367,8 @@ export class JsNode<T extends ast.Node, P> {
         }
       }
     });
-    return result;
+    // return result;
+    return this.descend<T>(node => node.check(type));
   }
 
   /**
