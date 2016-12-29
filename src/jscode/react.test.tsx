@@ -1,3 +1,4 @@
+import { JsNode} from '../JsNode';
 import {
   ReactClassComponent,
   ReactComponent,
@@ -120,5 +121,18 @@ describe('jscode/react', () => {
         return 42;
     }
 }`);
+  });
+
+  it('Find ReactClassComponent', () => {
+    const code = 'class Foo extends React.Component {}';
+    // This test is tricky because ReactComponent is not a primitive type, so
+    // the JsNode factory would produce a ClassDeclaration under normal
+    // circumstances. Since we tell findFirstChildOfType() to get us a
+    // ReactComponent, however, we expect it to return the correct type.
+    const node = JsNode.fromModuleCode(code)
+      .findFirstChildOfType(ReactClassComponent);
+    expect(node).toBeDefined();
+    expect(node.constructor.name).toBe('ReactClassComponent');
+    expect(node instanceof ReactClassComponent).toBe(true);
   });
 });

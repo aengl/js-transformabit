@@ -12,9 +12,9 @@
   },
   "devDependencies": {
     "@types/jest": "^16.0.2",
-    "@types/js-yaml": "^3.5.28",
-    "@types/node": "^6.0.52",
-    "jest": "^18.0.0",
+    "@types/js-yaml": "^3.5.29",
+    "@types/node": "^6.0.54",
+    "jest": "^18.1.0",
     "js-yaml": "^3.7.0",
     "tslint": "^4.2.0",
     "typescript": "^2.1.4"

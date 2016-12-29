@@ -138,11 +138,11 @@ describe('JsNode', () => {
     expect(node.format()).toBe('42');
   });
 
-  it('find', () => {
+  it('find children', () => {
     const code = 'const foo = 42, bar = 23;';
     let nodes = JsNode.fromCode(code)
       .first()
-      .find<Identifier>(node => node.check(Identifier));
+      .findChildren<Identifier>(node => node.check(Identifier));
     expect(nodes.map(n => n.name).join()).toBe('foo,bar');
   });
 

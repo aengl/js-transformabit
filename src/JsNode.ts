@@ -308,13 +308,14 @@ export class JsNode<T extends ast.Node, P> {
           this.traverse(p);
         } else if (!result) {
           const node = JsNode.fromPath(p);
-          if (predicate === undefined || predicate(node)) {
+          if (!predicate || predicate(node)) {
             result = p;
             return false;
           }
           this.traverse(p);
+        } else {
+          return false;
         }
-        return false;
       }
     });
     if (result) {
@@ -325,7 +326,7 @@ export class JsNode<T extends ast.Node, P> {
   /**
    * Descends the AST and returns all nodes that satisfies the predicate.
    */
-  find<T extends GenericJsNode>(predicate: (node: T) => boolean,
+  findChildren<T extends GenericJsNode>(predicate: (node: T) => boolean,
     includeSelf: boolean = false): JsNodeList<T> {
 
     let result = new JsNodeList<T>();
@@ -346,6 +347,10 @@ export class JsNode<T extends ast.Node, P> {
     return result;
   }
 
+  /**
+   * Descends the AST and returns the first node of a given type that satisfies
+   * the predicate.
+   */
   findFirstChildOfType<T extends GenericJsNode>(
     type: JsNodeType<T>, predicate?: (node: T) => boolean,
     includeSelf: boolean = false): T {
@@ -357,22 +362,26 @@ export class JsNode<T extends ast.Node, P> {
       visitNode: function(p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
-        } else {
+        } else if (!result) {
           node.path = p;
           if (node.check(type) && (!predicate || predicate(node))) {
             result = node;
             return false;
           }
           this.traverse(p);
+        } else {
+          return false;
         }
       }
     });
-    // return result;
-    return this.descend<T>(node => node.check(type));
+    if (result) {
+      return result;
+    }
   }
 
   /**
-   * Descends the AST and returns all nodes that satisfies the predicate.
+   * Descends the AST and returns all nodes of a given type that satisfy the
+   * predicate.
    */
   findChildrenOfType<T extends GenericJsNode>(
     type: JsNodeType<T>, predicate?: (node: T) => boolean,
