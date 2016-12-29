@@ -611,6 +611,14 @@ export class AssignmentExpression
     this.node.operator = value;
   }
 
+  left(): GenericJsNode {
+    return this.getNode<GenericJsNode>('left');
+  }
+
+  right(): GenericJsNode {
+    return this.getNode<GenericJsNode>('right');
+  }
+
   build(props: AssignmentExpressionProps, children: any[]): AssignmentExpression {
     let operator = props.operator || '=';
     this.node = b.assignmentExpression(
@@ -747,6 +755,10 @@ export class MethodDefinition
     this.node.kind = kind;
   }
 
+  key(): GenericExpression {
+    return this.getNode<GenericExpression>('key');
+  }
+
   build(props: MethodDefinitionProps, children: any[]): MethodDefinition {
     this.node = b.methodDefinition(
       props.kind,
@@ -811,6 +823,10 @@ export type NewExpressionProps = {
 @JsNodeFactory.registerType
 export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps> {
   props: NewExpressionProps;
+
+  callee(): GenericExpression {
+    return this.getNode<GenericExpression>('callee');
+  }
 
   build(props: NewExpressionProps,
     children: JsNode<NewExpressionChild, any>[]): NewExpression {
