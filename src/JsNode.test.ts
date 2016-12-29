@@ -121,15 +121,6 @@ describe('JsNode', () => {
     expect(nodes.at(1).format()).toBe('return foo;');
   });
 
-  it('find child', () => {
-    const code = 'const foo = 42, bar = 23;';
-    const node = JsNode.fromModuleCode(code);
-    const identifiers = node.findChildrenOfType(Identifier);
-    expect(identifiers.size()).toBe(2);
-    expect(identifiers.at(0).format()).toBe('foo');
-    expect(identifiers.at(1).format()).toBe('bar');
-  });
-
   it('chain find calls', () => {
     const code = 'class Foo { bar() {} };';
     const node = JsNode.fromModuleCode(code);
@@ -137,24 +128,6 @@ describe('JsNode', () => {
     expect(method.format()).toBe('bar() {}');
     const block = method.findFirstChildOfType(BlockStatement);
     expect(block.format()).toBe('{}');
-  });
-
-  it('find closest parent', () => {
-    const code = 'class Foo { bar() {} }';
-    const node = JsNode.fromModuleCode(code);
-    const method = node.findFirstChildOfType(MethodDefinition);
-    expect(method.format()).toBe('bar() {}');
-    const program = method.findClosestParentOfType(Program);
-    expect(program.format()).toBe(code);
-  });
-
-  it('find closest scope', () => {
-    const code = 'function foo() { const foo = 42; }';
-    const node = JsNode.fromModuleCode(code)
-      .findFirstChildOfType(VariableDeclaration)
-      .findClosestScope();
-    expect(node.type()).toBe('FunctionDeclaration');
-    expect(node.format()).toBe(code);
   });
 
   it('descend', () => {
@@ -173,6 +146,15 @@ describe('JsNode', () => {
     expect(nodes.map(n => n.name).join()).toBe('foo,bar');
   });
 
+  it('find child of type', () => {
+    const code = 'const foo = 42, bar = 23;';
+    const node = JsNode.fromModuleCode(code);
+    const identifiers = node.findChildrenOfType(Identifier);
+    expect(identifiers.size()).toBe(2);
+    expect(identifiers.at(0).name).toBe('foo');
+    expect(identifiers.at(1).name).toBe('bar');
+  });
+
   it('find children of type', () => {
     const code = 'const foo = 42;';
     let node = JsNode.fromCode(code)
@@ -181,6 +163,24 @@ describe('JsNode', () => {
       .findChildrenOfType(Identifier, null, true)
       .first();
     expect(node.format()).toBe('foo');
+  });
+
+  it('find closest parent', () => {
+    const code = 'class Foo { bar() {} }';
+    const node = JsNode.fromModuleCode(code);
+    const method = node.findFirstChildOfType(MethodDefinition);
+    expect(method.format()).toBe('bar() {}');
+    const program = method.findClosestParentOfType(Program);
+    expect(program.format()).toBe(code);
+  });
+
+  it('find closest scope', () => {
+    const code = 'function foo() { const foo = 42; }';
+    const node = JsNode.fromModuleCode(code)
+      .findFirstChildOfType(VariableDeclaration)
+      .findClosestScope();
+    expect(node.type()).toBe('FunctionDeclaration');
+    expect(node.format()).toBe(code);
   });
 
   it('ascend', () => {
