@@ -1,3 +1,5 @@
+notifications:
+  slack: trifork-se:rsjWCAsE47JsZYbFNzPpjbnM
 language: node_js
 node_js:
   - "node"
