@@ -93,7 +93,7 @@ export class VariableDeclaration<T extends ast.VariableDeclaration, P extends Va
   }
 
   declarations() {
-    return this.getNodes<VariableDeclarator>('declarations');
+    return this.getNodes('declarations', VariableDeclarator);
   }
 
   private getDeclarators(props: VariableDeclarationProps,

@@ -47,14 +47,18 @@ export class JsNodeList<T extends GenericJsNode> {
   protected _paths: ast.NodePath[] = [];
   protected _type: JsNodeType<T>;
 
-  static fromPath(path: ast.NodePath): JsNodeList<any> {
-    const list = new JsNodeList();
+  static fromPath<T extends GenericJsNode>(
+    path: ast.NodePath, type: JsNodeType<T>): JsNodeList<any> {
+
+    const list = new JsNodeList(type);
     list._paths = path.map(p => p);
     return list;
   }
 
-  static fromPaths(paths: ast.NodePath[]): JsNodeList<any> {
-    const list = new JsNodeList();
+  static fromPaths<T extends GenericJsNode>(
+    paths: ast.NodePath[], type: JsNodeType<T>): JsNodeList<any> {
+
+    const list = new JsNodeList(type);
     list._paths = paths;
     return list;
   }
@@ -109,14 +113,14 @@ export class JsNodeList<T extends GenericJsNode> {
       func(this.getTypedNode(index), index));
   }
 
-  filter(predicate: (node: T, index?: number) => boolean): JsNodeList<T> {
-    return JsNodeList.fromPaths(this._paths.filter((value, index, array) =>
-      predicate(this.getTypedNode(index), index)));
+  filter(predicate: (node: T, index?: number) => boolean): this {
+    this._paths = this._paths.filter((value, index) => predicate(this.getTypedNode(index), index));
+    return this;
   }
 
-  forEach(func: (node: T, index?: number) => any): void {
-    this._paths.forEach((value, index, array) =>
-      func(this.getTypedNode(index), index));
+  forEach(func: (node: T, index?: number) => any): this {
+    this._paths.forEach((value, index) => func(this.getTypedNode(index), index));
+    return this;
   }
 
   /**
@@ -575,8 +579,8 @@ export class JsNode<T extends ast.Node, P> {
   /**
    * Get a list of nodes that wrap a property of the current node.
    */
-  protected getNodes<T extends GenericJsNode>(propertyName: string): JsNodeList<T> {
-    return JsNodeList.fromPath(this._path.get(propertyName));
+  protected getNodes<T extends GenericJsNode>(propertyName: string, type?: JsNodeType<T>): JsNodeList<T> {
+    return JsNodeList.fromPath(this._path.get(propertyName), type);
   }
 
   /**
