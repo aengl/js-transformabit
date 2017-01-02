@@ -49,7 +49,7 @@ export class ReactStatelessComponent
   extends JsNode<ast.VariableDeclaration, ReactStatelessComponentProps> {
 
   build(props: ReactStatelessComponentProps,
-    children: GenericJsNode[]): ReactStatelessComponent {
+    children: GenericJsNode[]): this {
 
     this.node = b.variableDeclaration('const', [
       b.variableDeclarator(
@@ -60,7 +60,7 @@ export class ReactStatelessComponent
         )
       )
     ]);
-    return super.build(props, children) as ReactStatelessComponent;
+    return super.build(props, children) as this;
   }
 }
 
@@ -85,7 +85,7 @@ export class ReactComponent
     return false;
   }
 
-  build(props: ReactComponentProps, children: GenericJsNode[]): ReactComponent {
+  build(props: ReactComponentProps, children: GenericJsNode[]): this {
     // Create event handlers
     const eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.property(
@@ -157,7 +157,7 @@ export class ReactClassComponent
       && node.superClass().format() === 'React.Component';
   }
 
-  build(props: ReactClassComponentProps, children: GenericJsNode[]): ReactClassComponent {
+  build(props: ReactClassComponentProps, children: GenericJsNode[]): this {
     // Create event handlers
     let eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.methodDefinition(
@@ -239,7 +239,7 @@ export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps>
       && node.methodName() === 'render';
   }
 
-  build(props: ReactComponentRenderProps, children: string[]): ReactComponentRender {
+  build(props: ReactComponentRenderProps, children: string[]): this {
     if (children.length !== 1) {
       throw new Error('ReactComponentRender requires exactly one child');
     }
@@ -248,7 +248,7 @@ export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps>
       throw new Error('ReactComponentRender only accepts strings as children');
     }
     this.node = JsNode.fromExpressionStatement(renderBody).node;
-    return super.build(props, children) as ReactComponentRender;
+    return super.build(props, children) as this;
   }
 }
 
@@ -270,9 +270,9 @@ export class ReactComponentEventHandler
   }
 
   build(props: ReactComponentEventHandlerProps,
-    children: GenericStatement[]): ReactComponentEventHandler {
+    children: GenericStatement[]): this {
 
     this.node = b.blockStatement(children.map(child => child.node));
-    return super.build(props, children);
+    return super.build(props, children) as this;
   }
 }
