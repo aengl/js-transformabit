@@ -155,13 +155,21 @@ export class VariableDeclarator
 =========================================================================*/
 
 export type LiteralProps = {
-  value: string | number | boolean | null
+  value: ast.LiteralValue
 };
 
 @JsNodeFactory.registerType
 export class Literal extends JsNode<ast.Literal, LiteralProps> {
   static fromValue(value: any) {
     return new Literal().build({ value: value }, []);
+  }
+
+  get value(): ast.LiteralValue {
+    return this.node.value;
+  }
+
+  set value(value: ast.LiteralValue) {
+    this.node.value = value;
   }
 
   build(props: LiteralProps, children: any[]): Literal {

@@ -88,6 +88,10 @@ export declare namespace ast {
   export type ObjectExpressionProperty =
     Property | ObjectMethod | ObjectProperty | SpreadProperty;
 
+  export type SimpleLiteralValue = string | boolean | number | null;
+
+  export type LiteralValue = SimpleLiteralValue | RegExp;
+
   /* ---------------------------------------------------------------------------
    * Common interfaces
    */
@@ -392,7 +396,7 @@ export declare namespace ast {
 
   export interface SimpleLiteral extends Node, BaseExpression {
     type: 'Literal';
-    value: string | boolean | number | null;
+    value: SimpleLiteralValue;
     raw: string;
   }
 
