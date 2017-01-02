@@ -23,6 +23,19 @@ describe('JsNodeList', () => {
     expect(identifiers.at(2).node.name).toBe('baz');
   });
 
+  it('iterate', () => {
+    const code = 'let foo, bar; let baz;';
+    const identifiers = JsNode.fromModuleCode(code)
+      .findChildrenOfType(Identifier);
+    // This feature will work as soon as we start targeting ES6.
+    // for (let id of identifiers) {
+    //   expect(id).toBeDefined();
+    // }
+    for (let id of identifiers.toList()) {
+      expect(id).toBeDefined();
+    }
+  });
+
   it('map', () => {
     const code = 'let foo, bar; let baz;';
     const identifiers = JsNode.fromModuleCode(code)

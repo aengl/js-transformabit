@@ -43,7 +43,7 @@ export class JsNodeFactory {
 /**
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
-export class JsNodeList<T extends GenericJsNode> implements Iterator<T> {
+export class JsNodeList<T extends GenericJsNode> implements IterableIterator<T> {
   protected _paths: ast.NodePath[] = [];
   protected _type: JsNodeType<T>;
   private _pointer = 0;
@@ -73,20 +73,6 @@ export class JsNodeList<T extends GenericJsNode> implements Iterator<T> {
 
   constructor(type?: JsNodeType<T>) {
     this._type = type;
-  }
-
-  next(): IteratorResult<T> {
-    if (this._pointer < this._paths.length) {
-      return {
-        done: false,
-        value: this.at(this._pointer++)
-      }
-    } else {
-      return {
-        done: true,
-        value: undefined
-      };
-    }
   }
 
   /**
@@ -121,6 +107,34 @@ export class JsNodeList<T extends GenericJsNode> implements Iterator<T> {
    */
   at(index: number): T {
     return this.getTypedNode(index);
+  }
+
+  /**
+   * Implements Iterator.
+   */
+  next(): IteratorResult<T> {
+    if (this._pointer < this._paths.length) {
+      return {
+        done: false,
+        value: this.at(this._pointer++)
+      }
+    } else {
+      return {
+        done: true,
+        value: undefined
+      };
+    }
+  }
+
+  /**
+   * Implements Iterable.
+   */
+  [Symbol.iterator]() {
+    return this;
+  }
+
+  toList(): T[] {
+    return this.map(node => node);
   }
 
   map(func: (node: T, index?: number) => any): any[] {
