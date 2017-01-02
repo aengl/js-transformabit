@@ -9,7 +9,7 @@ const visit = recast.visit;
 export type TypeIdentifier = (ast.Node | ast.Type | string);
 export type GenericJsNode = JsNode<ast.Node, any>;
 export type JsNodeType<T extends GenericJsNode> = {
-  new(): T;
+  new (): T;
   check?: (node: GenericJsNode) => boolean;
 };
 
@@ -20,7 +20,7 @@ export class InvalidTypeError extends Error {
 }
 
 export class JsNodeFactory {
-  static registeredTypes: {[typeName: string]: JsNodeType<any>} = {};
+  static registeredTypes: { [typeName: string]: JsNodeType<any> } = {};
 
   static registerType(type: JsNodeType<any>): void {
     JsNodeFactory.registeredTypes[type.name] = type;
@@ -43,9 +43,10 @@ export class JsNodeFactory {
 /**
  * Represents a collection of nodes. These nodes can be anywhere in the AST.
  */
-export class JsNodeList<T extends GenericJsNode> {
+export class JsNodeList<T extends GenericJsNode> implements Iterator<T> {
   protected _paths: ast.NodePath[] = [];
   protected _type: JsNodeType<T>;
+  private _pointer = 0;
 
   static fromPath<T extends GenericJsNode>(
     path: ast.NodePath, type: JsNodeType<T>): JsNodeList<any> {
@@ -72,6 +73,20 @@ export class JsNodeList<T extends GenericJsNode> {
 
   constructor(type?: JsNodeType<T>) {
     this._type = type;
+  }
+
+  next(): IteratorResult<T> {
+    if (this._pointer < this._paths.length) {
+      return {
+        done: false,
+        value: this.at(this._pointer++)
+      }
+    } else {
+      return {
+        done: true,
+        value: undefined
+      };
+    }
   }
 
   /**
@@ -161,7 +176,7 @@ export class JsNodeList<T extends GenericJsNode> {
     }
     if (this._type) {
       const node = new this._type();
-      node.path =  this._paths[index];
+      node.path = this._paths[index];
       return node;
     }
     return <T>JsNode.fromPath(this._paths[index]);
@@ -308,7 +323,7 @@ export class JsNode<T extends ast.Node, P> {
     let result: ast.NodePath;
     const self = this.node;
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         if (p.node === self) {
           this.traverse(p);
         } else if (!result) {
@@ -337,7 +352,7 @@ export class JsNode<T extends ast.Node, P> {
     let result = new JsNodeList<T>();
     const self = this.node;
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else {
@@ -364,7 +379,7 @@ export class JsNode<T extends ast.Node, P> {
     const self = this.node;
     const node = new type();
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else if (!result) {
@@ -396,7 +411,7 @@ export class JsNode<T extends ast.Node, P> {
     const self = this.node;
     const node = new type();
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else {
@@ -501,7 +516,7 @@ export class JsNode<T extends ast.Node, P> {
     const self = this.node;
     let children = new JsNodeList<T>();
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         if (p.parent && p.parent.node === self) {
           children.push(JsNode.fromPath<T>(p));
         }
@@ -517,7 +532,7 @@ export class JsNode<T extends ast.Node, P> {
   removeChildren(predicate?: (node: GenericJsNode) => boolean): this {
     const self = this.node;
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         if (p.parent && p.parent.node === self) {
           const node = JsNode.fromPath(p);
           if (predicate === undefined || predicate(node)) {
@@ -535,7 +550,7 @@ export class JsNode<T extends ast.Node, P> {
    */
   removeDescendants(predicate: (node: GenericJsNode) => boolean): this {
     visit(this.node, {
-      visitNode: function(p: ast.NodePath) {
+      visitNode: function (p: ast.NodePath) {
         const node = JsNode.fromPath(p);
         if (predicate(node)) {
           p.prune();
@@ -614,7 +629,7 @@ export class JsNode<T extends ast.Node, P> {
 // Use global augmentation to resolve JsCode types
 declare global {
   namespace JSX {
-    interface Element extends GenericJsNode {}
+    interface Element extends GenericJsNode { }
     interface ElementAttributesProperty {
       props: any;
     }
