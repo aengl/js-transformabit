@@ -11,9 +11,9 @@
     "test-watch": "jest --watch"
   },
   "devDependencies": {
-    "@types/jest": "^16.0.2",
+    "@types/jest": "^16.0.3",
     "@types/js-yaml": "^3.5.29",
-    "@types/node": "^6.0.54",
+    "@types/node": "^6.0.55",
     "jest": "^18.1.0",
     "js-yaml": "^3.7.0",
     "tslint": "^4.2.0",
