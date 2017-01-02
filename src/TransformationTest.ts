@@ -32,24 +32,24 @@ export class TransformationTest {
     const name = transformation.constructor.name;
 
     transformation.configure(config.params);
-    const checkWasTrue = transformation.check(node);
+    // const checkWasTrue = transformation.check(node);
 
-    if (config.output !== false && !checkWasTrue) {
-      throw new Error(`Transformation '${name}' is not applicable to test case ` +
-        `'${testCaseName}', but is expected to be`);
-    } else if (config.output === false && checkWasTrue) {
-      throw new Error(`Transformation '${name}' applied to '${testCaseName}', ` +
-        `but is not expected to be`);
-    }
+    // if (config.output !== false && !checkWasTrue) {
+    //   throw new Error(`Transformation '${name}' is not applicable to test case ` +
+    //     `'${testCaseName}', but is expected to be`);
+    // } else if (config.output === false && checkWasTrue) {
+    //   throw new Error(`Transformation '${name}' applied to '${testCaseName}', ` +
+    //     `but is not expected to be`);
+    // }
 
-    if (checkWasTrue) {
+    // if (checkWasTrue) {
       const output: string = fs.readFileSync(
         `./tests/${name}/${config.output}`).toString();
-      const result = transformation.apply(node).format();
+      const result = transformation.edit(node).format();
       if (result !== output) {
         throw new Error(`Test case '${testCaseName}' failed for transformation ` +
           `'${name}', expecting:\n${output}\nreceived:\n${result}\n`);
       }
-    }
+    // }
   }
 }
