@@ -20,7 +20,8 @@ import {
   NewExpression,
   ImportSpecifier,
   ImportDeclaration,
-  BinaryExpression
+  BinaryExpression,
+  ArrayExpression
 } from '../JsCode';
 
 describe('jscode/js', () => {
@@ -461,6 +462,17 @@ describe('jscode/js', () => {
     );
     expect(alias.format()).toBe("import { Bar as Baz } from \"Code\";");
 
+  });
+
+
+  it('ArrayExpression', () => {
+   // const vars = [
+   //   (<Identifier name="a"/>) as Identifier,
+   //   (<Identifier name="b"/>) as Identifier,
+    //  (<Identifier name="c"/>) as Identifier
+    //];
+   // const numbers = (<ArrayExpression elements={vars}/>);
+   // expect(numbers.format()).toBe("[a,b,c]");
   });
 });
 

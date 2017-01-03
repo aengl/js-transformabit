@@ -904,6 +904,9 @@ export class ArrayExpression extends JsNode<ast.ArrayExpression, ArrayExpression
 
   build(props: ArrayExpressionProps, children: GenericJsNode[]): this {
     // TODO
+   // if (!props.elements) {
+    //  props.elements = [];
+    //}
     return super.build(props, children) as this;
   }
 }
