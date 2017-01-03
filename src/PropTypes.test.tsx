@@ -4,12 +4,18 @@ import * as proptypes from './PropTypes';
 describe('InferTypes', () => {
   it('constants', () => {
     const int = JsNode.fromModuleCode("function test() {this.props.age = 88;}");
+    const int2 = JsNode.fromModuleCode("function test() {this.props.age === 88;}");
     const str = JsNode.fromModuleCode("this.props.name = 'Blair';");
+    const str2 = JsNode.fromModuleCode("this.props.name === 'Blair';");
     const bool = JsNode.fromModuleCode("this.props.verbose = true;");
+    const bool2 = JsNode.fromModuleCode("this.props.verbose === true;");
 
     expect(proptypes.inferPropType(int, "age")).toBe("number");
+    expect(proptypes.inferPropType(int2, "age")).toBe("number");
     expect(proptypes.inferPropType(str, "name")).toBe("string");
+    expect(proptypes.inferPropType(str2, "name")).toBe("string");
     expect(proptypes.inferPropType(bool, "verbose")).toBe("boolean");
+    expect(proptypes.inferPropType(bool2, "verbose")).toBe("boolean");
   });
 
   it('complex types', () => {

@@ -866,9 +866,9 @@ export type Pattern =
 
 export type BinaryOperator = ast.BinaryOperator;
 export type BinaryExpressionProps = ExpressionProps & {
-  left: Identifier,
+  left: GenericExpression,
   operator: string,
-  right: Identifier
+  right: GenericExpression
 };
 
 @JsNodeFactory.registerType
@@ -879,6 +879,14 @@ export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpress
 
   set operator(value: BinaryOperator) {
     this.node.operator = value;
+  }
+
+  left() {
+    return this.getNode<GenericExpression>('left');
+  }
+
+  right() {
+    return this.getNode<GenericExpression>('right');
   }
 
   build(props: BinaryExpressionProps, children: GenericJsNode[]): this {

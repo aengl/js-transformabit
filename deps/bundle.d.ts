@@ -941,8 +941,8 @@ export declare namespace ast {
     ) => ArrayExpression,
     binaryExpression: (
       operator: string,
-      left: SimpleLiteral | RegExpLiteral | Identifier,
-      right: SimpleLiteral | RegExpLiteral | Identifier
+      left: Expression,
+      right: Expression
     ) => BinaryExpression;
     arrowFunctionExpression: (
       params: Pattern[],

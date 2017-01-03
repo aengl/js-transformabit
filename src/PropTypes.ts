@@ -2,12 +2,23 @@ import { GenericJsNode } from './JsNode';
 import * as js from './JsCode';
 
 export function inferPropType(root: GenericJsNode, name: string) {
+  // Assignments
   const assignments = root
     .findChildrenOfType(js.AssignmentExpression)
     .filter(node => node.left().findFirstChildOfType(js.MemberExpression) !== undefined)
-    .map(node => node) as js.AssignmentExpression[];
+    .toList();
   for (const assignment of assignments) {
     const type = inferPropTypeFromAssignment(assignment, name);
+    if (type) {
+      return type;
+    }
+  }
+  // Binary expressions
+  const binaryExpressions = root
+    .findChildrenOfType(js.BinaryExpression)
+    .toList();
+  for (const expression of binaryExpressions) {
+    const type = inferPropTypeBinaryExpression(expression, name);
     if (type) {
       return type;
     }
@@ -48,5 +59,9 @@ export function inferPropTypeFromAssignment(assignment: js.AssignmentExpression,
   }
 }
 
-export function inferPropTypeBinaryExpression(assignment: js.BinaryExpression, name: string) {
+export function inferPropTypeBinaryExpression(expression: js.BinaryExpression, name: string) {
+  if (expression.left().findFirstChildOfType(js.Identifier, id => id.name === name)) {
+    return resolveNodeToPropType(expression.right());
+  }
+  return resolveNodeToPropType(expression.left());
 }
