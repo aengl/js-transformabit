@@ -461,20 +461,14 @@ describe('jscode/js', () => {
       </ImportDeclaration>
     );
     expect(alias.format()).toBe("import { Bar as Baz } from \"Code\";");
-
   });
 
 
   it('ArrayExpression', () => {
-   // const vars = [
-   //   (<Identifier name="a"/>) as Identifier,
-   //   (<Identifier name="b"/>) as Identifier,
-    //  (<Identifier name="c"/>) as Identifier
-    //];
-   // const numbers = (<ArrayExpression elements={vars}/>);
-   // expect(numbers.format()).toBe("[a,b,c]");
+    const vars = ['a', 'b', 'c'].map(
+      s => (<Identifier name={s} />) as Identifier
+    );
+    const numbers = (<ArrayExpression elements={vars} />);
+    expect(numbers.format()).toBe("[a, b, c]");
   });
 });
-
-
-

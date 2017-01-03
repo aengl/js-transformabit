@@ -2,11 +2,11 @@ import { GenericJsNode } from './JsNode';
 import * as js from './JsCode';
 
 export function inferPropType(root: GenericJsNode, name: string) {
-  let assignments = root
+  const assignments = root
     .findChildrenOfType(js.AssignmentExpression)
     .filter(node => node.left().findFirstChildOfType(js.MemberExpression) !== undefined)
     .map(node => node) as js.AssignmentExpression[];
-  for (let assignment of assignments) {
+  for (const assignment of assignments) {
     const type = inferPropTypeFromAssignment(assignment, name);
     if (type) {
       return type;

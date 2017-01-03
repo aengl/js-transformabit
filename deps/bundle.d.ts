@@ -92,6 +92,8 @@ export declare namespace ast {
 
   export type LiteralValue = SimpleLiteralValue | RegExp;
 
+  export type ArrayExpressionElements = Array<Expression | SpreadElement | RestElement | null>;
+
   /* ---------------------------------------------------------------------------
    * Common interfaces
    */
@@ -296,7 +298,7 @@ export declare namespace ast {
 
   export interface ArrayExpression extends BaseExpression {
     type: 'ArrayExpression';
-    elements: Array<Expression | SpreadElement>;
+    elements: ArrayExpressionElements;
   }
 
   export interface Property extends Node {
@@ -934,6 +936,9 @@ export declare namespace ast {
       imported: Identifier,
       local: Identifier
     ) => ImportSpecifier;
+    arrayExpression: (
+      elements: ArrayExpressionElements
+    ) => ArrayExpression,
     binaryExpression: (
       operator: string,
       left: SimpleLiteral | RegExpLiteral | Identifier,

@@ -292,7 +292,7 @@ export class JsNode<T extends ast.Node, P> {
    * https://github.com/benjamn/ast-types
    */
   get node(): T {
-    return <T>this._path.value;
+    return this.path ? <T>this._path.value : null;
   }
 
   set node(node: T) {

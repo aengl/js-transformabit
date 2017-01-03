@@ -903,10 +903,10 @@ export type ArrayExpressionProps = ExpressionProps & {
 export class ArrayExpression extends JsNode<ast.ArrayExpression, ArrayExpressionProps> {
 
   build(props: ArrayExpressionProps, children: GenericJsNode[]): this {
-    // TODO
-   // if (!props.elements) {
-    //  props.elements = [];
-    //}
+    if (!props.elements) {
+      props.elements = [];
+    }
+    this.node = ast.builders.arrayExpression(props.elements.map(n => n.node));
     return super.build(props, children) as this;
   }
 }
