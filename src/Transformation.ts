@@ -1,8 +1,11 @@
-import { GenericJsNode } from './JsNode';
+import { File } from './JsCode';
+
+export interface TransformationParams {
+  [param: string]: string;
+}
 
 export interface Transformation {
-  configure?(...args: any[]): void;
-  edit(root: GenericJsNode): GenericJsNode;
+  editModule(file: File, params: TransformationParams): File;
 }
 
 export type TransformationClass<T extends Transformation> = {
