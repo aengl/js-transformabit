@@ -139,6 +139,10 @@ export class VariableDeclarator
     return this.getNode<Identifier>('id');
   }
 
+  init(): GenericExpression {
+	 return this.getNode<GenericExpression>('init');
+  }
+
   build(props: VariableDeclaratorProps, children: GenericExpression[] = []): this {
     let identifier = b.identifier(props.name);
     if (children.length > 1) {
