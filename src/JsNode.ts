@@ -46,7 +46,7 @@ export class JsNodeFactory {
 export class JsNodeList<T extends GenericJsNode> {
   protected _paths: ast.NodePath[] = [];
   protected _type: JsNodeType<T>;
-  private _pointer = 0;
+  //private _pointer = 0;
 
   static fromPath<T extends GenericJsNode>(
     path: ast.NodePath, type: JsNodeType<T>): JsNodeList<any> {
