@@ -928,6 +928,7 @@ export declare namespace ast {
   };
 
   export var builders: {
+    program: (statements: Node[]) => Program;
     importDeclaration: (
       speicifiers: Node[],
       source: Literal

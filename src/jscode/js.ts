@@ -32,7 +32,8 @@ export type ProgramProps = {
 @JsNodeFactory.registerType
 export class Program extends JsNode<ast.Program, ProgramProps> {
   build(props: ProgramProps, children: any[]): this {
-    return super.build(props, children) as this;
+    this.node = b.program(children.map(child => child.node));
+    return super.build(props, children.map(child => child.node)) as this;
   }
 }
 
