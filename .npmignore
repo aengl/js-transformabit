@@ -1,11 +1,10 @@
 /.vscode
 /node_modules
 /src
-/tests
+/nashorn
+**/*.test.*
 *.yml
-*.sh
 Makefile
 tsconfig.json
 tslint.json
 yarn.lock
-**/*.test.*
