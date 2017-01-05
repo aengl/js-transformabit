@@ -78,7 +78,7 @@ describe('jscode/react', () => {
     // This test is tricky because ReactComponent is not a primitive type, so
     // the JsNode factory would produce a ClassDeclaration under normal
     // circumstances. Since we tell findFirstChildOfType() to get us a
-    // ReactComponent, however, we expect it to return the correct type.
+    // ReactClassComponent, however, we expect it to return the correct type.
     const node = JsNode.fromModuleCode(code)
       .findFirstChildOfType(ReactClassComponent);
     expect(node).toBeDefined();
