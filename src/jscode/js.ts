@@ -31,9 +31,40 @@ export type ProgramProps = {
 
 @JsNodeFactory.registerType
 export class Program extends JsNode<ast.Program, ProgramProps> {
+
   build(props: ProgramProps, children: any[]): this {
-    this.node = b.program(children.map(child => child.node));
-    return super.build(props, children.map(child => child.node)) as this;
+    this.node = b.program(this.nodeArray(children, []));
+    return super.build(props, children) as this;
+  }
+
+  append(node: GenericJsNode) {
+    const children = this.children().map(node => {
+      if (node.check(ExpressionStatement)) {
+        return node;
+      } else if (node.check(VariableDeclaration)) {
+        return node;
+      } else if (node.check(Expression)) {
+        return b.expressionStatement(node.node as ast.Expression);
+      }
+
+    });
+    children.push(node);
+    this.replace(new Program().build({}, children));
+  }
+
+  private nodeArray(children: any[], array: any[]): any[] {
+    for (const child of children) {
+      if (Array.isArray(child)) {
+        array = this.nodeArray(child, array);
+      } else {
+        if (child.check(ExpressionStatement) || child.check(VariableDeclaration)) {
+          array.push(child.node);
+        } else {
+          array.push(b.expressionStatement(child.node));
+        }
+      }
+    }
+    return array;
   }
 }
 
@@ -216,7 +247,7 @@ export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
 =========================================================================*/
 
 export type CallExpressionProps = {
-  callee: string | Identifier | MemberExpression
+  callee: string | Identifier | MemberExpression | CallExpression
 };
 
 @JsNodeFactory.registerType
@@ -491,7 +522,7 @@ export class ObjectExpression
 function getSingleExpression(children: GenericExpression[],
   allowNull: boolean, statement: string): ast.Expression {
 
-  if (children.length === 0) {
+  if (children.length === 0 || children == null) {
     if (!allowNull) {
       throw new Error("Expression statement must contain 1 statement");
     }
@@ -501,16 +532,17 @@ function getSingleExpression(children: GenericExpression[],
   if (children.length > 1) {
     throw new Error("Expression statement can not contain more than 1 statement");
   }
-
-  switch (children[0].type()) {
+   let node = children[0];
+  switch (node.type()) {
     case "Identifier":
     case "Literal":
     case "CallExpression":
     case "AssignmentExpression":
-      return children[0].node;
+    case "VariableDeclaration":
+      return node.node;
     default:
       throw new Error("The expression in an " + statement +
-        " must be either an Identifier, CallExpression, AssignmentExpression, or a Literal");
+        " must be either an Identifier, CallExpression, AssignmentExpression, VariableDeclaration, or a Literal");
   }
 }
 

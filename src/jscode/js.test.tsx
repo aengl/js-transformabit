@@ -1,5 +1,6 @@
 import {
   JsCode,
+  Program,
   VariableDeclaration,
   VariableDeclarator,
   Literal,
@@ -113,7 +114,7 @@ describe('jscode/js', () => {
       </BlockStatement>
     );
 
-    expect(simpleBlock.format().replace(/\n/g, "")).toBe("{    let num = 3;}");
+    expect(simpleBlock.formatStripped()).toBe("{let num = 3;}");
   });
 
   it('FunctionDeclaration', () => {
@@ -137,7 +138,7 @@ describe('jscode/js', () => {
         </BlockStatement>
       </FunctionDeclaration>
     );
-    expect(blockWithNoParams.format().replace(/\n/g, "")).toBe("function foo() {    let num = 3;}");
+    expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;}");
 
     let withParamsAndBody = (
       <FunctionDeclaration name="foo">
@@ -150,7 +151,7 @@ describe('jscode/js', () => {
         </BlockStatement>
       </FunctionDeclaration>
     );
-    expect(withParamsAndBody.format().replace(/\n/g, "")).toBe("function foo(bar, baz) {    let num = 3;}");
+    expect(withParamsAndBody.formatStripped()).toBe("function foo(bar, baz) {let num = 3;}");
   });
 
   it('ExpressionStatement', () => {
@@ -258,7 +259,7 @@ describe('jscode/js', () => {
       <MethodDefinition key="bar" kind='method'>
       </MethodDefinition>
     );
-    expect(empty.format().replace(/\n([\s]*)/g, "")).toBe("bar() {}");
+    expect(empty.formatStripped()).toBe("bar() {}");
 
     let notEmpty = (
       <MethodDefinition key="foo" kind='method'>
@@ -271,7 +272,7 @@ describe('jscode/js', () => {
         </FunctionExpression>
       </MethodDefinition>
     );
-    expect(notEmpty.format().replace(/\n([\s]*)/g, "")).toBe("foo() {return true;}");
+    expect(notEmpty.formatStripped()).toBe("foo() {return true;}");
   });
 
   it('ClassDeclaration', () => {
@@ -296,7 +297,7 @@ describe('jscode/js', () => {
 
       </ClassDeclaration>
     );
-    expect(withMethod.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {foo() {return true;}}");
+    expect(withMethod.formatStripped()).toBe("class Foo extends Bar {foo() {return true;}}");
 
     let withTwoMethods = (
       <ClassDeclaration id="Foo" superClass='Bar'>
@@ -321,7 +322,7 @@ describe('jscode/js', () => {
 
       </ClassDeclaration>
     );
-    expect(withTwoMethods.format().replace(/\n([\s]*)/g, "")).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
+    expect(withTwoMethods.formatStripped()).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
   });
 
   it('FunctionExpression', () => {
@@ -340,7 +341,7 @@ describe('jscode/js', () => {
         </BlockStatement>
       </FunctionExpression>
     );
-    expect(blockWithNoParams.format().replace(/\n([\s]*)/g, "")).toBe("function() {let num = 3;}");
+    expect(blockWithNoParams.formatStripped()).toBe("function() {let num = 3;}");
   });
 
   it('Property', () => {
@@ -371,7 +372,7 @@ describe('jscode/js', () => {
         <Property key="one" kind='init' value={Literal.fromValue(1)} />
       </ObjectExpression>
     );
-    expect(abc1.format().replace(/\s/g, "")).toBe(`{a:"a",b:"b",c:"c",one:1}`);
+    expect(abc1.formatStripped()).toBe(`{a: "a",b: "b",c: "c",one: 1}`);
   });
 
   it('NewExpression', () => {
@@ -470,5 +471,32 @@ describe('jscode/js', () => {
     );
     const numbers = (<ArrayExpression elements={vars} />);
     expect(numbers.format()).toBe("[a, b, c]");
+  });
+
+  it('Program', () => {
+
+    const empty = <Program/>
+    expect(empty.format()).toBe("");
+
+    const single = (
+      <Program>
+        <ExpressionStatement>
+          <AssignmentExpression operator='=' left='foo' right={<Identifier name="foo"/> as Identifier} />
+        </ExpressionStatement>
+      </Program>
+    ) as Program;
+    expect(single.format()).toBe("foo = foo;");
+
+    const singleNotWrapped = (
+      <Program>
+        <AssignmentExpression operator='=' left='foo' right={<Identifier name="foo"/> as Identifier} />
+      </Program>
+    );
+    expect(singleNotWrapped.format()).toBe("foo = foo;");
+
+    single.append(
+      <AssignmentExpression operator='=' left='bar' right={<Identifier name="bar"/> as Identifier} />
+    );
+    expect(single.formatStripped()).toBe("foo = foo;bar = bar;");
   });
 });

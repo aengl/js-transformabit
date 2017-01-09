@@ -271,6 +271,11 @@ export class JsNode<T extends ast.Node, P> {
     return recast.print(this._path.value).code.replace(/\r/g, '');
   }
 
+  formatStripped(): string {
+    return this.format().replace(/\n([\s]*)/g, "");
+  }
+
+
   /**
    * Returns a path object for the current AST root.
    *
