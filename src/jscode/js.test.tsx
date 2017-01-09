@@ -501,5 +501,19 @@ describe('jscode/js', () => {
        </ExpressionStatement> as ExpressionStatement
     );
     expect(single.formatStripped()).toBe("foo = foo;bar = bar;");
+
+    single.prepend(
+       <ExpressionStatement>
+        <AssignmentExpression operator='=' left='fofo' right={<Identifier name="fofo"/> as Identifier} />
+       </ExpressionStatement> as ExpressionStatement
+    );
+    expect(single.formatStripped()).toBe("fofo = fofo;foo = foo;bar = bar;");
+
+    single.insert(1,
+       <ExpressionStatement>
+        <AssignmentExpression operator='=' left='wolly' right={<Identifier name="wolly"/> as Identifier} />
+       </ExpressionStatement> as ExpressionStatement
+    );
+    expect(single.formatStripped()).toBe("fofo = fofo;wolly = wolly;foo = foo;bar = bar;");
   });
 });

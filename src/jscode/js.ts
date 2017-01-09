@@ -14,6 +14,8 @@ const b = ast.builders;
 export interface ContainerNode {
 
   append(node: GenericStatement): void;
+  insert(index: number, node: GenericStatement): void;
+  prepend(node: GenericStatement): void;
 
 }
 
@@ -48,6 +50,14 @@ export class Program extends JsNode<ast.Program, ProgramProps> implements Contai
 
   append(node: GenericStatement) {
     this.node.body.push(node.node);
+  }
+
+  insert(index: number, node: GenericStatement) {
+    this.node.body.splice(index, 0, node.node);
+  }
+
+  prepend(node: GenericStatement) {
+    this.node.body.splice(0, 0, node.node);
   }
 
   private nodeArray(children: any[], array: any[]): any[] {
@@ -305,7 +315,22 @@ export class FunctionDeclaration
   }
 
   append(node: GenericStatement) {
-    this.findFirstChildOfType(BlockStatement).append(node);
+    this.getOrCreateBlock().append(node);
+  }
+
+  insert(index: number, node: GenericStatement) {
+    this.getOrCreateBlock().insert(index, node);
+  }
+
+  prepend(node: GenericStatement) {
+    this.getOrCreateBlock().prepend(node);
+  }
+
+  private getOrCreateBlock(): BlockStatement {
+    if (this.node.body === null) {
+      this.node.body = b.blockStatement([]);
+    }
+    return this.getNode<BlockStatement>("body");
   }
 
   private getBody(children: any[]): ast.BlockStatement {
@@ -418,6 +443,14 @@ export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementPro
 
   append(node: GenericStatement) {
     this.node.body.push(node.node);
+  }
+
+  insert(index: number, node: GenericStatement) {
+    this.node.body.splice(index, 0, node.node);
+  }
+
+  prepend(node: GenericStatement) {
+    this.node.body.splice(0, 0, node.node);
   }
 }
 
