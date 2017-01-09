@@ -3,6 +3,7 @@ import {
   Program,
   VariableDeclaration,
   VariableDeclarator,
+  GenericVariableDeclaration,
   Literal,
   Identifier,
   CallExpression,
@@ -137,8 +138,15 @@ describe('jscode/js', () => {
           </VariableDeclaration>
         </BlockStatement>
       </FunctionDeclaration>
-    );
+    ) as FunctionDeclaration;
     expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;}");
+
+    blockWithNoParams.append(
+        <VariableDeclaration name="max" kind='let'>
+          <Literal value={6} />
+        </VariableDeclaration> as GenericVariableDeclaration
+    );
+    expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;let max = 6;}");
 
     let withParamsAndBody = (
       <FunctionDeclaration name="foo">
@@ -487,15 +495,10 @@ describe('jscode/js', () => {
     ) as Program;
     expect(single.format()).toBe("foo = foo;");
 
-    const singleNotWrapped = (
-      <Program>
-        <AssignmentExpression operator='=' left='foo' right={<Identifier name="foo"/> as Identifier} />
-      </Program>
-    );
-    expect(singleNotWrapped.format()).toBe("foo = foo;");
-
     single.append(
-      <AssignmentExpression operator='=' left='bar' right={<Identifier name="bar"/> as Identifier} />
+       <ExpressionStatement>
+        <AssignmentExpression operator='=' left='bar' right={<Identifier name="bar"/> as Identifier} />
+       </ExpressionStatement> as ExpressionStatement
     );
     expect(single.formatStripped()).toBe("foo = foo;bar = bar;");
   });

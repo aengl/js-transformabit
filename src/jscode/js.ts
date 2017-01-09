@@ -9,6 +9,15 @@ import { ast } from '../../deps/bundle';
 const b = ast.builders;
 
 /*========================================================================
+                                  Container Node
+=========================================================================*/
+export interface ContainerNode {
+
+  append(node: GenericStatement): void;
+
+}
+
+/*========================================================================
                                   File
 =========================================================================*/
 
@@ -30,26 +39,15 @@ export type ProgramProps = {
 };
 
 @JsNodeFactory.registerType
-export class Program extends JsNode<ast.Program, ProgramProps> {
+export class Program extends JsNode<ast.Program, ProgramProps> implements ContainerNode {
 
   build(props: ProgramProps, children: any[]): this {
     this.node = b.program(this.nodeArray(children, []));
     return super.build(props, children) as this;
   }
 
-  append(node: GenericJsNode) {
-    const children = this.children().map(node => {
-      if (node.check(ExpressionStatement)) {
-        return node;
-      } else if (node.check(VariableDeclaration)) {
-        return node;
-      } else if (node.check(Expression)) {
-        return b.expressionStatement(node.node as ast.Expression);
-      }
-
-    });
-    children.push(node);
-    this.replace(new Program().build({}, children));
+  append(node: GenericStatement) {
+    this.node.body.push(node.node);
   }
 
   private nodeArray(children: any[], array: any[]): any[] {
@@ -57,11 +55,7 @@ export class Program extends JsNode<ast.Program, ProgramProps> {
       if (Array.isArray(child)) {
         array = this.nodeArray(child, array);
       } else {
-        if (child.check(ExpressionStatement) || child.check(VariableDeclaration)) {
-          array.push(child.node);
-        } else {
-          array.push(b.expressionStatement(child.node));
-        }
+        array.push(child.node);
       }
     }
     return array;
@@ -115,7 +109,7 @@ export type VariableDeclarationProps = {
 
 @JsNodeFactory.registerType
 export class VariableDeclaration<T extends ast.VariableDeclaration, P extends VariableDeclarationProps>
-  extends JsNode<T, P> {
+  extends Statement<T, P> {
 
   build(props: P, children: any[]): this {
 
@@ -290,7 +284,7 @@ export type FunctionDeclarationProps = {
 
 @JsNodeFactory.registerType
 export class FunctionDeclaration
-  extends JsNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
+  extends JsNode<ast.FunctionDeclaration, FunctionDeclarationProps> implements ContainerNode {
 
   build(props: FunctionDeclarationProps, children: any[]): this {
     let identifier = b.identifier(props.name);
@@ -308,6 +302,10 @@ export class FunctionDeclaration
       }
     }
     return params;
+  }
+
+  append(node: GenericStatement) {
+    this.findFirstChildOfType(BlockStatement).append(node);
   }
 
   private getBody(children: any[]): ast.BlockStatement {
@@ -408,7 +406,7 @@ export type BlockStatementProps = {
 };
 
 @JsNodeFactory.registerType
-export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> {
+export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementProps> implements ContainerNode {
   build(props: BlockStatementProps, children: GenericStatement[]): this {
     let statements: ast.Statement[] = [];
     for (let child of children) {
@@ -418,8 +416,8 @@ export class BlockStatement extends JsNode<ast.BlockStatement, BlockStatementPro
     return super.build(props, children) as this;
   }
 
-  appendStatement(node: (ast.Statement | GenericStatement)) {
-    this.node.body.push(<ast.Statement>this.toAstNode(node));
+  append(node: GenericStatement) {
+    this.node.body.push(node.node);
   }
 }
 
@@ -646,7 +644,7 @@ export type AssignmentExpressionProps = {
 
 @JsNodeFactory.registerType
 export class AssignmentExpression
-  extends JsNode<ast.AssignmentExpression, AssignmentExpressionProps> {
+  extends Expression<ast.AssignmentExpression, AssignmentExpressionProps> {
 
   get operator() {
     return this.node.operator;
