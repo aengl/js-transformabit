@@ -264,17 +264,18 @@ export class JsNode<T extends ast.Node, P> {
   }
 
   /**
-   * Returns the source code for the
-
+   * Returns the source code for AST with this node as the root.
    */
   format(): string {
     return recast.print(this._path.value).code.replace(/\r/g, '');
   }
 
+  /**
+   * Like format(), but with newlines and indentation stripped.
+   */
   formatStripped(): string {
     return this.format().replace(/\n([\s]*)/g, "");
   }
-
 
   /**
    * Returns a path object for the current AST root.

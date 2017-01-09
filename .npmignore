@@ -8,3 +8,7 @@ Makefile
 tsconfig.json
 tslint.json
 yarn.lock
+
+/deps/index.js
+/deps/package.json
+/deps/webpack.config.js
