@@ -104,6 +104,7 @@ export declare namespace ast {
     trailingComments?: Array<Comment>;
     loc?: SourceLocation;
     range?: [number, number];
+    [propName: string]: any;
   }
 
   export interface SourceLocation {

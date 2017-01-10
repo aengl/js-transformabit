@@ -618,17 +618,21 @@ export class JsNode<T extends ast.Node, P> {
     return (node instanceof JsNode) ? node.node : node;
   }
 
+  protected getProp<T>(propertyName: string): T {
+    return <T>this.node[propertyName];
+  }
+
   /**
    * Gets the node that wraps a property of the current node.
    */
-  protected getNode<T extends GenericJsNode>(propertyName: string): T {
+  protected getNodeForProp<T extends GenericJsNode>(propertyName: string): T {
     return JsNode.fromPath<T>(this._path.get(propertyName));
   }
 
   /**
    * Get a list of nodes that wrap a property of the current node.
    */
-  protected getNodes<T extends GenericJsNode>(propertyName: string, type?: JsNodeType<T>): JsNodeList<T> {
+  protected getNodesForProp<T extends GenericJsNode>(propertyName: string, type?: JsNodeType<T>): JsNodeList<T> {
     return JsNodeList.fromPath(this._path.get(propertyName), type);
   }
 
@@ -667,5 +671,32 @@ declare global {
     interface ElementAttributesProperty {
       props: any;
     }
+  }
+}
+
+/**
+ * A class of nodes that contains a list of other nodes.
+ */
+export class JsContainerNode<T extends ast.Node, P, C extends GenericJsNode>
+  extends JsNode<T, P> {
+
+  append(node: C) {
+    this.getChildNodes().push(node.node);
+  }
+
+  insert(index: number, node: C) {
+    this.getChildNodes().splice(index, 0, node.node);
+  }
+
+  prepend(node: C) {
+    this.getChildNodes().splice(0, 0, node.node);
+  }
+
+  protected getChildNodes() {
+    return this.getProp<ast.Node[]>(this.childrenPropName);
+  }
+
+  protected get childrenPropName() {
+    return 'body';
   }
 }

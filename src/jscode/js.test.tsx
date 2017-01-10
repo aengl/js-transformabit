@@ -488,7 +488,6 @@ describe('jscode/js', () => {
   });
 
   it('Program', () => {
-
     const empty = <Program />
     expect(empty.format()).toBe("");
 
