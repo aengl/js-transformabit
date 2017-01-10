@@ -30,9 +30,14 @@ export class JsNodeFactory {
     return JsNodeFactory.registeredTypes[typeName];
   }
 
+  static isComplex(typeName: string): boolean {
+    return JsNodeFactory.registeredTypes[typeName] === undefined;
+  }
+
   static create<T extends GenericJsNode>(typeName: string): T {
     const type = JsNodeFactory.getType<T>(typeName);
     if (!type) {
+      // TODO: once we have all node types implemented, we can throw here.
       // console.warn('Attempted to create unknown node type: ' + typeName);
       return <T>new JsNode<any, any>();
     }
@@ -46,7 +51,6 @@ export class JsNodeFactory {
 export class JsNodeList<T extends GenericJsNode> {
   protected _paths: ast.NodePath[] = [];
   protected _type: JsNodeType<T>;
-  //private _pointer = 0;
 
   static fromPath<T extends GenericJsNode>(
     path: ast.NodePath, type: JsNodeType<T>): JsNodeList<any> {
@@ -112,6 +116,7 @@ export class JsNodeList<T extends GenericJsNode> {
   /**
    * Implements Iterator.
    */
+  // private _pointer = 0;
   // next(): IteratorResult<T> {
   //   if (this._pointer < this._paths.length) {
   //     return {
@@ -327,12 +332,27 @@ export class JsNode<T extends ast.Node, P> {
    * Returns true if the node type matches the specified type.
    */
   check<T extends GenericJsNode>(type: JsNodeType<T>): this is T {
-    if (type.check) {
+        if (type.check) {
       // If the type has a static check(), use that one instead. This allows
       // complex types to perform more sophisticated checks.
       return type.check(this);
     }
-    return this.type() === type.name;
+    return (this.type() === type.name) || this instanceof type;
+  }
+
+  /**
+   * Casts this node to a certain type.
+   *
+   * This is used to "upgrade" primitive nodes (like a ClassDeclaration) to a
+   * corresponding complex node (like ReactClassComponent).
+   */
+  convert<T extends GenericJsNode>(type: JsNodeType<T>): T {
+    if (!(this instanceof type)) {
+      const node = new type();
+      node.path = this.path;
+      return node;
+    }
+    return this;
   }
 
   /**
@@ -340,7 +360,7 @@ export class JsNode<T extends ast.Node, P> {
    * predicate callback.
    */
   descend<T extends GenericJsNode>(predicate?: (node: GenericJsNode) => boolean): T {
-    let result: ast.NodePath;
+    let result: T;
     const self = this.node;
     visit(this.node, {
       visitNode: function (p: ast.NodePath) {
@@ -349,7 +369,7 @@ export class JsNode<T extends ast.Node, P> {
         } else if (!result) {
           const node = JsNode.fromPath(p);
           if (!predicate || predicate(node)) {
-            result = p;
+            result = JsNode.fromPath<T>(p);
             return false;
           }
           this.traverse(p);
@@ -358,9 +378,7 @@ export class JsNode<T extends ast.Node, P> {
         }
       }
     });
-    if (result) {
-      return JsNode.fromPath<T>(result);
-    }
+    return result;
   }
 
   /**
@@ -397,15 +415,14 @@ export class JsNode<T extends ast.Node, P> {
 
     let result: T;
     const self = this.node;
-    const node = new type();
     visit(this.node, {
       visitNode: function (p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else if (!result) {
-          node.path = p;
+          const node = JsNode.fromPath(p);
           if (node.check(type) && (!predicate || predicate(node))) {
-            result = node;
+            result = node.convert(type);
             return false;
           }
           this.traverse(p);
@@ -429,13 +446,12 @@ export class JsNode<T extends ast.Node, P> {
 
     let result = new JsNodeList<T>(type);
     const self = this.node;
-    const node = new type();
     visit(this.node, {
       visitNode: function (p: ast.NodePath) {
         if (p.node === self && !includeSelf) {
           this.traverse(p);
         } else {
-          node.path = p;
+          const node = JsNode.fromPath(p);
           if (node.check(type) && (!predicate || predicate(node))) {
             result.pushPath(p);
           }
@@ -452,9 +468,7 @@ export class JsNode<T extends ast.Node, P> {
       // We can't just return matchedNode since it will always be a registered
       // type. In case we are looking for a complex type, we need to explicitly
       // construct it from the matched node.
-      const node = new type();
-      node.path = matchedNode.path;
-      return node;
+      return matchedNode.convert(type);
     }
   }
 
@@ -488,10 +502,10 @@ export class JsNode<T extends ast.Node, P> {
    */
   findParentOfType<T extends GenericJsNode>(type: JsNodeType<T>): T {
     const matchedNode = <T>this.ascend(node => node.check(type));
-    // See findClosestParentOfType()
-    const node = new type();
-    node.path = matchedNode.path;
-    return node;
+    if (matchedNode) {
+      // See findClosestParentOfType()
+      return matchedNode.convert(type);
+    }
   }
 
   /**

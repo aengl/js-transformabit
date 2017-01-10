@@ -1,4 +1,4 @@
-import { JsNode, JsNodeList } from './JsNode';
+import { JsNode, JsNodeList, JsNodeFactory } from './JsNode';
 import * as js from './JsCode';
 import { ast } from '../deps/bundle';
 
@@ -95,6 +95,21 @@ describe('JsNodeList', () => {
   });
 });
 
+describe('JsNodeFactory', () => {
+  it('create node', () => {
+    expect(JsNodeFactory.create('Identifier')).toBeInstanceOf(js.Identifier);
+  });
+
+  it('check super class type', () => {
+    const code = 'this.foo = bar;';
+    const node = JsNode.fromModuleCode(code).findFirstChildOfType(js.ThisExpression);
+    expect(node).toBeInstanceOf(js.ThisExpression);
+    expect(node.check(js.ThisExpression)).toEqual(true);
+    expect(node).toBeInstanceOf(js.Expression);
+    expect(node.check(js.Expression)).toEqual(true);
+  });
+});
+
 describe('JsNode', () => {
   it('create & format', () => {
     const code = 'const foo = 42;';
@@ -125,13 +140,10 @@ describe('JsNode', () => {
     expect(nodes.at(1).format()).toBe('return foo;');
   });
 
-  it('chain find calls', () => {
-    const code = 'class Foo { bar() {} };';
-    const node = JsNode.fromModuleCode(code);
-    const method = node.findFirstChildOfType(js.MethodDefinition);
-    expect(method.format()).toBe('bar() {}');
-    const block = method.findFirstChildOfType(js.BlockStatement);
-    expect(block.format()).toBe('{}');
+  it('convert', () => {
+    const code = 'let foo;';
+    const node = JsNode.fromModuleCode(code).findFirstChildOfType(js.Identifier);
+    expect(node.convert(js.Expression)).toBeInstanceOf(js.Expression);
   });
 
   it('descend', () => {
@@ -148,6 +160,15 @@ describe('JsNode', () => {
       .first()
       .findChildren<js.Identifier>(node => node.check(js.Identifier));
     expect(nodes.map(n => n.name).join()).toBe('foo,bar');
+  });
+
+  it('chain find calls', () => {
+    const code = 'class Foo { bar() {} };';
+    const node = JsNode.fromModuleCode(code);
+    const method = node.findFirstChildOfType(js.MethodDefinition);
+    expect(method.format()).toBe('bar() {}');
+    const block = method.findFirstChildOfType(js.BlockStatement);
+    expect(block.format()).toBe('{}');
   });
 
   it('find child of type', () => {
@@ -291,7 +312,7 @@ describe('JsNode', () => {
       )
       );
     expect(node.format()).toBe(
-      `class Foo {
+`class Foo {
   bar() {}
 }`
     );
@@ -304,7 +325,7 @@ describe('JsNode', () => {
       .findFirstChildOfType(js.ClassBody)
       .createConstructor();
     expect(node.format()).toBe(
-      `class Foo {
+`class Foo {
   constructor() {
     super();
   }
