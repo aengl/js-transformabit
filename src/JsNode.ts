@@ -680,23 +680,26 @@ declare global {
 export class JsContainerNode<T extends ast.Node, P, C extends GenericJsNode>
   extends JsNode<T, P> {
 
-  append(node: C) {
+  append(node: C): this {
     this.getChildNodes().push(node.node);
+    return this;
   }
 
-  insert(index: number, node: C) {
+  insert(index: number, node: C): this {
     this.getChildNodes().splice(index, 0, node.node);
+    return this;
   }
 
-  prepend(node: C) {
+  prepend(node: C): this {
     this.getChildNodes().splice(0, 0, node.node);
+    return this;
   }
 
-  protected getChildNodes() {
+  protected getChildNodes(): ast.Node[] {
     return this.getProp<ast.Node[]>(this.childrenPropName);
   }
 
-  protected get childrenPropName() {
+  protected get childrenPropName(): string {
     return 'body';
   }
 }
