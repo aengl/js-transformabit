@@ -70,6 +70,12 @@ describe('jscode/js', () => {
     expect(Literal.fromValue('Hello').format()).toBe('"Hello"');
   });
 
+  it('Identifier', () => {
+    expect(Identifier.fromName('foo').format()).toBe('foo');
+    expect((<Identifier name='bar' />).format()).toBe('bar');
+    expect(new Identifier().build({ name: 'baz' }, []).format()).toBe('baz');
+  });
+
   it('CallExpression', () => {
     let foo = <CallExpression callee='foo' />;
     expect(foo.format()).toBe("foo()");
@@ -142,9 +148,9 @@ describe('jscode/js', () => {
     expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;}");
 
     blockWithNoParams.append(
-        <VariableDeclaration name="max" kind='let'>
-          <Literal value={6} />
-        </VariableDeclaration> as GenericVariableDeclaration
+      <VariableDeclaration name="max" kind='let'>
+        <Literal value={6} />
+      </VariableDeclaration> as GenericVariableDeclaration
     );
     expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;let max = 6;}");
 
@@ -482,37 +488,36 @@ describe('jscode/js', () => {
   });
 
   it('Program', () => {
-
-    const empty = <Program/>
+    const empty = <Program />
     expect(empty.format()).toBe("");
 
     const single = (
       <Program>
         <ExpressionStatement>
-          <AssignmentExpression operator='=' left='foo' right={<Identifier name="foo"/> as Identifier} />
+          <AssignmentExpression operator='=' left='foo' right={<Identifier name="foo" /> as Identifier} />
         </ExpressionStatement>
       </Program>
     ) as Program;
     expect(single.format()).toBe("foo = foo;");
 
     single.append(
-       <ExpressionStatement>
-        <AssignmentExpression operator='=' left='bar' right={<Identifier name="bar"/> as Identifier} />
-       </ExpressionStatement> as ExpressionStatement
+      <ExpressionStatement>
+        <AssignmentExpression operator='=' left='bar' right={<Identifier name="bar" /> as Identifier} />
+      </ExpressionStatement> as ExpressionStatement
     );
     expect(single.formatStripped()).toBe("foo = foo;bar = bar;");
 
     single.prepend(
-       <ExpressionStatement>
-        <AssignmentExpression operator='=' left='fofo' right={<Identifier name="fofo"/> as Identifier} />
-       </ExpressionStatement> as ExpressionStatement
+      <ExpressionStatement>
+        <AssignmentExpression operator='=' left='fofo' right={<Identifier name="fofo" /> as Identifier} />
+      </ExpressionStatement> as ExpressionStatement
     );
     expect(single.formatStripped()).toBe("fofo = fofo;foo = foo;bar = bar;");
 
     single.insert(1,
-       <ExpressionStatement>
-        <AssignmentExpression operator='=' left='wolly' right={<Identifier name="wolly"/> as Identifier} />
-       </ExpressionStatement> as ExpressionStatement
+      <ExpressionStatement>
+        <AssignmentExpression operator='=' left='wolly' right={<Identifier name="wolly" /> as Identifier} />
+      </ExpressionStatement> as ExpressionStatement
     );
     expect(single.formatStripped()).toBe("fofo = fofo;wolly = wolly;foo = foo;bar = bar;");
   });
