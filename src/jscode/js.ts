@@ -274,10 +274,10 @@ export class CallExpression
       if (!(child instanceof JsNode)) {
         throw new Error("All Children must be of JsNode, if you are trying to pass in a variable that is a JsNode, write {variableNameHere}");
       }
-      if (child.check(Literal) || child.check(Identifier) || child.check(CallExpression)) {
+      if (child.check(Literal) || child.check(Identifier) || child.check(FunctionExpression) || child.check(Expression)) {
         args.push(child.node);
       } else {
-        throw new Error("argument if specified must be either a Literal, Identifier, or a CallExpression");
+        throw new Error("argument if specified must be either a Literal, Identifier, or an Expression");
       }
     }
     return args;
@@ -355,7 +355,7 @@ export type FunctionExpressionProps = {
 
 @JsNodeFactory.registerType
 export class FunctionExpression
-  extends JsNode<ast.FunctionExpression, FunctionExpressionProps> {
+  extends Expression<ast.FunctionExpression, FunctionExpressionProps> {
 
   props: FunctionExpressionProps;
 
