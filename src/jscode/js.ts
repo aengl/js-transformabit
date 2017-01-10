@@ -234,7 +234,7 @@ export type CallExpressionProps = {
 
 @JsNodeFactory.registerType
 export class CallExpression
-  extends JsNode<ast.CallExpression, CallExpressionProps> {
+  extends Expression<ast.CallExpression, CallExpressionProps> {
 
   build(props: CallExpressionProps, children: any[] = []): this {
     let args = this.getArgs(children);
