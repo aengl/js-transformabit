@@ -23,7 +23,9 @@ import {
   ImportSpecifier,
   ImportDeclaration,
   BinaryExpression,
-  ArrayExpression
+  ArrayExpression,
+  IfStatement,
+  UnaryExpression
 } from '../JsCode';
 
 describe('jscode/js', () => {
@@ -424,6 +426,15 @@ describe('jscode/js', () => {
         />
     );
     expect(tripleNotEquals.format()).toBe("foo !== bar");
+
+    let typeofCheck = (
+      <BinaryExpression
+        left={<UnaryExpression operator="typeof" arguement={<Identifier name="value"/> as Identifier}/> as UnaryExpression}
+        operator="==="
+        right={<Literal value="array"/> as Literal}
+        />
+    );
+    expect(typeofCheck.format()).toBe("typeof value === \"array\"");
   });
 
   it('ImportDeclaration', () => {
@@ -521,4 +532,76 @@ describe('jscode/js', () => {
     );
     expect(single.formatStripped()).toBe("fofo = fofo;wolly = wolly;foo = foo;bar = bar;");
   });
+
+  it('UnaryExpression', () => {
+    const logicalNot = (<UnaryExpression operator="!" arguement={<Identifier name="success"/> as Identifier}/>);
+    expect(logicalNot.formatStripped()).toBe("!success");
+
+    const typeofCheck = (<UnaryExpression operator="typeof" arguement={<Identifier name="age"/> as Identifier}/>);
+    expect(typeofCheck.formatStripped()).toBe("typeof age");
+
+  });
+
+   it('IfStatement', () => {
+      const test1 = (
+        <BinaryExpression
+          left={<Identifier name="foo" /> as Identifier}
+          operator="!=="
+          right={<Identifier name="bar" /> as Identifier}
+          />
+      ) as BinaryExpression;
+
+      const empty = (
+        <IfStatement test={test1}/>
+      );
+      expect(empty.formatStripped()).toBe("if (foo !== bar){}");
+
+      const blockStatement = (
+        <BlockStatement>
+          <ExpressionStatement>
+            <AssignmentExpression
+              operator='='
+              left='c'
+              right={<Identifier name="a"/> as Identifier} />
+          </ExpressionStatement>
+          <ExpressionStatement>
+            <AssignmentExpression
+              operator='='
+              left='a'
+              right={<Identifier name="b"/> as Identifier} />
+          </ExpressionStatement>
+          <ExpressionStatement>
+            <AssignmentExpression
+              operator='='
+              left='b'
+              right={<Identifier name="c"/> as Identifier}/>
+          </ExpressionStatement>
+        </BlockStatement>
+      ) as BlockStatement;
+
+      const withBlockStatement = (
+        <IfStatement test={test1}>
+          {blockStatement}
+        </IfStatement>
+      );
+      expect(withBlockStatement.formatStripped()).toBe("if (foo !== bar) {c = a;a = b;b = c;}");
+
+
+      const unary = (
+        <UnaryExpression operator="!" arguement={<Identifier name="secret"/> as Identifier}/>
+      ) as UnaryExpression;
+
+      const singleStatement = (
+        <IfStatement test={unary}>
+          <ExpressionStatement>
+            <AssignmentExpression
+              operator='='
+              left='secret'
+              right={<Identifier name="password"/> as Identifier}/>
+          </ExpressionStatement>
+        </IfStatement>
+      );
+      expect(singleStatement.formatStripped()).toBe("if (!secret) {secret = password;}");
+
+   });
 });

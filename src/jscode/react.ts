@@ -153,6 +153,8 @@ export class ReactClassComponent
   extends ClassDeclaration<ast.ClassDeclaration, ReactClassComponentProps> {
 
   static check(node: GenericJsNode): boolean {
+    //console.log(node);
+    //return node instanceof ClassDeclaration && (
     return node.check(ClassDeclaration) && (
       node.superClass().format() === 'React.Component' ||
       node.superClass().format() === 'Component'

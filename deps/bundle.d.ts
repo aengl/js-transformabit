@@ -930,6 +930,14 @@ export declare namespace ast {
 
   export var builders: {
     program: (statements: Node[]) => Program;
+    ifStatement: (
+      test: Expression,
+      consequent: Statement
+    ) => IfStatement,
+    unaryExpression: (
+      operator: UnaryOperator,
+      arguement: Expression
+    ) => UnaryExpression,
     importDeclaration: (
       speicifiers: Node[],
       source: Literal

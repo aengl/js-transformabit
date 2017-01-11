@@ -1003,3 +1003,55 @@ export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDecla
     return nodes;
   }
 }
+
+/*========================================================================
+                            Unary Expression
+=========================================================================*/
+export type UnaryExpressionProps = {
+  arguement: GenericExpression,
+  operator: "!" | "delete" | "typeof" | "void" | "+"
+};
+
+@JsNodeFactory.registerType
+export class UnaryExpression extends Expression<ast.UnaryExpression, UnaryExpressionProps> {
+  props: UnaryExpressionProps;
+
+  build(props: UnaryExpressionProps, children: GenericJsNode[]): this {
+    this.node = ast.builders.unaryExpression(props.operator, props.arguement.node);
+    return super.build(props, children) as this;
+  }
+}
+
+/*========================================================================
+                            If Statement
+=========================================================================*/
+export type IfStatementProps = {
+  test: GenericExpression
+};
+
+@JsNodeFactory.registerType
+export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
+  props: IfStatementProps;
+
+  build(props: IfStatementProps, children: GenericJsNode[]): this {
+    this.node = ast.builders.ifStatement(props.test.node, this.getConsequent(children));
+    return super.build(props, children) as this;
+  }
+
+  private getConsequent(children: GenericJsNode[]): ast.Statement {
+    if (children.length === 0) {
+      return ast.builders.blockStatement([]);
+    }
+    const first = children[0];
+    if (children.length === 1 && first.check(BlockStatement)) {
+      return first.node;
+    }
+    return ast.builders.blockStatement(children.map(child => {
+     if (child.check(Statement)) {
+       return child.node as ast.Statement;
+     }
+     throw new Error("Children of an IfStatement must be statements");
+    }));
+  }
+
+}
