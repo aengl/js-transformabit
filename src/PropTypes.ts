@@ -29,15 +29,15 @@ export function inferPropType(root: GenericJsNode, name: string) {
  * Reduces an AST node to a single type, if possible.
  */
 export function resolveNodeToPropType(node: GenericJsNode) {
-  if (node.check(js.ArrayExpression)) {
+  if (node instanceof js.ArrayExpression) {
     return 'array';
-  } else if (node.check(js.Literal)) {
+  } else if (node instanceof js.Literal) {
     return typeof node.value;
-  } else if (node.check(js.ObjectExpression)) {
+  } else if (node instanceof js.ObjectExpression) {
     return 'object';
-  } else if (node.check(js.FunctionExpression)) {
+  } else if (node instanceof js.FunctionExpression) {
     return 'func';
-  } else if (node.check(js.NewExpression)) {
+  } else if (node instanceof js.NewExpression) {
     return `instanceOf(${node.findFirstChildOfType(js.Identifier).name})`;
   }
 }
@@ -49,7 +49,7 @@ export function inferPropTypeFromAssignment(assignment: js.AssignmentExpression,
     const isArray = assignment.left()
       .findFirstChildOfType(js.MemberExpression, node => {
         const property = node.property();
-        return property.check(js.Literal);
+        return property instanceof js.Literal;
       }, true);
     if (isArray) {
       return 'array';

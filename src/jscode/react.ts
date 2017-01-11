@@ -1,16 +1,5 @@
 import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
-import {
-  GenericStatement,
-  MethodDefinition,
-  ClassDeclaration,
-  ClassDeclarationProps,
-  FunctionExpression,
-  CallExpression,
-  ObjectExpression,
-  VariableDeclaration,
-  BlockStatement,
-  Property
-} from './js';
+import * as js from './js';
 import { ast } from '../../deps/bundle';
 
 const b = ast.builders;
@@ -73,11 +62,11 @@ export type ReactComponentProps = {
 };
 
 export class ReactComponent
-  extends VariableDeclaration<ast.VariableDeclaration, ReactComponentProps> {
+  extends js.VariableDeclaration<ast.VariableDeclaration, ReactComponentProps> {
 
   static check(node: GenericJsNode): boolean {
-    if (node.check(VariableDeclaration)) {
-      const callExp = node.findFirstChildOfType(CallExpression);
+    if (node instanceof js.VariableDeclaration) {
+      const callExp = node.findFirstChildOfType(js.CallExpression);
       if (callExp) {
         return callExp.callee().format() === 'React.createClass';
       }
@@ -91,19 +80,6 @@ export class ReactComponent
 
   set name(value: string) {
     this.declarations().first().name = value;
-  }
-
-  findConstructor(): MethodDefinition {
-    throw 'TODO';
-    // return this
-    //   .findChildrenOfType(MethodDefinition, m => m.kind === 'constructor')
-    //   .first();
-  }
-
-  createConstructor(): this {
-    throw 'TODO';
-    // this.findFirstChildOfType(ClassBody).createConstructor();
-    // return this;
   }
 
   build(props: ReactComponentProps, children: GenericJsNode[]): this {
@@ -136,17 +112,30 @@ export class ReactComponent
     return this;
   }
 
+  findConstructor(): js.MethodDefinition {
+    throw 'TODO';
+    // return this
+    //   .findChildrenOfType(js.MethodDefinition, m => m.kind === 'constructor')
+    //   .first();
+  }
+
+  createConstructor(): this {
+    throw 'TODO';
+    // this.findFirstChildOfType(ClassBody).createConstructor();
+    // return this;
+  }
+
   convertToReactClassComponent() {
     const methods = this
-      .findFirstChildOfType(ObjectExpression)
-      .children<Property>()
+      .findFirstChildOfType(js.ObjectExpression)
+      .children<js.Property>()
       .map(prop => b.methodDefinition(
         'method',
         b.identifier(prop.key().name),
         b.functionExpression(
           null,
-          prop.findFirstChildOfType(FunctionExpression).params().nodes<ast.Pattern>(),
-          prop.findFirstChildOfType(BlockStatement).node
+          prop.findFirstChildOfType(js.FunctionExpression).params().nodes<ast.Pattern>(),
+          prop.findFirstChildOfType(js.BlockStatement).node
         )
       ));
     const className = this.declarations().first().id().name;
@@ -168,15 +157,13 @@ export class ReactComponent
  * Class Component
  */
 
-export type ReactClassComponentProps = ClassDeclarationProps;
+export type ReactClassComponentProps = js.ClassDeclarationProps;
 
 export class ReactClassComponent
-  extends ClassDeclaration<ast.ClassDeclaration, ReactClassComponentProps> {
+  extends js.ClassDeclaration<ast.ClassDeclaration, ReactClassComponentProps> {
 
   static check(node: GenericJsNode): boolean {
-    //console.log(node);
-    //return node instanceof ClassDeclaration && (
-    return node.check(ClassDeclaration) && (
+    return (node instanceof js.ClassDeclaration) && (
       node.superClass().format() === 'React.Component' ||
       node.superClass().format() === 'Component'
     );
@@ -217,7 +204,7 @@ export class ReactClassComponent
 
   getRenderMethod() {
     const methods = this
-      .findChildrenOfType(MethodDefinition)
+      .findChildrenOfType(js.MethodDefinition)
       .filter(node => node.methodName() === 'render');
     if (methods.size() > 0) {
       return methods.at(0);
@@ -225,7 +212,7 @@ export class ReactClassComponent
   }
 
   convertToReactComponent() {
-    let methods = this.findChildrenOfType(MethodDefinition, node => node.kind === 'method');
+    let methods = this.findChildrenOfType(js.MethodDefinition, node => node.kind === 'method');
     let properties: ast.Property[] = methods.map(method =>
       b.property('init', b.identifier(method.methodName()),
         b.functionExpression(
@@ -260,8 +247,7 @@ export class ReactComponentRenderProps {
 
 export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps> {
   static check(node: GenericJsNode): boolean {
-    return node.check(MethodDefinition)
-      && node.methodName() === 'render';
+    return node instanceof js.MethodDefinition && node.methodName() === 'render';
   }
 
   build(props: ReactComponentRenderProps, children: string[]): this {
@@ -289,13 +275,13 @@ export class ReactComponentEventHandler
   extends JsNode<any, ReactComponentEventHandlerProps> {
 
   static check(node: GenericJsNode): boolean {
-    return node.check(MethodDefinition)
+    return node instanceof js.MethodDefinition
       && node.kind === 'method'
       && node.methodName() !== 'render';
   }
 
   build(props: ReactComponentEventHandlerProps,
-    children: GenericStatement[]): this {
+    children: js.GenericStatement[]): this {
 
     this.node = b.blockStatement(children.map(child => child.node));
     return super.build(props, children) as this;

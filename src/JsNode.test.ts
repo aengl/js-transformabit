@@ -117,9 +117,7 @@ describe('JsNodeFactory', () => {
     const code = 'this.foo = bar;';
     const node = JsNode.fromModuleCode(code).findFirstChildOfType(js.ThisExpression);
     expect(node).toBeInstanceOf(js.ThisExpression);
-    expect(node.check(js.ThisExpression)).toEqual(true);
     expect(node).toBeInstanceOf(js.Expression);
-    expect(node.check(js.Expression)).toEqual(true);
   });
 });
 
@@ -132,13 +130,13 @@ describe('JsNode', () => {
   it('create from module', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code);
-    expect(node.check(js.File)).toBe(true);
+    expect(node).toBeInstanceOf(js.File);
   });
 
   it('create from code', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromCode(code).first();
-    expect(node.check(js.VariableDeclaration)).toBe(true);
+    expect(node).toBeInstanceOf(js.VariableDeclaration);
   });
 
   it('create from expression statement', () => {
@@ -163,7 +161,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42;';
     let node = JsNode.fromCode(code).first().descend();
     expect(node.format()).toBe('foo = 42');
-    node = JsNode.fromModuleCode(code).descend(node => node.check(js.Literal));
+    node = JsNode.fromModuleCode(code).descend(node => node instanceof js.Literal);
     expect(node.format()).toBe('42');
   });
 
@@ -171,7 +169,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42, bar = 23;';
     let nodes = JsNode.fromCode(code)
       .first()
-      .findChildren<js.Identifier>(node => node.check(js.Identifier));
+      .findChildren<js.Identifier>(node => node instanceof js.Identifier);
     expect(nodes.map(n => n.name).join()).toBe('foo,bar');
   });
 
@@ -184,7 +182,7 @@ describe('JsNode', () => {
     expect(block.format()).toBe('{}');
   });
 
-  it('find child of type', () => {
+  it('find children of type', () => {
     const code = 'const foo = 42, bar = 23;';
     const node = JsNode.fromModuleCode(code);
     const identifiers = node.findChildrenOfType(js.Identifier);
@@ -193,7 +191,7 @@ describe('JsNode', () => {
     expect(identifiers.at(1).name).toBe('bar');
   });
 
-  it('find children of type', () => {
+  it('find first child of type', () => {
     const code = 'const foo = 42;';
     let node = JsNode.fromCode(code)
       .first()
@@ -225,7 +223,7 @@ describe('JsNode', () => {
     const code = 'const foo = 42;';
     const node = JsNode.fromModuleCode(code).findFirstChildOfType(js.Literal);
     expect(node.ascend().format()).toBe('foo = 42');
-    expect(node.ascend(node => node.check(js.Program)).format()).toBe(code);
+    expect(node.ascend(node => node instanceof js.Program).format()).toBe(code);
   });
 
   it('find parent of type', () => {
@@ -283,7 +281,7 @@ describe('JsNode', () => {
   it('remove ancestors', () => {
     const code = 'class Foo { bar() { return 23; } baz() { return 42; } }';
     const node = JsNode.fromModuleCode(code);
-    node.removeDescendants(node => node.check(js.ReturnStatement));
+    node.removeDescendants(node => node instanceof js.ReturnStatement);
     expect(node.format()).toBe('class Foo { bar() {} baz() {} }');
   });
 

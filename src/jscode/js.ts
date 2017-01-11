@@ -120,7 +120,7 @@ export class VariableDeclaration<T extends ast.VariableDeclaration, P extends Va
       return nodes;
     }
     for (let child of children) {
-      if (child.check(VariableDeclarator)) {
+      if (child instanceof VariableDeclarator) {
         nodes.push(child.node);
       }
     }
@@ -259,7 +259,10 @@ export class CallExpression
       if (!(child instanceof JsNode)) {
         throw new Error("All Children must be of JsNode, if you are trying to pass in a variable that is a JsNode, write {variableNameHere}");
       }
-      if (child.check(Literal) || child.check(Identifier) || child.check(FunctionExpression) || child.check(Expression)) {
+      if (child instanceof Literal ||
+        child instanceof Identifier ||
+        child instanceof FunctionExpression ||
+        child instanceof Expression) {
         args.push(child.node);
       } else {
         throw new Error("argument if specified must be either a Literal, Identifier, or an Expression");
@@ -299,7 +302,7 @@ export class FunctionDeclaration
   private getParameters(children: any[]): ast.Pattern[] {
     let params: ast.Pattern[] = [];
     for (let child of children) {
-      if (child.check(Identifier)) {
+      if (child instanceof Identifier) {
         params.push(child.node);
       }
     }
@@ -315,7 +318,7 @@ export class FunctionDeclaration
 
   private getBody(children: any[]): ast.BlockStatement {
     for (let child of children) {
-      if (child.check(BlockStatement)) {
+      if (child instanceof BlockStatement) {
         return child.node;
       }
     }
@@ -386,7 +389,7 @@ export class FunctionExpression
   private getParameters(children: any[]): ast.Pattern[] {
     let params = Array<ast.Pattern>();
     for (let index in children) {
-      if (children[index].check(Identifier)) {
+      if (children[index] instanceof Identifier) {
         params.push(children[index].node as ast.Pattern);
       }
     }
@@ -395,7 +398,7 @@ export class FunctionExpression
 
   private getBody(children: any[]): ast.BlockStatement {
     for (let index in children) {
-      if (children[index].check(BlockStatement)) {
+      if (children[index] instanceof BlockStatement) {
         return children[index].node as ast.BlockStatement;
       }
     }
@@ -1062,11 +1065,11 @@ export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
       return ast.builders.blockStatement([]);
     }
     const first = children[0];
-    if (children.length === 1 && first.check(BlockStatement)) {
+    if (children.length === 1 && first instanceof BlockStatement) {
       return first.node;
     }
     return ast.builders.blockStatement(children.map(child => {
-      if (child.check(Statement)) {
+      if (child instanceof Statement) {
         return child.node as ast.Statement;
       }
       throw new Error("Children of an IfStatement must be statements");
