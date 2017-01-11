@@ -85,6 +85,27 @@ export class ReactComponent
     return false;
   }
 
+  get name(): string {
+    return this.declarations().first().name;
+  }
+
+  set name(value: string) {
+    this.declarations().first().name = value;
+  }
+
+  findConstructor(): MethodDefinition {
+    throw 'TODO';
+    // return this
+    //   .findChildrenOfType(MethodDefinition, m => m.kind === 'constructor')
+    //   .first();
+  }
+
+  createConstructor(): this {
+    throw 'TODO';
+    // this.findFirstChildOfType(ClassBody).createConstructor();
+    // return this;
+  }
+
   build(props: ReactComponentProps, children: GenericJsNode[]): this {
     // Create event handlers
     const eventHandlers = getEventHandlersFromChildren(children)
@@ -139,7 +160,7 @@ export class ReactComponent
         )
       )
     );
-    return this.morph(ReactClassComponent);
+    return this.convert(ReactClassComponent);
   }
 }
 
@@ -226,7 +247,7 @@ export class ReactClassComponent
         )
       ])
     );
-    return this.morph(ReactComponent);
+    return this.convert(ReactComponent);
   }
 }
 

@@ -669,12 +669,6 @@ export class JsNode<T extends ast.Node, P> {
     // this.path = JsNode.fromCollection(js(this.node)).path;
     return this;
   }
-
-  protected morph<T extends GenericJsNode>(type: JsNodeType<T>): T {
-    let node = new type();
-    node.path = this.path;
-    return node;
-  }
 }
 
 // Use global augmentation to resolve JsCode types

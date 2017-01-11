@@ -100,7 +100,6 @@ export class VariableDeclaration<T extends ast.VariableDeclaration, P extends Va
   extends Statement<T, P> {
 
   build(props: P, children: any[]): this {
-
     let declarators = this.getDeclarators(props, children);
     this.node = <T>b.variableDeclaration(props.kind || 'var', declarators);
     return super.build(props, children) as this;
@@ -149,12 +148,20 @@ export class VariableDeclarator
     children: GenericExpression
   };
 
+  get name(): string {
+    return this.id().name;
+  }
+
+  set name(value: string) {
+    this.id().name = value;
+  }
+
   id(): Identifier {
     return this.getNodeForProp<Identifier>('id');
   }
 
   init(): GenericExpression {
-	 return this.getNodeForProp<GenericExpression>('init');
+    return this.getNodeForProp<GenericExpression>('init');
   }
 
   build(props: VariableDeclaratorProps, children: GenericExpression[] = []): this {
@@ -526,7 +533,7 @@ function getSingleExpression(children: GenericExpression[],
   if (children.length > 1) {
     throw new Error("Expression statement can not contain more than 1 statement");
   }
-   let node = children[0];
+  let node = children[0];
   switch (node.type()) {
     case "Identifier":
     case "Literal":
@@ -694,6 +701,14 @@ export type ClassDeclarationProps = {
 @JsNodeFactory.registerType
 export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDeclarationProps>
   extends JsNode<T, P> {
+
+  get name(): string {
+    return this.id().name;
+  }
+
+  set name(value: string) {
+    this.id().name = value;
+  }
 
   build(props: P, children: JsNode<ast.ClassBodyElement, any>[]): this {
     this.node = <T>b.classDeclaration(
@@ -1051,10 +1066,10 @@ export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
       return first.node;
     }
     return ast.builders.blockStatement(children.map(child => {
-     if (child.check(Statement)) {
-       return child.node as ast.Statement;
-     }
-     throw new Error("Children of an IfStatement must be statements");
+      if (child.check(Statement)) {
+        return child.node as ast.Statement;
+      }
+      throw new Error("Children of an IfStatement must be statements");
     }));
   }
 
