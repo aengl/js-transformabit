@@ -612,6 +612,19 @@ export class JsNode<T extends ast.Node, P> {
   }
 
   /**
+   * Finds an element using the findCallback, or creates the element using the
+   * createCallback if no element was found.
+   */
+  findOrCreate<T extends GenericJsNode>(findCallback: () => T, createCallback: () => any): T {
+    let node = findCallback.call(this);
+    if (!node) {
+      createCallback.call(this);
+      node = findCallback.call(this);
+    }
+    return node;
+  }
+
+  /**
    * Helper to unwrap a node to an ast-types node.
    */
   protected toAstNode(node: (GenericJsNode | ast.Node)): ast.Node {

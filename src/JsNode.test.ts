@@ -300,37 +300,27 @@ describe('JsNode', () => {
     // ).toBe('let baz;\nlet foo;let bar;');
   });
 
+  it('find or create', () => {
+    const code = 'class Foo {}';
+    const node = JsNode
+      .fromModuleCode(code)
+      .findFirstChildOfType(js.ClassDeclaration);
+    node.findOrCreate(node.findConstructor, node.createConstructor);
+    expect(node.formatStripped()).toBe('class Foo {constructor() {super();}}');
+  });
+
   it('append method to class body', () => {
     const code = 'class Foo {}';
     const node = JsNode.fromModuleCode(code);
     node
       .findFirstChildOfType(js.ClassBody)
       .createMethod(
-      b.methodDefinition('method',
-        b.identifier('bar'),
-        b.functionExpression(null, [], b.blockStatement([]))
-      )
+        b.methodDefinition('method',
+          b.identifier('bar'),
+          b.functionExpression(null, [], b.blockStatement([]))
+        )
       );
-    expect(node.format()).toBe(
-`class Foo {
-  bar() {}
-}`
-    );
-  });
-
-  it('create constructor', () => {
-    const code = 'class Foo {}';
-    const node = JsNode.fromModuleCode(code);
-    node
-      .findFirstChildOfType(js.ClassBody)
-      .createConstructor();
-    expect(node.format()).toBe(
-`class Foo {
-  constructor() {
-    super();
-  }
-}`
-    );
+    expect(node.formatStripped()).toBe('class Foo {bar() {}}');
   });
 
   it('repairs parent relationship', () => {
