@@ -83,6 +83,19 @@ describe('JsNodeList', () => {
     expect(node.format()).toBe('let foo, bar;');
   });
 
+  it('concat', () => {
+    const list1 = JsNode
+      .fromModuleCode('let foo;')
+      .findChildrenOfType(js.Identifier);
+    const list2 = JsNode
+      .fromModuleCode('let bar;')
+      .findChildrenOfType(js.Identifier);
+    const concat = list1.concat(list2);
+    expect(concat.size()).toBe(2);
+    expect(concat.at(0).format()).toBe('foo');
+    expect(concat.at(1).format()).toBe('bar');
+  });
+
   it('nodes', () => {
     const code = 'let foo, bar; let baz;';
     const nodes = JsNode.fromModuleCode(code)

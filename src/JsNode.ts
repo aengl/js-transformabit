@@ -53,7 +53,7 @@ export class JsNodeList<T extends GenericJsNode> {
   protected _type: JsNodeType<T>;
 
   static fromPath<T extends GenericJsNode>(
-    path: ast.NodePath, type: JsNodeType<T>): JsNodeList<any> {
+    path: ast.NodePath, type?: JsNodeType<T>): JsNodeList<any> {
 
     const list = new JsNodeList(type);
     list._paths = path.map(p => p);
@@ -61,7 +61,7 @@ export class JsNodeList<T extends GenericJsNode> {
   }
 
   static fromPaths<T extends GenericJsNode>(
-    paths: ast.NodePath[], type: JsNodeType<T>): JsNodeList<any> {
+    paths: ast.NodePath[], type?: JsNodeType<T>): JsNodeList<any> {
 
     const list = new JsNodeList(type);
     list._paths = paths;
@@ -183,6 +183,23 @@ export class JsNodeList<T extends GenericJsNode> {
   removeAll(): this {
     this._paths.forEach(path => path.prune());
     return this;
+  }
+
+  copy(): JsNodeList<T> {
+    return JsNodeList.fromPaths(this._paths.slice(0), this._type);
+  }
+
+  concat<U extends GenericJsNode>(list: JsNodeList<U>): JsNodeList<T | U> {
+    const newList = new JsNodeList<T | U>();
+    let type: JsNodeType<T | U>;
+    if (this._type && list._type && (this._type.name === list._type.name)) {
+      // If the types of the two lists match, we can maintain a strongly
+      // typed list. If not, the type becomes undefined.
+      type = this._type;
+    }
+    const copy = this.copy();
+    copy._paths = copy._paths.concat(list._paths);
+    return copy;
   }
 
   nodes<T extends ast.Node>(): T[] {
