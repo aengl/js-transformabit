@@ -1038,6 +1038,10 @@ export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
     return super.build(props, children) as this;
   }
 
+  consequent(): GenericStatement {
+    return this.getNodeForProp('consequent') as GenericStatement;
+  }
+
   private getConsequent(children: GenericJsNode[]): ast.Statement {
     if (children.length === 0) {
       return ast.builders.blockStatement([]);

@@ -553,8 +553,9 @@ describe('jscode/js', () => {
 
       const empty = (
         <IfStatement test={test1}/>
-      );
+      ) as IfStatement;
       expect(empty.formatStripped()).toBe("if (foo !== bar){}");
+      expect(empty.consequent().formatStripped()).toBe('{}');
 
       const blockStatement = (
         <BlockStatement>
@@ -583,8 +584,9 @@ describe('jscode/js', () => {
         <IfStatement test={test1}>
           {blockStatement}
         </IfStatement>
-      );
+      ) as IfStatement;
       expect(withBlockStatement.formatStripped()).toBe("if (foo !== bar) {c = a;a = b;b = c;}");
+      expect(withBlockStatement.consequent().formatStripped()).toBe("{c = a;a = b;b = c;}");
 
 
       const unary = (
@@ -600,8 +602,9 @@ describe('jscode/js', () => {
               right={<Identifier name="password"/> as Identifier}/>
           </ExpressionStatement>
         </IfStatement>
-      );
+      ) as IfStatement;
       expect(singleStatement.formatStripped()).toBe("if (!secret) {secret = password;}");
+      expect(singleStatement.consequent().formatStripped()).toBe("{secret = password;}");
 
    });
 });
