@@ -588,5 +588,18 @@ describe('jscode/js', () => {
      expect(id.format()).toBe("div");
    });
 
+  it('JSXExpressionContainer', () => {
+    const numProp = (<js.JSXExpressionContainer expression={3}/>);
+    expect(numProp.format()).toBe("{3}");
+    const bool = (<js.JSXExpressionContainer expression={true}/>);
+    expect(bool.format()).toBe("{true}");
+
+    const callExpressionProp = (<js.JSXExpressionContainer expression={<js.CallExpression callee="hello"/> as js.CallExpression}/>);
+    expect(callExpressionProp.format()).toBe("{hello()}");
+
+    const callExpressionChild = (<js.JSXExpressionContainer><js.CallExpression callee="hello"/></js.JSXExpressionContainer>);
+    expect(callExpressionChild.format()).toBe("{hello()}");
+  });
+
 });
 
