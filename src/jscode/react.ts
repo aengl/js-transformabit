@@ -10,6 +10,11 @@ export type AnyReactComponent = (
   ReactClassComponent
 );
 
+export type StatefulReactComponent = (
+  ReactComponent |
+  ReactClassComponent
+);
+
 function find(children: GenericJsNode[], type: JsNodeType<any>): GenericJsNode {
   for (let child of children) {
     if (child instanceof type) {
