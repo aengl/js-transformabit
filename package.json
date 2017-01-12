@@ -1,6 +1,6 @@
 {
   "name": "js-transformabit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A JS/React code transformation library.",
   "main": "./dist/Main.js",
   "typings": "./dist/Main",
@@ -17,6 +17,6 @@
     "jest": "^18.1.0",
     "js-yaml": "^3.7.0",
     "tslint": "^4.3.1",
-    "typescript": "^2.1.4"
+    "typescript": "^2.1.5"
   }
 }

@@ -329,8 +329,6 @@ export type FunctionExpressionProps = {
 export class FunctionExpression
   extends Expression<ast.FunctionExpression, FunctionExpressionProps> {
 
-  props: FunctionExpressionProps;
-
   build(props: FunctionExpressionProps, children: any[]): this {
     this.node = b.functionExpression(
       this.getId(props),
@@ -433,7 +431,6 @@ export type PropertyProps = {
 
 @JsNodeFactory.registerType
 export class Property extends JsNode<ast.Property, PropertyProps> {
-  props: PropertyProps;
 
   build(props: PropertyProps, children: any[]): this {
     let key = this.getKey(props);
@@ -481,8 +478,6 @@ export type ObjectExpressionProps = {
 @JsNodeFactory.registerType
 export class ObjectExpression
   extends JsNode<ast.ObjectExpression, ObjectExpressionProps> {
-
-  props: ObjectExpressionProps;
 
   build(props: ObjectExpressionProps, children: any[]): this {
     this.node = b.objectExpression(this.getProperties(children));
@@ -793,8 +788,6 @@ export type MethodDefinitionProps = {
 export class MethodDefinition
   extends JsNode<ast.MethodDefinition, MethodDefinitionProps> {
 
-  props: MethodDefinitionProps;
-
   get kind(): ast.MethodKind {
     return this.node.kind;
   }
@@ -870,7 +863,6 @@ export type NewExpressionProps = {
 
 @JsNodeFactory.registerType
 export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps> {
-  props: NewExpressionProps;
 
   callee(): GenericExpression {
     return this.getNodeForProp<GenericExpression>('callee');
@@ -970,7 +962,6 @@ export type ImportSpecifierProps = {
 
 @JsNodeFactory.registerType
 export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifierProps> {
-  props: ImportSpecifierProps;
   build(props: ImportSpecifierProps, children: GenericJsNode[]): this {
     this.node = ast.builders.importSpecifier(
       props.imported.node,
@@ -990,7 +981,6 @@ export type ImportDeclarationProps = {
 
 @JsNodeFactory.registerType
 export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDeclarationProps> {
-  props: ImportDeclarationProps;
   build(props: ImportDeclarationProps, children: GenericJsNode[]): this {
     this.node = ast.builders.importDeclaration(
       this.getSpecifiers(children, new Array<ast.Node>()),
@@ -1023,8 +1013,6 @@ export type UnaryExpressionProps = {
 
 @JsNodeFactory.registerType
 export class UnaryExpression extends Expression<ast.UnaryExpression, UnaryExpressionProps> {
-  props: UnaryExpressionProps;
-
   build(props: UnaryExpressionProps, children: GenericJsNode[]): this {
     this.node = ast.builders.unaryExpression(props.operator, props.arguement.node);
     return this;
@@ -1040,8 +1028,6 @@ export type IfStatementProps = {
 
 @JsNodeFactory.registerType
 export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
-  props: IfStatementProps;
-
   build(props: IfStatementProps, children: GenericJsNode[]): this {
     this.node = ast.builders.ifStatement(props.test.node, this.getConsequent(children));
     return this;
