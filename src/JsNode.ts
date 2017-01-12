@@ -225,7 +225,7 @@ export class JsNode<T extends ast.Node, P> {
    * This is a required property to make TypeScript analyse property types.
    * It will always be undefined, do reference it in code!
    */
-  protected props: P;
+  props: P;
 
   static fromNode<T extends GenericJsNode>(astNode: ast.Node): T {
     let node = JsNodeFactory.create<T>(astNode.type.toString());
