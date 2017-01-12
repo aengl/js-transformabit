@@ -1068,3 +1068,21 @@ export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
   }
 
 }
+
+
+/*========================================================================
+                            JSX Identifier
+=========================================================================*/
+
+export type JSXIdentifierProps = {
+  name: string
+};
+
+@JsNodeFactory.registerType
+export class JSXIdentifier extends Expression<ast.JSXIdentifier, JSXIdentifierProps> {
+
+  build(props: JSXIdentifierProps, children: any[]): this {
+    this.node = b.jsxIdentifier(props.name);
+    return this;
+  }
+}

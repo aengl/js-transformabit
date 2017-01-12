@@ -581,4 +581,12 @@ describe('jscode/js', () => {
       expect(singleStatement.consequent().formatStripped()).toBe("{secret = password;}");
 
    });
+
+
+   it('JSXIdentifier', () => {
+     const id = (<js.JSXIdentifier name="div"/>);
+     expect(id.format()).toBe("div");
+   });
+
 });
+

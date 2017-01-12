@@ -66,7 +66,7 @@ export declare namespace ast {
     LogicalExpression | MemberExpression | ConditionalExpression |
     CallExpression | NewExpression | SequenceExpression | TemplateLiteral |
     TaggedTemplateExpression | ClassExpression | MetaProperty | Identifier |
-    AwaitExpression;
+    AwaitExpression | JSXIdentifier;
 
   export type Class = ClassDeclaration | ClassExpression;
 
@@ -328,6 +328,11 @@ export declare namespace ast {
     operator: UnaryOperator;
     prefix: boolean;
     argument: Expression;
+  }
+
+  export interface JSXIdentifier extends BaseExpression {
+    type: 'JSXIdentifier';
+    name: string;
   }
 
   export interface BinaryExpression extends BaseExpression {
@@ -930,6 +935,9 @@ export declare namespace ast {
 
   export var builders: {
     program: (statements: Node[]) => Program;
+    jsxIdentifier: (
+      name: string
+    ) => JSXIdentifier;
     ifStatement: (
       test: Expression,
       consequent: Statement
