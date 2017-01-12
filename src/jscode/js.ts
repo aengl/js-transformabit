@@ -1148,3 +1148,56 @@ export class JSXAttribute extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
     return ast.builders.jsxIdentifier(props.name.name);
   }
 }
+
+/*========================================================================
+                            JSX Opening Element
+=========================================================================*/
+
+export type JSXOpeningElementProps = {
+  name: string | JSXIdentifier | Identifier
+  attributes?: JSXAttribute[],
+  selfClosing?: boolean
+};
+
+@JsNodeFactory.registerType
+export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningElementProps> {
+  build(props: JSXOpeningElementProps, children: any[]): this {
+    this.node = b.jsxOpeningElement(this.getName(props), this.getAttributes(props, children), this.isSelfClosing(props));
+    return this;
+  }
+
+  private getName(props: JSXOpeningElementProps): ast.JSXIdentifier {
+    if (props.name instanceof JSXIdentifier) {
+      return props.name.node;
+    }
+    if (typeof props.name === "string") {
+      return ast.builders.jsxIdentifier(props.name);
+    }
+    return ast.builders.jsxIdentifier(props.name.name);
+  }
+
+  private getAttributes(props: JSXOpeningElementProps, children: any[]): ast.JSXAttribute[] {
+    if (!props.attributes) {
+      return this.getAttributesFromChildren(children);
+    }
+    return props.attributes.map(attr => attr.node);
+  }
+
+  private getAttributesFromChildren(children: any[]): ast.JSXAttribute[] {
+    let attrs: ast.JSXAttribute[] = [];
+    for (const child of children) {
+      if (child instanceof JSXAttribute) {
+        attrs.push(child.node);
+      }
+    }
+    return attrs;
+  }
+
+  private isSelfClosing(props: JSXOpeningElementProps): boolean {
+    if (typeof props.selfClosing === "undefined") {
+      return false;
+    }
+    return props.selfClosing;
+  }
+
+}

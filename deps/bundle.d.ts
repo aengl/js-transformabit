@@ -335,6 +335,13 @@ export declare namespace ast {
     name: string;
   }
 
+  export interface JSXOpeningElement extends BaseExpression {
+    type: 'JSXOpeningElement';
+    name: JSXIdentifier;
+    attributes: JSXAttribute[];
+    selfClosing: boolean;
+  }
+
   export interface JSXAttribute extends BaseExpression {
     type: 'JSXAttribute';
     name: JSXIdentifier;
@@ -946,6 +953,11 @@ export declare namespace ast {
 
   export var builders: {
     program: (statements: Node[]) => Program;
+    jsxOpeningElement: (
+      name: JSXIdentifier,
+      attributes: JSXAttribute[],
+      selfClosing: boolean
+    ) => JSXOpeningElement,
     jsxAttribute: (
       name: JSXIdentifier,
       value: Literal | JSXExpressionContainer

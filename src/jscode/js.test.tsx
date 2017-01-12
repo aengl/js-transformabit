@@ -621,5 +621,34 @@ describe('jscode/js', () => {
     expect(novalue.format()).toBe("required");
   });
 
+  it('JSXOpeningElement', () => {
+    const onlyName = (
+      <js.JSXOpeningElement name="div"/>
+    );
+    expect(onlyName.format()).toBe("<div>");
+
+    const selfClosing = (
+      <js.JSXOpeningElement name="hr" selfClosing={true}/>
+    );
+    expect(selfClosing.format()).toBe("<hr />");
+
+    const childAttributes = (
+      <js.JSXOpeningElement name="div">
+        <js.JSXAttribute name="id" value="foo"/>
+        <js.JSXAttribute name="className" value="foo-style"/>
+      </js.JSXOpeningElement>
+    );
+    expect(childAttributes.format()).toBe("<div id=\"foo\" className=\"foo-style\">");
+
+    const attrs = [
+      <js.JSXAttribute name="id" value="foo"/>, <js.JSXAttribute name="className" value="foo-style"/>
+    ] as js.JSXAttribute[];
+    const propsAttributes = (
+      <js.JSXOpeningElement name="div" attributes={attrs}>
+      </js.JSXOpeningElement>
+    );
+    expect(propsAttributes.format()).toBe("<div id=\"foo\" className=\"foo-style\">");
+  });
+
 });
 
