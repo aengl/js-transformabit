@@ -467,15 +467,40 @@ export class JsNode<T extends ast.Node, P> {
     includeSelf: boolean = false): JsNodeList<T> {
 
     let result = new JsNodeList<T>(type);
-    const checkType = this.checkType;
-    const self = this.node;
+    const self = this;
     visit(this.node, {
       visitNode: function (p: ast.NodePath) {
-        if (p.node === self && !includeSelf) {
+        if (p.node === self.node && !includeSelf) {
           this.traverse(p);
         } else {
           const node = JsNode.fromPath(p);
-          if (checkType(node, type) && (!predicate || predicate(node))) {
+          if (self.checkType(node, type) && (!predicate || predicate(node))) {
+            result.pushPath(p);
+          }
+          this.traverse(p);
+        }
+      }
+    });
+    return result;
+  }
+
+  /**
+   * Descends the AST and returns all nodes of several given types that satisfy
+   * the predicate.
+   */
+  findChildrenOfTypes(
+    types: JsNodeType<any>[], predicate?: (node: GenericJsNode) => boolean,
+    includeSelf: boolean = false): JsNodeList<any> {
+
+    let result = new JsNodeList<any>();
+    const self = this;
+    visit(this.node, {
+      visitNode: function (p: ast.NodePath) {
+        if (p.node === self.node && !includeSelf) {
+          this.traverse(p);
+        } else {
+          const node = JsNode.fromPath(p);
+          if (self.checkTypes(node, types) && (!predicate || predicate(node))) {
             result.pushPath(p);
           }
           this.traverse(p);
@@ -652,6 +677,18 @@ export class JsNode<T extends ast.Node, P> {
    */
   protected checkType<T extends GenericJsNode>(node: GenericJsNode, type: JsNodeType<T>): node is T {
     return type.check ? type.check(node) : node instanceof type;
+  }
+
+  /**
+   * Helper to check multiple types.
+   */
+  protected checkTypes(node: GenericJsNode, types: JsNodeType<any>[]): boolean {
+    for (const type of types) {
+      if (this.checkType(node, type)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

@@ -177,8 +177,9 @@ describe('JsNode', () => {
 
   it('chain find calls', () => {
     const code = 'class Foo { bar() {} };';
-    const node = JsNode.fromModuleCode(code);
-    const method = node.findFirstChildOfType(js.MethodDefinition);
+    const method = JsNode
+      .fromModuleCode(code)
+      .findFirstChildOfType(js.MethodDefinition);
     expect(method.format()).toBe('bar() {}');
     const block = method.findFirstChildOfType(js.BlockStatement);
     expect(block.format()).toBe('{}');
@@ -186,11 +187,24 @@ describe('JsNode', () => {
 
   it('find children of type', () => {
     const code = 'const foo = 42, bar = 23;';
-    const node = JsNode.fromModuleCode(code);
-    const identifiers = node.findChildrenOfType(js.Identifier);
+    const identifiers = JsNode
+      .fromModuleCode(code)
+      .findChildrenOfType(js.Identifier);
     expect(identifiers.size()).toBe(2);
     expect(identifiers.at(0).name).toBe('foo');
     expect(identifiers.at(1).name).toBe('bar');
+  });
+
+  it('find children of types', () => {
+    const code = 'const foo = 42, bar = 23;';
+    const nodes = JsNode
+      .fromModuleCode(code)
+      .findChildrenOfTypes([js.Identifier, js.Literal]);
+    expect(nodes.size()).toBe(4);
+    expect(nodes.at(0).format()).toBe('foo');
+    expect(nodes.at(1).format()).toBe('42');
+    expect(nodes.at(2).format()).toBe('bar');
+    expect(nodes.at(3).format()).toBe('23');
   });
 
   it('find first child of type', () => {
