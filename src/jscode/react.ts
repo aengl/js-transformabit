@@ -4,6 +4,12 @@ import { ast } from '../../deps/bundle';
 
 const b = ast.builders;
 
+export type AnyReactComponent = (
+  ReactStatelessComponent |
+  ReactComponent |
+  ReactClassComponent
+);
+
 function find(children: GenericJsNode[], type: JsNodeType<any>): GenericJsNode {
   for (let child of children) {
     if (child instanceof type) {
@@ -35,7 +41,25 @@ export type ReactStatelessComponentProps = {
 };
 
 export class ReactStatelessComponent
-  extends JsNode<ast.VariableDeclaration, ReactStatelessComponentProps> {
+  extends js.VariableDeclaration<ast.VariableDeclaration, ReactStatelessComponentProps> {
+
+  static check(node: GenericJsNode): boolean {
+    if (node instanceof js.VariableDeclaration) {
+      const callExp = node.findFirstChildOfType(js.CallExpression);
+      if (callExp) {
+        return callExp.callee().format() === 'React.createClass';
+      }
+    }
+    return false;
+  }
+
+  get name(): string {
+    return this.declarations().first().name;
+  }
+
+  set name(value: string) {
+    this.declarations().first().name = value;
+  }
 
   build(props: ReactStatelessComponentProps,
     children: GenericJsNode[]): this {
@@ -49,7 +73,7 @@ export class ReactStatelessComponent
         )
       )
     ]);
-    return super.build(props, children) as this;
+    return this;
   }
 }
 
@@ -87,7 +111,7 @@ export class ReactComponent
     const eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.property(
         'init',
-        b.identifier(handler.props.name),
+        b.identifier(handler.name),
         b.functionExpression(null, [b.identifier('event')], handler.node)
       )
     );
@@ -174,7 +198,7 @@ export class ReactClassComponent
     let eventHandlers = getEventHandlersFromChildren(children)
       .map(handler => b.methodDefinition(
         'method',
-        b.identifier(handler.props.name),
+        b.identifier(handler.name),
         b.functionExpression(null, [b.identifier('event')], handler.node)
       )
       );
@@ -259,7 +283,7 @@ export class ReactComponentRender extends JsNode<any, ReactComponentRenderProps>
       throw new Error('ReactComponentRender only accepts strings as children');
     }
     this.node = JsNode.fromExpressionStatement(renderBody).node;
-    return super.build(props, children) as this;
+    return this;
   }
 }
 
@@ -272,7 +296,9 @@ export class ReactComponentEventHandlerProps {
 }
 
 export class ReactComponentEventHandler
-  extends JsNode<any, ReactComponentEventHandlerProps> {
+  extends js.BlockStatement<any, ReactComponentEventHandlerProps> {
+
+  name: string;
 
   static check(node: GenericJsNode): boolean {
     return node instanceof js.MethodDefinition
@@ -283,7 +309,8 @@ export class ReactComponentEventHandler
   build(props: ReactComponentEventHandlerProps,
     children: js.GenericStatement[]): this {
 
+    this.name = props.name;
     this.node = b.blockStatement(children.map(child => child.node));
-    return super.build(props, children) as this;
+    return this;
   }
 }

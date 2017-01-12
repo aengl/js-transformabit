@@ -221,7 +221,11 @@ export class JsNodeList<T extends GenericJsNode> {
 export class JsNode<T extends ast.Node, P> {
   protected _path: ast.NodePath;
 
-  public props: P;
+  /**
+   * This is a required property to make TypeScript analyse property types.
+   * It will always be undefined, do reference it in code!
+   */
+  protected props: P;
 
   static fromNode<T extends GenericJsNode>(astNode: ast.Node): T {
     let node = JsNodeFactory.create<T>(astNode.type.toString());
@@ -323,12 +327,8 @@ export class JsNode<T extends ast.Node, P> {
     this._path = new ast.NodePath(node);
   }
 
-  build(props: P, children: any[]): JsNode<T, P> {
-    this.props = props;
-    if (!this.node || !this.node.type) {
-      throw new Error(`${this.constructor.name}.build() did not assign a valid node`);
-    }
-    return this;
+  build(props: P, children: any[]): this {
+    throw new Error('Can not build a JsNode directly');
   }
 
   /**
