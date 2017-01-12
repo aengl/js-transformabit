@@ -189,13 +189,11 @@ export class JsNodeList<T extends GenericJsNode> {
     return JsNodeList.fromPaths(this._paths.slice(0), this._type);
   }
 
-  concat<U extends GenericJsNode>(list: JsNodeList<U>): JsNodeList<T | U> {
-    const newList = new JsNodeList<T | U>();
-    let type: JsNodeType<T | U>;
-    if (this._type && list._type && (this._type.name === list._type.name)) {
-      // If the types of the two lists match, we can maintain a strongly
-      // typed list. If not, the type becomes undefined.
-      type = this._type;
+  concat(list: JsNodeList<T>): JsNodeList<T> {
+    const newList = new JsNodeList<T>();
+    let type: JsNodeType<T>;
+    if (this._type !== list._type) {
+      throw new Error('Can not concatenate lists of different type');
     }
     return JsNodeList.fromPaths(this._paths.concat(list._paths), type);
   }
