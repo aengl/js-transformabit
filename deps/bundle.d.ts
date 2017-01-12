@@ -342,6 +342,12 @@ export declare namespace ast {
     selfClosing: boolean;
   }
 
+
+  export interface JSXClosingElement extends BaseExpression {
+    type: 'JSXClosingElement';
+    name: JSXIdentifier;
+  }
+
   export interface JSXAttribute extends BaseExpression {
     type: 'JSXAttribute';
     name: JSXIdentifier;
@@ -953,6 +959,9 @@ export declare namespace ast {
 
   export var builders: {
     program: (statements: Node[]) => Program;
+    jsxClosingElement: (
+      name: JSXIdentifier
+    ) => JSXClosingElement,
     jsxOpeningElement: (
       name: JSXIdentifier,
       attributes: JSXAttribute[],

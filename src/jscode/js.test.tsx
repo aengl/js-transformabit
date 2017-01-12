@@ -650,5 +650,14 @@ describe('jscode/js', () => {
     expect(propsAttributes.format()).toBe("<div id=\"foo\" className=\"foo-style\">");
   });
 
+  it('JSXClosingElement', () => {
+    const str = (<js.JSXClosingElement name="div"/>);
+    expect(str.format()).toBe("</div>");
+    const jsxId = (<js.JSXClosingElement name={<js.JSXIdentifier name="span"/> as js.JSXIdentifier}/>);
+    expect(jsxId.format()).toBe("</span>");
+    const id = (<js.JSXClosingElement name={<js.Identifier name="section"/> as js.Identifier}/>);
+    expect(id.format()).toBe("</section>");
+  });
+
 });
 

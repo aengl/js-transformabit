@@ -1215,3 +1215,29 @@ export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningE
   }
 
 }
+
+/*========================================================================
+                            JSX Closing Element
+=========================================================================*/
+
+export type JSXClosingElementProps = {
+  name: string | JSXIdentifier | Identifier
+};
+
+@JsNodeFactory.registerType
+export class JSXClosingElement extends JsNode<ast.JSXClosingElement, JSXClosingElementProps> {
+  build(props: JSXClosingElementProps, children: any[]): this {
+    this.node = b.jsxClosingElement(this.getName(props));
+    return this;
+  }
+
+  private getName(props: JSXClosingElementProps): ast.JSXIdentifier {
+    if (props.name instanceof JSXIdentifier) {
+      return props.name.node;
+    }
+    if (typeof props.name === "string") {
+      return ast.builders.jsxIdentifier(props.name);
+    }
+    return ast.builders.jsxIdentifier(props.name.name);
+  }
+}
