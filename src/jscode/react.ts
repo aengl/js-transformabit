@@ -150,8 +150,32 @@ export class ReactComponent
 
   createConstructor(): this {
     throw 'TODO';
-    // this.findFirstChildOfType(ClassBody).createConstructor();
-    // return this;
+    /* Relevant code from AddWebSocket editor
+    private hasInit(body: js.BlockStatement, params: AddWebSocketParams): boolean {
+      return body.findChildrenOfType(js.AssignmentExpression).filter(exp => {
+        const left = exp.left();
+        if (left.check(js.MemberExpression)) {
+          if (left.object.name !== "this" || left.property.name !== "connection") {
+            return false;
+          }
+        } else {
+          return false;
+        }
+        const right = exp.right();
+        if (right.check(js.NewExpression)) {
+          this.project.println(right.callee().children().at(0).format());
+        } else {
+          return false;
+        }
+
+        return false;
+      }).size() > 0;
+    }
+    */
+  }
+
+  findMethod(name: string) {
+    throw 'TODO';
   }
 
   convertToReactClassComponent() {

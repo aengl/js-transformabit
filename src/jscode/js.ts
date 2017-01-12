@@ -716,9 +716,20 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
     return this.getNodeForProp<GenericExpression>('superClass');
   }
 
-  findConstructor(): MethodDefinition {
+  methods() {
+    return this.findChildrenOfType(MethodDefinition);
+  }
+
+  findConstructor() {
     return this
       .findChildrenOfType(MethodDefinition, m => m.kind === 'constructor')
+      .first();
+  }
+
+  findMethod(name: string) {
+    return this
+      .findChildrenOfType(MethodDefinition,
+        m => m.kind === 'method' && m.methodName() === name)
       .first();
   }
 
@@ -796,7 +807,7 @@ export class MethodDefinition
     this.node.kind = kind;
   }
 
-  key(): GenericExpression {
+  key() {
     return this.getNodeForProp<GenericExpression>('key');
   }
 
@@ -810,11 +821,14 @@ export class MethodDefinition
     return this;
   }
 
-  methodName(): string {
-    return this.findFirstChildOfType(Identifier).name;
+  methodName() {
+    const key = this.key();
+    if (key instanceof Identifier) {
+      return key.name;
+    }
   }
 
-  methodArgs(): JsNodeList<Pattern> {
+  methodArgs() {
     return this
       .findFirstChildOfType(FunctionExpression)
       .params();
