@@ -1,4 +1,5 @@
 notifications:
+  template: "Build ${result} from ${author} (${branch}, ${commit_message}, ${commit})"
   slack: trifork-se:rsjWCAsE47JsZYbFNzPpjbnM
 language: node_js
 node_js:
