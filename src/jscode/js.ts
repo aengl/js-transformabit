@@ -1105,3 +1105,46 @@ export class JSXExpressionContainer extends Expression<ast.JSXExpressionContaine
     throw new Error("Child must be of type Expression");
   }
 }
+
+/*========================================================================
+                            JSX Attribute
+=========================================================================*/
+
+export type JSXAttributeProps = {
+  name: string | JSXIdentifier | Identifier
+  value?: string | boolean | number | GenericExpression| JSXExpressionContainer
+};
+
+@JsNodeFactory.registerType
+export class JSXAttribute extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
+  build(props: JSXAttributeProps, children: any[]): this {
+    this.node = b.jsxAttribute(this.getName(props), this.getValue(props));
+    return this;
+  }
+
+  private getValue(props: JSXAttributeProps): ast.Literal | ast.JSXExpressionContainer {
+    if (!props.value) {
+      return null;
+    }
+    if (props.value instanceof JSXExpressionContainer) {
+      return props.value.node;
+    }
+    if (typeof props.value === "string") {
+      return ast.builders.literal(props.value);
+    }
+    if (props.value instanceof Expression) {
+      return ast.builders.jsxExpressionContainer(props.value.node);
+    }
+    return ast.builders.jsxExpressionContainer(ast.builders.literal(props.value));
+  }
+
+  private getName(props: JSXAttributeProps): ast.JSXIdentifier {
+    if (props.name instanceof JSXIdentifier) {
+      return props.name.node;
+    }
+    if (typeof props.name === "string") {
+      return ast.builders.jsxIdentifier(props.name);
+    }
+    return ast.builders.jsxIdentifier(props.name.name);
+  }
+}

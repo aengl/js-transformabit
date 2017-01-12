@@ -601,5 +601,25 @@ describe('jscode/js', () => {
     expect(callExpressionChild.format()).toBe("{hello()}");
   });
 
+  it('JSXAttribute', () => {
+    const str = (<js.JSXAttribute name="className" value="item"/>);
+    expect(str.format()).toBe("className=\"item\"");
+
+    const num = (<js.JSXAttribute name="max" value={10}/>);
+    expect(num.format()).toBe("max={10}");
+
+    const bool = (<js.JSXAttribute name="readonly" value={true}/>);
+    expect(bool.format()).toBe("readonly={true}");
+
+    const exp = (<js.JSXAttribute name="x-id" value={<js.CallExpression callee="get_id"/> as js.CallExpression}/>);
+    expect(exp.format()).toBe("x-id={get_id()}");
+
+    const jsxexp = (<js.JSXAttribute name="x-foo" value={<js.JSXExpressionContainer expression={<js.Identifier name="foo"/> as js.Identifier}/> as js.JSXExpressionContainer}/>);
+    expect(jsxexp.format()).toBe("x-foo={foo}");
+
+    const novalue = (<js.JSXAttribute name="required"/>);
+    expect(novalue.format()).toBe("required");
+  });
+
 });
 
