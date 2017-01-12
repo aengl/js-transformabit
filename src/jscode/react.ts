@@ -149,7 +149,7 @@ export class ReactComponent
         )
       )
     );
-    return this.convert(ReactClassComponent);
+    return this.castTo(ReactClassComponent);
   }
 }
 
@@ -234,7 +234,7 @@ export class ReactClassComponent
         )
       ])
     );
-    return this.convert(ReactComponent);
+    return this.castTo(ReactComponent);
   }
 }
 

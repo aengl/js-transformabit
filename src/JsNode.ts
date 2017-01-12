@@ -345,11 +345,11 @@ export class JsNode<T extends ast.Node, P> {
 
   /**
    * Returns true if this node can be converted to a complex node of a given
-   * type.
+   * type. See castTo() for details on casting.
    */
-  canConvert<T extends GenericJsNode>(type: JsNodeType<T>): boolean {
+  canCastTo<T extends GenericJsNode>(type: JsNodeType<T>): boolean {
     if (!type.check) {
-      throw new Error('Can only convert to complex types');
+      throw new Error('Can only cast to complex types');
     }
     return (this instanceof type) || type.check(this);
   }
@@ -358,14 +358,20 @@ export class JsNode<T extends ast.Node, P> {
    * Casts this node to a certain type.
    *
    * This is used to "upgrade" primitive nodes (like a ClassDeclaration) to a
-   * corresponding complex node (like ReactClassComponent).
+   * corresponding complex node (like ReactClassComponent). It doesn't
+   * influence the AST structure in any way, but provices the methods for that
+   * specific complex type.
+   *
+   * A cast will always succeed, but may not always be meaningful. Unless you
+   * know what you're doing, call canCastTo() first to make sure that the
+   * current node is compatible.
    */
-  convert<T extends GenericJsNode>(type: JsNodeType<T>): T {
+  castTo<T extends GenericJsNode>(type: JsNodeType<T>): T {
     if (this instanceof type) {
       return this;
     }
     if (!type.check) {
-      throw new Error('Can only convert to complex types');
+      throw new Error('Can only cast to complex types');
     }
     const node = new type();
     node.path = this.path;
@@ -440,7 +446,7 @@ export class JsNode<T extends ast.Node, P> {
         } else if (!result) {
           const node = JsNode.fromPath(p);
           if (checkType(node, type) && (!predicate || predicate(node))) {
-            result = node.convert(type);
+            result = node.castTo(type);
             return false;
           }
           this.traverse(p);
@@ -487,7 +493,7 @@ export class JsNode<T extends ast.Node, P> {
       // We can't just return matchedNode since it will always be a registered
       // type. In case we are looking for a complex type, we need to explicitly
       // construct it from the matched node.
-      return matchedNode.convert(type);
+      return matchedNode.castTo(type);
     }
   }
 
@@ -523,7 +529,7 @@ export class JsNode<T extends ast.Node, P> {
     const matchedNode = <T>this.ascend(node => this.checkType(node, type));
     if (matchedNode) {
       // See findClosestParentOfType()
-      return matchedNode.convert(type);
+      return matchedNode.castTo(type);
     }
   }
 

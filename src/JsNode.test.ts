@@ -151,10 +151,12 @@ describe('JsNode', () => {
     expect(nodes.at(1).format()).toBe('return foo;');
   });
 
-  it('convert', () => {
+  it('cast', () => {
     const code = 'let foo;';
     const node = JsNode.fromModuleCode(code).findFirstChildOfType(js.Identifier);
-    expect(node.convert(js.Expression)).toBeInstanceOf(js.Expression);
+    // TODO: strangely enough, Jest complains about this throwing an error
+    // expect(node.canCastTo(js.Expression)).toThrow();
+    expect(node.castTo(js.Expression)).toBeInstanceOf(js.Expression);
   });
 
   it('descend', () => {
