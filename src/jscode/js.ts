@@ -77,7 +77,7 @@ export class Statement<T extends ast.Statement, P extends StatementProps>
 export type GenericStatement = Statement<ast.Statement, StatementProps>;
 
 /*========================================================================
-                            Variable Delcaration
+                            Variable Declaration
 =========================================================================*/
 
 export type VariableDeclarationProps = {

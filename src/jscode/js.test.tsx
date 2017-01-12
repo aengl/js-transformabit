@@ -552,7 +552,7 @@ describe('jscode/js', () => {
               right={<js.Identifier name="c"/> as js.Identifier}/>
           </js.ExpressionStatement>
         </js.BlockStatement>
-      ) as js.BlockStatement;
+      ) as js.GenericBlockStatement;
 
       const withBlockStatement = (
         <js.IfStatement test={test1}>
