@@ -274,7 +274,6 @@ describe('jscode/js', () => {
 
     let withMethod = (
       <js.ClassDeclaration id="Foo" superClass='Bar'>
-
         <js.MethodDefinition key="foo" kind='method'>
           <js.FunctionExpression>
             <js.BlockStatement>
@@ -284,10 +283,11 @@ describe('jscode/js', () => {
             </js.BlockStatement>
           </js.FunctionExpression>
         </js.MethodDefinition>
-
       </js.ClassDeclaration>
-    );
+    ) as js.GenericClassDeclaration;
     expect(withMethod.formatStripped()).toBe("class Foo extends Bar {foo() {return true;}}");
+    expect(withMethod.methods().size()).toBe(1);
+    expect(withMethod.methods().first().methodName()).toBe('foo');
 
     let withTwoMethods = (
       <js.ClassDeclaration id="Foo" superClass='Bar'>
@@ -309,10 +309,12 @@ describe('jscode/js', () => {
             </js.BlockStatement>
           </js.FunctionExpression>
         </js.MethodDefinition>
-
       </js.ClassDeclaration>
-    );
+    ) as js.GenericClassDeclaration;
     expect(withTwoMethods.formatStripped()).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
+    expect(withTwoMethods.methods().size()).toBe(2);
+    expect(withTwoMethods.methods().at(0).methodName()).toBe('bar');
+    expect(withTwoMethods.methods().at(1).methodName()).toBe('foo');
   });
 
   it('FunctionExpression', () => {

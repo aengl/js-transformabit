@@ -178,6 +178,10 @@ export class ReactComponent
     throw 'TODO';
   }
 
+  addMethod(method: js.MethodDefinition) {
+    throw 'TODO';
+  }
+
   convertToReactClassComponent() {
     const methods = this
       .findFirstChildOfType(js.ObjectExpression)

@@ -703,14 +703,14 @@ export declare namespace ast {
 
     constructor(value: Node, parentPath?: Path, name?: string);
     getValueProperty(name: string): string;
-    get(name: string): any;
+    get(name: string): this;
     each(callback: (childPath: NodePath) => void, context?: Path): void;
     map(callback: (childPath: NodePath) => NodePath, context?: Path): NodePath[];
     filter(callback: (childPath: NodePath) => boolean, context?: Path): NodePath[];
     shift(): void;
-    unshift(...nodes: NodePath[]): void;
-    push(...nodes: NodePath[]): void;
-    pop(): NodePath;
+    unshift(...nodes: Node[]): void;
+    push(...nodes: Node[]): void;
+    pop(): Node;
     insertAt(index: number, node: Node): Path;
     insertBefore(node: Node): Path;
     insertAfter(node: Node): Path;

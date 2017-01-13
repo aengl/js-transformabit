@@ -705,15 +705,32 @@ export class JsNode<T extends ast.Node, P> {
   /**
    * Gets the node that wraps a property of the current node.
    */
-  protected getNodeForProp<T extends GenericJsNode>(propertyName: string): T {
-    return JsNode.fromPath<T>(this._path.get(propertyName));
+  protected getNodeForProp<T extends GenericJsNode>(props: (string | string[])): T {
+    return JsNode.fromPath<T>(this.resolvePropPath(props));
   }
 
   /**
    * Get a list of nodes that wrap a property of the current node.
    */
-  protected getNodesForProp<T extends GenericJsNode>(propertyName: string, type?: JsNodeType<T>): JsNodeList<T> {
-    return JsNodeList.fromPath(this._path.get(propertyName), type);
+  protected getNodesForProp<T extends GenericJsNode>(
+    props: (string | string[]), type?: JsNodeType<T>): JsNodeList<T> {
+
+    return JsNodeList.fromPath(this.resolvePropPath(props), type);
+  }
+
+  /**
+   * Navigates an AST tree by following a chain of property names.
+   */
+  protected resolvePropPath(props: (string | string[])): ast.NodePath {
+    if (props instanceof Array) {
+      let path = this._path;
+      props.forEach(s => {
+        path = path.get(s);
+      });
+      return path;
+    } else {
+      return this._path.get(props);
+    }
   }
 
   /**

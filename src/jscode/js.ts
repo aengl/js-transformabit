@@ -717,7 +717,7 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
   }
 
   methods() {
-    return this.findChildrenOfType(MethodDefinition);
+    return this.getNodesForProp<MethodDefinition>(['body', 'body']);
   }
 
   findConstructor() {
@@ -733,8 +733,13 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
       .first();
   }
 
+  addMethod(node: (ast.MethodDefinition | MethodDefinition), index?: number): this {
+    this.getNodeForProp<ClassBody>('body').addMethod(node, index);
+    return this;
+  }
+
   createConstructor(): this {
-    this.findFirstChildOfType(ClassBody).createConstructor();
+    this.getNodeForProp<ClassBody>('body').createConstructor();
     return this;
   }
 }
@@ -752,12 +757,6 @@ export type ClassBodyProps = {
 @JsNodeFactory.registerType
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   build(props: ClassBodyProps, children: any[]): this {
-    // this.node = b.classBody(
-    //   children
-    //     .map(c => (c instanceof JsNode) ? c.node : null)
-    //     .filter(c => c)
-    // );
-    // return this;
     throw new Error('ClassBody is created implicitly when creating a ClassDeclaration');
   }
 
@@ -777,8 +776,8 @@ export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
     return this;
   }
 
-  createMethod(node: ast.Node, index?: number): this {
-    this._path.get('body').push(node);
+  addMethod(node: (ast.MethodDefinition | MethodDefinition), index?: number): this {
+    this._path.get('body').push(node instanceof MethodDefinition ? node.node : node);
     return this;
   }
 }

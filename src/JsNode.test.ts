@@ -341,7 +341,7 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code);
     node
       .findFirstChildOfType(js.ClassBody)
-      .createMethod(
+      .addMethod(
         b.methodDefinition('method',
           b.identifier('bar'),
           b.functionExpression(null, [], b.blockStatement([]))
@@ -355,7 +355,7 @@ describe('JsNode', () => {
     const node = JsNode.fromModuleCode(code);
     const foo = node
       .findFirstChildOfType(js.ClassBody)
-      .createMethod(
+      .addMethod(
       b.methodDefinition('method',
         b.identifier('bar'),
         b.functionExpression(null, [], b.blockStatement([
