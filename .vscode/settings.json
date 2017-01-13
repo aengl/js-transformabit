@@ -1,4 +1,5 @@
 {
+  "typescript.tsdk": "./node_modules/typescript/lib",
   "editor.tabSize": 2,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
@@ -6,5 +7,12 @@
     "**/.git": true,
     "**/node_modules": true,
     "dist": true
-  }
+  },
+  "prettier.tabWidth": 2,
+  "prettier.printWidth": 100,
+  "prettier.formatOnSave": true,
+  "prettier.singleQuote": true,
+  "prettier.bracketSpacing": true,
+  "prettier.trailingComma": false,
+  "prettier.useFlowParser": false
 }
