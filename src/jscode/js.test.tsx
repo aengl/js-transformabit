@@ -659,5 +659,22 @@ describe('jscode/js', () => {
     expect(id.format()).toBe("</section>");
   });
 
+
+  it('JSXElement', () => {
+    const empty = (<js.JSXElement name="div"/>);
+    expect(empty.format()).toBe("<div></div>");
+
+    const withAttribute = (<js.JSXElement name="div" attributes={[<js.JSXAttribute name="display" value="block"/> as js.JSXAttribute]}/>);
+    expect(withAttribute.format()).toBe(`<div display="block"></div>`);
+
+    const withChildren = (
+      <js.JSXElement name="div">
+        <js.JSXElement name="h1">Title</js.JSXElement>
+      </js.JSXElement>
+    );
+    expect(withChildren.formatStripped()).toBe(`<div><h1>Title</h1></div>`);
+
+  });
+
 });
 

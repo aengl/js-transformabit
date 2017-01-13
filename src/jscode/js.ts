@@ -1202,6 +1202,8 @@ export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningE
     for (const child of children) {
       if (child instanceof JSXAttribute) {
         attrs.push(child.node);
+      } else {
+        throw new Error("Children of JSXOpeningElement must be of type JSXAttribute");
       }
     }
     return attrs;
@@ -1239,5 +1241,73 @@ export class JSXClosingElement extends JsNode<ast.JSXClosingElement, JSXClosingE
       return ast.builders.jsxIdentifier(props.name);
     }
     return ast.builders.jsxIdentifier(props.name.name);
+  }
+}
+
+/*========================================================================
+                            JSX Element
+=========================================================================*/
+
+export type JSXElementProps = {
+  name: string | JSXIdentifier | Identifier,
+  attributes?: JSXAttribute[],
+  selfClosing?: boolean
+};
+
+@JsNodeFactory.registerType
+export class JSXElement extends JsNode<ast.JSXElement, JSXElementProps> {
+  build(props: JSXElementProps, children: any[]): this {
+    this.node = b.jsxElement(
+      this.getOpeningElement(props),
+      ast.builders.jsxClosingElement(this.getName(props.name)),
+      this.getElementChildren(children)
+    );
+    return this;
+  }
+
+  private getOpeningElement(props: JSXElementProps): ast.JSXOpeningElement {
+    return ast.builders.jsxOpeningElement(
+      this.getName(props.name),
+      this.getAttributes(props),
+      this.isSelfClosing(props)
+    );
+  }
+
+  private getElementChildren(children: any[]): (ast.Literal | ast.JSXExpressionContainer | ast.JSXElement)[] {
+    let childNodes: (ast.Literal | ast.JSXExpressionContainer | ast.JSXElement)[] = [];
+    for (const child of children) {
+      if (child instanceof Literal || child instanceof JSXExpressionContainer || child instanceof JSXElement) {
+        childNodes.push(child.node);
+      } else if (typeof child === "string") {
+        childNodes.push(ast.builders.literal(child));
+      } else {
+        throw new Error("Children of JSXElement must be either of type Literal, JSXExpressionContainer, or JSXElement");
+      }
+    }
+    return childNodes;
+  }
+
+  private getAttributes(props: JSXElementProps): ast.JSXAttribute[] {
+    if (!props.attributes) {
+      return [];
+    }
+    return props.attributes.map(attr => attr.node);
+  }
+
+  private isSelfClosing(props: JSXOpeningElementProps): boolean {
+    if (typeof props.selfClosing === "undefined") {
+      return false;
+    }
+    return props.selfClosing;
+  }
+
+  private getName(name: string | JSXIdentifier | Identifier): ast.JSXIdentifier {
+    if (name instanceof JSXIdentifier) {
+      return name.node;
+    }
+    if (typeof name === "string") {
+      return ast.builders.jsxIdentifier(name);
+    }
+    return ast.builders.jsxIdentifier(name.name);
   }
 }
