@@ -1,4 +1,5 @@
 import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
+import { JsCode } from '../JsCode';
 import * as js from './js';
 import { ast } from '../../deps/bundle';
 
@@ -266,6 +267,45 @@ export class ReactClassComponent
     if (methods.size() > 0) {
       return methods.at(0);
     }
+  }
+
+  addMethod(method: js.MethodDefinition, bind: boolean = true) {
+    super.addMethod(method);
+    if (bind) {
+      const methodName = method.methodName();
+      if (methodName) {
+        // Not all methods have a name since they can be expressions. We will
+        // only bind if we can determine a name.
+        this.bindThisToMethod(methodName);
+      }
+    }
+  }
+
+  bindThisToMethod(methodName: string) {
+    // First, let's make sure we have a constructor
+    const body = this.findOrCreate(this.findConstructor, this.createConstructor).body();
+    if (!(body instanceof js.BlockStatement)) {
+      throw new Error('Constructor must have BlockStatement as its body');
+    }
+    // Next, add a bind expression to the constructor body
+    body.append(
+      <js.ExpressionStatement>
+        <js.AssignmentExpression>
+          <js.MemberExpression object='this' property={methodName} />
+          <js.CallExpression callee={(
+            <js.MemberExpression>
+              <js.MemberExpression>
+                <js.ThisExpression />
+                <js.Identifier name={methodName} />
+              </js.MemberExpression>
+              <js.Identifier name='bind' />
+            </js.MemberExpression> as js.MemberExpression
+          )}>
+            <js.ThisExpression />
+          </js.CallExpression>
+        </js.AssignmentExpression>
+      </js.ExpressionStatement> as js.ExpressionStatement
+    );
   }
 
   convertToReactComponent() {

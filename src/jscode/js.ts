@@ -234,7 +234,10 @@ export class CallExpression
 
   build(props: CallExpressionProps, children: any[] = []): this {
     let args = this.getArgs(children);
-    this.node = b.callExpression(this.getNodeOrFallback(props.callee, b.identifier), args);
+    this.node = b.callExpression(
+      this.getNodeOrFallback(props.callee, b.identifier),
+      args
+    );
     return this;
   }
 
@@ -595,7 +598,7 @@ export class ThisExpression
 
 export type MemberExpressionProps = ExpressionProps & {
   object?: GenericExpression | string,
-  property: GenericExpression | string
+  property?: GenericExpression | string
 };
 
 @JsNodeFactory.registerType
@@ -604,13 +607,19 @@ export class MemberExpression
 
   build(props: MemberExpressionProps, children: any[]): this {
     let object: ast.Expression;
-    if (!props.object || props.object === 'this') {
-      object = b.thisExpression();
+    let property: ast.Expression;
+    if (children.length === 2) {
+      object = children[0].node;
+      property = children[1].node;
     } else {
-      object = this.getNodeOrFallback(props.object, b.identifier);
+      if (!props.object || props.object === 'this') {
+        object = b.thisExpression();
+      } else {
+        object = this.getNodeOrFallback(props.object, b.identifier);
+      }
+      property = this.getNodeOrFallback(props.property, b.identifier);
     }
-    this.node = b.memberExpression(object,
-      this.getNodeOrFallback(props.property, b.identifier));
+    this.node = b.memberExpression(object, property);
     return this;
   }
 
@@ -788,7 +797,7 @@ export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
 
 export type MethodDefinitionProps = {
   key: Identifier | string,
-  kind: ast.MethodKind,
+  kind?: ast.MethodKind,
   computed?: boolean,
   staticMethod?: boolean,
   expression?: FunctionExpression
@@ -812,7 +821,7 @@ export class MethodDefinition
 
   build(props: MethodDefinitionProps, children: any[]): this {
     this.node = b.methodDefinition(
-      props.kind,
+      props.kind || 'method',
       this.getKey(props),
       this.getFunction(props, children),
       this.getBool(props.staticMethod)
