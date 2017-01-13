@@ -269,7 +269,7 @@ export class ReactClassComponent
     }
   }
 
-  addMethod(method: js.MethodDefinition, bind: boolean = true) {
+  addMethod(method: js.MethodDefinition, index: number = 0, bind: boolean = true) {
     super.addMethod(method);
     if (bind) {
       const methodName = method.methodName();
@@ -279,6 +279,7 @@ export class ReactClassComponent
         this.bindThisToMethod(methodName);
       }
     }
+    return this;
   }
 
   bindThisToMethod(methodName: string) {
