@@ -3,7 +3,7 @@ notifications:
     rooms:
       - trifork-se:rsjWCAsE47JsZYbFNzPpjbnM
     template:
-      - "Build %{result} from %{author} (%{branch}, %{commit_message}, %{commit})"
+      - "Build %{result} from %{author} (#%{build_number} %{branch}, %{commit}) %{commit_message}"
 language: node_js
 node_js:
   - "node"
