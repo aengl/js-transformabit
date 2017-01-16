@@ -701,10 +701,11 @@ export class JsNode<T extends ast.Node, P> {
    * method is usually only called through JsCode and requires the meta and
    * builder class properties to be assigned.
    */
-  build(props: JsNodeProps, children: any[]): this {
+  build(props: JsNodeProps, children: any[] = []): this {
+    // Create AST nodes from meta definitions
     const nodes = Object.keys(this.meta).map(k => {
       const data = this.meta[k];
-      // from prop
+      // From prop
       const prop = props[k];
       if (prop && data.fromProp) {
         if (data.fromString && typeof prop === 'string') {
@@ -712,7 +713,7 @@ export class JsNode<T extends ast.Node, P> {
         }
         return data.fromProp(prop);
       }
-      // from child
+      // From child
       if (children.length > 0 && data.fromChild) {
         let child: any;
         for (let childData of data.fromChild) {
@@ -734,13 +735,28 @@ export class JsNode<T extends ast.Node, P> {
         }
         return child;
       }
-      // default
+      // Default
       if (data.default) {
         return data.default();
       }
       throw new Error(`Could not build ${this.constructor.name}; property "${k}" is missing`);
     });
-    this.node = (this.builder as any)(...nodes);
+    // Convert the remaining children to AST nodes
+    const remainingChildren = children.map(c => {
+      if (!(c instanceof JsNode)) {
+        throw new Error(`${this.constructor.name} found an invalid child that is not of type JsNode`);
+      }
+      return c.node;
+    });
+    // Invoke builder
+    try {
+      this.node = (this.builder as any)(...nodes, ...remainingChildren);
+    }
+    catch (e) {
+      console.error('AST nodes passed to the builder:', nodes);
+      console.log(children);
+      throw new Error(`Failed invoking the AST builder function for ${this.constructor.name}: ${e.message}`);
+    }
     return this;
   }
 

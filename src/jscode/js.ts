@@ -132,9 +132,15 @@ export type VariableDeclaratorProps = {
 export class VariableDeclarator
   extends JsNode<ast.VariableDeclarator, VariableDeclaratorProps> {
 
-  propTypes: {
-    children: GenericExpression
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: v => v.node,
+      fromString: s => b.identifier(s)
+    }
   };
+
+  protected builder = (id: ast.Pattern, init: ast.Expression) =>
+    b.variableDeclarator(id, init || null);
 
   get name(): string {
     return this.id().name;
@@ -150,16 +156,6 @@ export class VariableDeclarator
 
   init(): GenericExpression {
     return this.getNodeForProp<GenericExpression>('init');
-  }
-
-  build(props: VariableDeclaratorProps, children: GenericExpression[] = []): this {
-    let identifier = b.identifier(props.name);
-    if (children.length > 1) {
-      throw new Error("VariableDeclarator can only have one child");
-    }
-    let child = children.length ? children[0].node : null;
-    this.node = b.variableDeclarator(identifier, child);
-    return this;
   }
 }
 
