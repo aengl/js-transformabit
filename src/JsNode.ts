@@ -251,9 +251,19 @@ export class JsNode<T extends ast.Node, P> {
   /**
    * Contains information for building nodes from JsCode.
    */
-  protected meta: JsNodeMeta;
+  protected meta: JsNodeMeta = {};
 
+  /**
+   * Called when building AST nodes in build(). Every key in meta results in an
+   * argument (in the order they are declared). The remaining arguments are the
+   * children passed in JsCode, converted to AST nodes.
+   */
   protected builder: JsNodeBuilder;
+
+  /**
+   * Specifies the types that are valid for children in JsCode.
+   */
+  protected childTypes: JsNodeType<any>[] = [JsNode];
 
   static fromNode<T extends GenericJsNode>(astNode: ast.Node): T {
     let node = JsNodeFactory.create<T>(astNode.type.toString());
@@ -749,11 +759,11 @@ export class JsNode<T extends ast.Node, P> {
       throw new Error(`Could not build ${this.constructor.name}; property "${k}" is missing`);
     });
     // Convert the remaining children to AST nodes
-    const remainingChildren = children.map(c => {
-      if (!(c instanceof JsNode)) {
-        throw new Error(`${this.constructor.name} found an invalid child that is not of type JsNode`);
+    const remainingChildren = children.map(child => {
+      if (!this.childTypes.some(type => child instanceof type)) {
+        throw new Error(`${this.constructor.name} child had invalid type; only following types are allowed: ${this.childTypes.map(t => t.name)}`);
       }
-      return c.node;
+      return child.node;
     });
     // Invoke builder
     try {

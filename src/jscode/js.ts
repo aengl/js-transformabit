@@ -33,22 +33,7 @@ export type ProgramProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class Program extends JsContainerNode<ast.Program, ProgramProps, GenericStatement> {
-
-  build(props: ProgramProps, children: any[]): this {
-    this.node = b.program(this.nodeArray(children, []));
-    return this;
-  }
-
-  private nodeArray(children: any[], array: any[]): any[] {
-    for (const child of children) {
-      if (Array.isArray(child)) {
-        array = this.nodeArray(child, array);
-      } else {
-        array.push(child.node);
-      }
-    }
-    return array;
-  }
+  protected builder = (...statements: ast.Node[]) => b.program(statements);
 }
 
 /*========================================================================
@@ -126,8 +111,8 @@ export type GenericVariableDeclaration =
                             Variable Declarator
 =========================================================================*/
 
-export type VariableDeclaratorProps = {
-  name: string
+export type VariableDeclaratorProps = JsNodeProps & {
+  name: string | Pattern
 };
 
 @JsNodeFactory.registerType
@@ -165,7 +150,7 @@ export class VariableDeclarator
                             Literal
 =========================================================================*/
 
-export type LiteralProps = {
+export type LiteralProps = JsNodeProps & {
   value: ast.LiteralValue
 };
 
@@ -228,7 +213,7 @@ export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
 =========================================================================*/
 
 export type CallExpressionProps = {
-  callee: string | Identifier | MemberExpression | CallExpression
+  callee: string | GenericExpression
 };
 
 @JsNodeFactory.registerType
@@ -242,38 +227,12 @@ export class CallExpression
     }
   };
 
-  protected builder = (id: ast.Pattern, init: ast.Expression) =>
-    b.variableDeclarator(id, init || null);
+  protected builder = (callee, ...args) => b.callExpression(callee, args);
 
-  build(props: CallExpressionProps, children: any[] = []): this {
-    let args = this.getArgs(children);
-    this.node = b.callExpression(
-      this.getNodeOrFallback(props.callee, b.identifier),
-      args
-    );
-    return this;
-  }
+  protected childTypes = [Literal, Identifier, Expression];
 
   callee() {
     return this.getNodeForProp('callee');
-  }
-
-  private getArgs(children: any[]): ast.Expression[] {
-    let args: ast.Expression[] = [];
-    for (const child of children) {
-      if (!(child instanceof JsNode)) {
-        throw new Error("All Children must be of JsNode, if you are trying to pass in a variable that is a JsNode, write {variableNameHere}");
-      }
-      if (child instanceof Literal ||
-        child instanceof Identifier ||
-        child instanceof FunctionExpression ||
-        child instanceof Expression) {
-        args.push(child.node);
-      } else {
-        throw new Error("argument if specified must be either a Literal, Identifier, or an Expression");
-      }
-    }
-    return args;
   }
 }
 
