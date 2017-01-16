@@ -173,17 +173,20 @@ export class Literal extends JsNode<ast.Literal, LiteralProps> {
     return new Literal().build({ value: value }, []);
   }
 
+  protected meta: JsNodeMeta = {
+    value: {
+      fromProp: v => v
+    }
+  };
+
+  protected builder = b.literal;
+
   get value(): ast.LiteralValue {
     return this.node.value;
   }
 
   set value(value: ast.LiteralValue) {
     this.node.value = value;
-  }
-
-  build(props: LiteralProps, children: any[]): this {
-    this.node = b.literal(props.value);
-    return this;
   }
 }
 

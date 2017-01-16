@@ -23,13 +23,13 @@ export type JsNodeMeta = {
 };
 
 export type JsNodeMetaProp = {
-  fromProp?: (v: GenericJsNode) => ast.Node,
+  fromProp?: (v: GenericJsNode) => any,
   fromChild?: Array<{
     type: JsNodeType<any>,
-    convert?: (c: GenericJsNode) => ast.Node
+    convert?: (c: GenericJsNode) => any
   }>,
-  fromString?: (s: string) => ast.Node,
-  default?: () => ast.Node
+  fromString?: (s: string) => any,
+  default?: () => any
 };
 
 export type JsNodeBuilder = (...args: any[]) => ast.Node;
