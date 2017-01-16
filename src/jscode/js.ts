@@ -85,35 +85,37 @@ export type VariableDeclarationProps = JsNodeProps & {
 };
 
 @JsNodeFactory.registerType
-export class VariableDeclaration<T extends ast.VariableDeclaration, P extends VariableDeclarationProps>
+export class VariableDeclaration<
+  T extends ast.VariableDeclaration, P extends VariableDeclarationProps>
   extends Statement<T, P> {
 
+  protected meta: JsNodeMeta = {
+    kind: {
+      fromProp: v => v,
+      default: 'var'
+    }
+  };
+
+  protected builder = (kind: ast.VariableKind, ...declarators: ast.VariableDeclarator[]) =>
+    b.variableDeclaration(kind, declarators);
+
   build(props: P, children: any[]): this {
-    let declarators = this.getDeclarators(props, children);
-    this.node = <T>b.variableDeclaration(props.kind || 'var', declarators);
-    return this;
+    if (props.name) {
+      // If we get a name we assume there's just one declarator with that name
+      // as its id
+      return super.build(props, children, this.meta,
+        (kind: ast.VariableKind, init: ast.Expression) =>
+          b.variableDeclaration(kind, [
+            b.variableDeclarator(b.identifier(props.name), init || null)
+          ]
+        )
+      );
+    }
+    return super.build(props, children);
   }
 
   declarations() {
     return this.getNodesForProp('declarations', VariableDeclarator);
-  }
-
-  private getDeclarators(props: VariableDeclarationProps,
-    children: any[]): ast.VariableDeclarator[] {
-
-    let nodes: ast.VariableDeclarator[] = [];
-    if (props.name) {
-      let declarator = new VariableDeclarator().build({ name: props.name });
-      declarator.build({ name: props.name }, children as GenericExpression[]);
-      nodes.push(declarator.node);
-      return nodes;
-    }
-    for (let child of children) {
-      if (child instanceof VariableDeclarator) {
-        nodes.push(child.node);
-      }
-    }
-    return nodes;
   }
 }
 
@@ -200,6 +202,14 @@ export type IdentifierProps = ExpressionProps & {
 
 @JsNodeFactory.registerType
 export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: v => v
+    }
+  };
+
+  protected builder = b.identifier;
+
   static fromName(name: string) {
     return new Identifier().build({ name: name }, []);
   }
@@ -210,11 +220,6 @@ export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
 
   set name(value: string) {
     this.node.name = value;
-  }
-
-  build(props: IdentifierProps, children: any[]): this {
-    this.node = b.identifier(props.name);
-    return this;
   }
 }
 
@@ -229,6 +234,16 @@ export type CallExpressionProps = {
 @JsNodeFactory.registerType
 export class CallExpression
   extends Expression<ast.CallExpression, CallExpressionProps> {
+
+  protected meta: JsNodeMeta = {
+    callee: {
+      fromProp: v => v.node,
+      fromString: s => b.identifier(s)
+    }
+  };
+
+  protected builder = (id: ast.Pattern, init: ast.Expression) =>
+    b.variableDeclarator(id, init || null);
 
   build(props: CallExpressionProps, children: any[] = []): this {
     let args = this.getArgs(children);
@@ -263,7 +278,7 @@ export class CallExpression
 }
 
 /*========================================================================
-                            Function Delcaration
+                            Function Declaration
 =========================================================================*/
 
 export type FunctionDeclarationProps = {

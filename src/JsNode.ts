@@ -29,7 +29,7 @@ export type JsNodeMetaProp = {
     convert?: (c: GenericJsNode) => any
   }>,
   fromString?: (s: string) => any,
-  default?: () => any
+  default?: any
 };
 
 export type JsNodeBuilder = (...args: any[]) => ast.Node;
@@ -701,10 +701,17 @@ export class JsNode<T extends ast.Node, P> {
    * method is usually only called through JsCode and requires the meta and
    * builder class properties to be assigned.
    */
-  build(props: JsNodeProps, children: any[] = []): this {
+  build(props: JsNodeProps, children: any[] = [],
+    meta?: JsNodeMeta, builder?: JsNodeBuilder): this {
+    if (!meta) {
+      meta = this.meta;
+    }
+    if (!builder) {
+      builder = this.builder;
+    }
     // Create AST nodes from meta definitions
-    const nodes = Object.keys(this.meta).map(k => {
-      const data = this.meta[k];
+    const nodes = Object.keys(meta).map(k => {
+      const data = meta[k];
       // From prop
       const prop = props[k];
       if (prop && data.fromProp) {
@@ -737,7 +744,7 @@ export class JsNode<T extends ast.Node, P> {
       }
       // Default
       if (data.default) {
-        return data.default();
+        return typeof data.default === 'function' ? data.default() : data.default;
       }
       throw new Error(`Could not build ${this.constructor.name}; property "${k}" is missing`);
     });
@@ -750,11 +757,10 @@ export class JsNode<T extends ast.Node, P> {
     });
     // Invoke builder
     try {
-      this.node = (this.builder as any)(...nodes, ...remainingChildren);
+      this.node = (builder as any)(...nodes, ...remainingChildren);
     }
     catch (e) {
-      console.error('AST nodes passed to the builder:', nodes);
-      console.log(children);
+      console.error('AST nodes passed to the builder:\n', nodes.concat(children));
       throw new Error(`Failed invoking the AST builder function for ${this.constructor.name}: ${e.message}`);
     }
     return this;
