@@ -8,10 +8,31 @@ const visit = recast.visit;
 
 export type TypeIdentifier = (ast.Node | ast.Type | string);
 export type GenericJsNode = JsNode<ast.Node, any>;
+
 export type JsNodeType<T extends GenericJsNode> = {
   new (): T;
   check?: (node: GenericJsNode) => boolean;
 };
+
+export type JsNodeProps = {
+  [key: string]: any
+};
+
+export type JsNodeMeta = {
+  [key: string]: JsNodeMetaProp
+};
+
+export type JsNodeMetaProp = {
+  fromProp?: (v: GenericJsNode) => ast.Node,
+  fromChild?: Array<{
+    type: JsNodeType<any>,
+    convert: (c: GenericJsNode) => ast.Node
+  }>,
+  fromString?: (s: string) => ast.Node,
+  default?: () => ast.Node
+};
+
+export type JsNodeBuilder = (...args: any[]) => ast.Node;
 
 export class InvalidTypeError extends Error {
   constructor(public typeId: string) {
@@ -227,6 +248,13 @@ export class JsNode<T extends ast.Node, P> {
    */
   props: P;
 
+  /**
+   * Contains information for building nodes from JsCode.
+   */
+  protected meta: JsNodeMeta;
+
+  protected builder: JsNodeBuilder;
+
   static fromNode<T extends GenericJsNode>(astNode: ast.Node): T {
     let node = JsNodeFactory.create<T>(astNode.type.toString());
     node.node = astNode;
@@ -325,10 +353,6 @@ export class JsNode<T extends ast.Node, P> {
 
   set node(node: T) {
     this._path = new ast.NodePath(node);
-  }
-
-  build(props: P, children: any[]): this {
-    throw new Error('Can not build a JsNode directly');
   }
 
   /**
@@ -670,6 +694,49 @@ export class JsNode<T extends ast.Node, P> {
       node = findCallback.call(this);
     }
     return node;
+  }
+
+  build(props: JsNodeProps, children: any[]): this {
+    const nodes = Object.keys(this.meta).map(k => {
+      const data = this.meta[k];
+      // from prop
+      const prop = props[k];
+      if (prop && data.fromProp) {
+        if (data.fromString && typeof prop === 'string') {
+          return data.fromString(prop);
+        }
+        return data.fromProp(prop);
+      }
+      // from child
+      if (children.length > 0 && data.fromChild) {
+        let child: any;
+        for (let childData of data.fromChild) {
+          for (let i = 0; i < children.length; i++) {
+            if (children[i] instanceof childData.type) {
+              child = childData.convert(children[i]);
+            } else if (data.fromString && typeof children[i] === 'string') {
+              child = data.fromString(children[i]);
+            }
+            if (child) {
+              children.splice(i, 1);
+              break;
+            }
+          }
+        }
+        if (!child) {
+          const types = data.fromChild.map((d: any) => d.type.toString()).join(', ');
+          throw new Error(`${this.constructor.name} expected a a child matching one of these types: ${types} for property ${k}`);
+        }
+        return child;
+      }
+      // default
+      if (data.default) {
+        return data.default();
+      }
+      throw new Error(`Could not build ${this.constructor.name}; property "${k}" is missing`);
+    });
+    this.node = (this.builder as any)(...nodes);
+    return this;
   }
 
   /**

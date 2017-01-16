@@ -190,10 +190,20 @@ describe('jscode/js', () => {
   });
 
   it('MemberExpression', () => {
+    // use properties
     let thisFoo = <js.MemberExpression
       object={js.ThisExpression.create()}
       property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
+
+    // use children
+    let thisFoo2 = (
+      <js.MemberExpression>
+        <js.ThisExpression />
+        {'foo'}
+      </js.MemberExpression>
+    );
+    expect(thisFoo2.format()).toBe("this.foo");
 
     let noThis = <js.MemberExpression property='bar' />;
     expect(noThis.format()).toBe("this.bar");

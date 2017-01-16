@@ -1,9 +1,12 @@
 import {
   JsNode,
+  JsNodeType,
   JsNodeFactory,
   JsContainerNode,
   JsNodeList,
-  GenericJsNode
+  GenericJsNode,
+  JsNodeProps,
+  JsNodeMeta
 } from '../JsNode';
 import { ast } from '../../deps/bundle';
 
@@ -13,8 +16,7 @@ const b = ast.builders;
                                   File
 =========================================================================*/
 
-export type FileProps = {
-};
+export type FileProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class File extends JsNode<ast.File, FileProps> {
@@ -27,8 +29,7 @@ export class File extends JsNode<ast.File, FileProps> {
                                  Program
 =========================================================================*/
 
-export type ProgramProps = {
-};
+export type ProgramProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class Program extends JsContainerNode<ast.Program, ProgramProps, GenericStatement> {
@@ -54,8 +55,7 @@ export class Program extends JsContainerNode<ast.Program, ProgramProps, GenericS
                                 Expression
 =========================================================================*/
 
-export type ExpressionProps = {
-};
+export type ExpressionProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class Expression<T extends ast.Expression, P extends ExpressionProps>
@@ -67,8 +67,7 @@ export type GenericExpression = Expression<ast.Expression, ExpressionProps>;
                                 Statement
 =========================================================================*/
 
-export type StatementProps = {
-};
+export type StatementProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class Statement<T extends ast.Statement, P extends StatementProps>
@@ -80,7 +79,7 @@ export type GenericStatement = Statement<ast.Statement, StatementProps>;
                             Variable Declaration
 =========================================================================*/
 
-export type VariableDeclarationProps = {
+export type VariableDeclarationProps = JsNodeProps & {
   name?: string,
   kind?: ast.VariableKind
 };
@@ -605,23 +604,31 @@ export type MemberExpressionProps = ExpressionProps & {
 export class MemberExpression
   extends Expression<ast.MemberExpression, MemberExpressionProps> {
 
-  build(props: MemberExpressionProps, children: any[]): this {
-    let object: ast.Expression;
-    let property: ast.Expression;
-    if (children.length === 2) {
-      object = children[0].node;
-      property = children[1].node;
-    } else {
-      if (!props.object || props.object === 'this') {
-        object = b.thisExpression();
-      } else {
-        object = this.getNodeOrFallback(props.object, b.identifier);
-      }
-      property = this.getNodeOrFallback(props.property, b.identifier);
+  protected meta: JsNodeMeta = {
+    object: {
+      fromProp: v => v.node,
+      fromChild: [
+        {
+          type: Expression,
+          convert: c => c.node
+        }
+      ],
+      fromString: s => s === 'this' ? b.thisExpression() : b.identifier(s),
+      default: b.thisExpression
+    },
+    property: {
+      fromProp: v => v.node,
+      fromChild: [
+        {
+          type: Expression,
+          convert: c => c.node
+        }
+      ],
+      fromString: s => b.identifier(s)
     }
-    this.node = b.memberExpression(object, property);
-    return this;
-  }
+  };
+
+  protected builder = b.memberExpression;
 
   object() {
     return this.getNodeForProp<GenericExpression>('object');

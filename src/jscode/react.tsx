@@ -234,8 +234,7 @@ export class ReactClassComponent
         'method',
         b.identifier(handler.name),
         b.functionExpression(null, [b.identifier('event')], handler.node)
-      )
-      );
+      ));
     // Create AST
     this.node = b.classDeclaration(
       b.identifier(typeof props.id === 'string' ? props.id : props.id.name),
