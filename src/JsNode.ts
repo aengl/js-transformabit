@@ -26,7 +26,7 @@ export type JsNodeMetaProp = {
   fromProp?: (v: GenericJsNode) => ast.Node,
   fromChild?: Array<{
     type: JsNodeType<any>,
-    convert: (c: GenericJsNode) => ast.Node
+    convert?: (c: GenericJsNode) => ast.Node
   }>,
   fromString?: (s: string) => ast.Node,
   default?: () => ast.Node
@@ -696,6 +696,11 @@ export class JsNode<T extends ast.Node, P> {
     return node;
   }
 
+  /**
+   * Assigns an AST node, which is constructed from props and children. This
+   * method is usually only called through JsCode and requires the meta and
+   * builder class properties to be assigned.
+   */
   build(props: JsNodeProps, children: any[]): this {
     const nodes = Object.keys(this.meta).map(k => {
       const data = this.meta[k];
@@ -713,7 +718,7 @@ export class JsNode<T extends ast.Node, P> {
         for (let childData of data.fromChild) {
           for (let i = 0; i < children.length; i++) {
             if (children[i] instanceof childData.type) {
-              child = childData.convert(children[i]);
+              child = childData.convert ? childData.convert(children[i]) : children[i].node;
             } else if (data.fromString && typeof children[i] === 'string') {
               child = data.fromString(children[i]);
             }

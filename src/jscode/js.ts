@@ -607,23 +607,13 @@ export class MemberExpression
   protected meta: JsNodeMeta = {
     object: {
       fromProp: v => v.node,
-      fromChild: [
-        {
-          type: Expression,
-          convert: c => c.node
-        }
-      ],
+      fromChild: [{ type: Expression }],
       fromString: s => s === 'this' ? b.thisExpression() : b.identifier(s),
       default: b.thisExpression
     },
     property: {
       fromProp: v => v.node,
-      fromChild: [
-        {
-          type: Expression,
-          convert: c => c.node
-        }
-      ],
+      fromChild: [{ type: Expression }],
       fromString: s => b.identifier(s)
     }
   };
