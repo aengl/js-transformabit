@@ -4,41 +4,41 @@ const JsCode = js.JsCode;
 
 describe('jscode/js', () => {
 
-  it.only('VariableDeclaration', () => {
+  it('VariableDeclaration', () => {
     let foo = <js.VariableDeclaration name="foo" kind='let'></js.VariableDeclaration>;
     expect(foo.format()).toBe("let foo;");
 
     let bar = new js.VariableDeclaration().build({ name: "bar" }, []);
     expect(bar.format()).toBe("var bar;");
 
-  //   let letbar = new js.VariableDeclaration().build({ name: "bar", kind: 'let' }, []);
-  //   expect(letbar.format()).toBe("let bar;");
+    let letbar = new js.VariableDeclaration().build({ name: "bar", kind: 'let' }, []);
+    expect(letbar.format()).toBe("let bar;");
 
-  //   let foobar = (
-  //     <js.VariableDeclaration kind='let'>
-  //       <js.VariableDeclarator name="foo" />
-  //       <js.VariableDeclarator name="bar" />
-  //     </js.VariableDeclaration>
-  //   );
+    let foobar = (
+      <js.VariableDeclaration kind='let'>
+        <js.VariableDeclarator name="foo" />
+        <js.VariableDeclarator name="bar" />
+      </js.VariableDeclaration>
+    );
 
-  //   expect(foobar.format()).toBe("let foo, bar;");
+    expect(foobar.format()).toBe("let foo, bar;");
 
-  //   let age = <js.VariableDeclaration name="age" kind='let'><js.Literal value={3} /></js.VariableDeclaration>;
-  //   expect(age.format()).toBe("let age = 3;");
+    let age = <js.VariableDeclaration name="age" kind='let'><js.Literal value={3} /></js.VariableDeclaration>;
+    expect(age.format()).toBe("let age = 3;");
 
-  //   let bananasInPajamas = (
-  //     <js.VariableDeclaration kind='const'>
-  //       <js.VariableDeclarator name="b1">
-  //         <js.Literal value={1} />
-  //       </js.VariableDeclarator>
-  //       <js.VariableDeclarator name="b2">
-  //         <js.Literal value={2} />
-  //       </js.VariableDeclarator>
-  //     </js.VariableDeclaration>
-  //   );
+    let bananasInPajamas = (
+      <js.VariableDeclaration kind='const'>
+        <js.VariableDeclarator name="b1">
+          <js.Literal value={1} />
+        </js.VariableDeclarator>
+        <js.VariableDeclarator name="b2">
+          <js.Literal value={2} />
+        </js.VariableDeclarator>
+      </js.VariableDeclaration>
+    );
 
-  //   expect(bananasInPajamas.format()).toBe("const b1 = 1, b2 = 2;");
-  // });
+    expect(bananasInPajamas.format()).toBe("const b1 = 1, b2 = 2;");
+  });
 
   it('Literal', () => {
     expect(js.Literal.fromValue(8).format()).toBe('8');
