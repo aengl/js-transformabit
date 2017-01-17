@@ -236,6 +236,18 @@ export class JsNodeList<T extends GenericJsNode> {
   }
 }
 
+function flatten(arr) {
+  let ret = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (Array.isArray(arr[i])) {
+      ret = ret.concat(flatten(arr[i]));
+    } else {
+      ret.push(arr[i]);
+    }
+  }
+  return ret;
+}
+
 /**
  * Represents a node in the AST tree.
  */
@@ -713,12 +725,14 @@ export class JsNode<T extends ast.Node, P> {
    */
   build(props: JsNodeProps, children: any[] = [],
     meta?: JsNodeMeta, builder?: JsNodeBuilder): this {
+
     if (!meta) {
       meta = this.meta;
     }
     if (!builder) {
       builder = this.builder;
     }
+    children = flatten(children);
     // Create AST nodes from meta definitions
     const nodes = Object.keys(meta).map(k => {
       const data = meta[k];
@@ -762,7 +776,8 @@ export class JsNode<T extends ast.Node, P> {
     // Convert the remaining children to AST nodes
     const remainingChildren = children.map(child => {
       if (!this.childTypes.some(type => child instanceof type)) {
-        throw new Error(`${this.constructor.name} child had invalid type; only following types are allowed: ${this.childTypes.map(t => t.name)}`);
+        console.error('Children:', children);
+        throw new Error(`${this.constructor.name} no child with suitable type; only following types are allowed: ${this.childTypes.map(t => t.name)}`);
       }
       return child.node;
     });

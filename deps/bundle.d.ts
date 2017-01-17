@@ -524,7 +524,7 @@ export declare namespace ast {
 
   export interface ClassBody extends Node {
     type: 'ClassBody';
-    body: Array<MethodDefinition>;
+    body: Array<ClassBodyElement>;
   }
 
   export interface MethodDefinition extends Node {

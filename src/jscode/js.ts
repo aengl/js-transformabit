@@ -153,7 +153,7 @@ export type LiteralProps = JsNodeProps & {
 };
 
 @JsNodeFactory.registerType
-export class Literal extends JsNode<ast.Literal, LiteralProps> {
+export class Literal extends Expression<ast.Literal, LiteralProps> {
   static fromValue(value: any) {
     return new Literal().build({ value: value }, []);
   }
@@ -283,7 +283,7 @@ export class FunctionExpression
   extends Expression<ast.FunctionExpression, FunctionExpressionProps> {
 
   protected meta: JsNodeMeta = {
-    name: {
+    id: {
       fromProp: p => p,
       fromString: b.identifier,
       default: null
@@ -532,21 +532,39 @@ export type ClassDeclarationProps = {
 export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDeclarationProps>
   extends JsNode<T, P> {
 
+  protected meta: JsNodeMeta = {
+    id: {
+      fromProp: p => p,
+      fromString: b.identifier
+    },
+    superClass: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      fromString: b.identifier,
+      default: null
+    },
+    body: {
+      fromProp: p => p,
+      fromChild: [{ type: ClassBody }],
+      default: null
+    }
+  };
+
+  protected builder = (id, superClass, body, ...elements) => b.classDeclaration(
+    id,
+    body || b.classBody(elements),
+    superClass
+  );
+
+  // TODO
+  // protected childTypes = [ClassBodyElement];
+
   get name(): string {
     return this.id().name;
   }
 
   set name(value: string) {
     this.id().name = value;
-  }
-
-  build(props: P, children: JsNode<ast.ClassBodyElement, any>[]): this {
-    this.node = <T>b.classDeclaration(
-      this.getNodeOrFallback(props.id, b.identifier),
-      b.classBody(children.map(c => c.node)),
-      props.superClass ? this.getNodeOrFallback(props.superClass, b.identifier) : null
-    );
-    return this;
   }
 
   id(): Identifier {
@@ -597,9 +615,10 @@ export type ClassBodyProps = {
 
 @JsNodeFactory.registerType
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
-  build(props: ClassBodyProps, children: any[]): this {
-    throw new Error('ClassBody is created implicitly when creating a ClassDeclaration');
-  }
+  protected builder = (...elements) => b.classBody(elements);
+
+  // TODO
+  // protected childTypes = [ClassBodyElement];
 
   createConstructor(): this {
     this._path.get('body').unshift(
@@ -639,6 +658,35 @@ export type MethodDefinitionProps = {
 export class MethodDefinition
   extends JsNode<ast.MethodDefinition, MethodDefinitionProps> {
 
+  protected meta: JsNodeMeta = {
+    kind: {
+      fromProp: p => p,
+      default: 'method'
+    },
+    key: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      fromString: b.identifier
+    },
+    static: {
+      fromProp: p => p,
+      default: false
+    },
+    value: {
+      fromProp: p => p,
+      fromChild: [{ type: FunctionExpression }],
+      default: null
+    }
+  };
+
+  protected builder = (kind, key, isStatic, value) =>
+    b.methodDefinition(
+      kind,
+      key,
+      value || b.functionExpression(null, [], b.blockStatement([])),
+      isStatic
+    );
+
   get kind(): ast.MethodKind {
     return this.node.kind;
   }
@@ -649,16 +697,6 @@ export class MethodDefinition
 
   key() {
     return this.getNodeForProp<GenericExpression>('key');
-  }
-
-  build(props: MethodDefinitionProps, children: any[]): this {
-    this.node = b.methodDefinition(
-      props.kind || 'method',
-      this.getKey(props),
-      this.getFunction(props, children),
-      this.getBool(props.staticMethod)
-    );
-    return this;
   }
 
   methodName() {
@@ -677,32 +715,6 @@ export class MethodDefinition
   body() {
     return this.findFirstChildOfType(FunctionExpression).body();
   }
-
-  private getBool(val?: boolean): boolean {
-    if (typeof val === "undefined") {
-      return false;
-    }
-    return val;
-  }
-
-  private getKey(props: MethodDefinitionProps): ast.Expression {
-    if (props.key.constructor.name === "String") {
-      return new Identifier().build({ name: <string>props.key }, []).node;
-    }
-    return (props.key as Identifier).node;
-  }
-
-  private getFunction(props: MethodDefinitionProps,
-    children: any[]): ast.Function {
-
-    if (props.expression) {
-      return props.expression.node;
-    }
-    if (children.length === 0) {
-      return new FunctionExpression().build({}, []).node;
-    }
-    return (children[0] as FunctionExpression).node;
-  }
 }
 
 /*========================================================================
@@ -718,26 +730,19 @@ export type NewExpressionProps = {
 @JsNodeFactory.registerType
 export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps> {
 
+  protected meta: JsNodeMeta = {
+    callee: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }/*, { type: Super }*/],
+      fromString: b.identifier
+    }
+  };
+
+  protected builder = (callee, ...args) => b.newExpression(callee, args);
+  protected childTypes = [Expression/*, SpreadElement*/];
+
   callee(): GenericExpression {
     return this.getNodeForProp<GenericExpression>('callee');
-  }
-
-  build(props: NewExpressionProps,
-    children: JsNode<NewExpressionChild, any>[]): this {
-
-    this.node = ast.builders.newExpression(
-      this.getNodeOrFallback(props.callee, b.identifier),
-      this.getArgs(children)
-    );
-    return this;
-  }
-
-  private getArgs(children: JsNode<NewExpressionChild, any>[]): NewExpressionChild[] {
-    const nodes: NewExpressionChild[] = [];
-    for (const child of children) {
-      nodes.push(child.node);
-    }
-    return nodes;
   }
 }
 
@@ -752,13 +757,32 @@ export type Pattern =
 
 export type BinaryOperator = ast.BinaryOperator;
 export type BinaryExpressionProps = ExpressionProps & {
-  left: GenericExpression,
-  operator: string,
-  right: GenericExpression
+  operator?: string,
+  left?: GenericExpression,
+  right?: GenericExpression
 };
 
 @JsNodeFactory.registerType
 export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpressionProps> {
+  protected meta: JsNodeMeta = {
+    operator: {
+      fromProp: p => p,
+      default: '==='
+    },
+    left: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      fromString: b.identifier
+    },
+    right: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      fromString: b.literal
+    }
+  };
+
+  protected builder = b.binaryExpression;
+
   get operator() {
     return this.node.operator;
   }
@@ -774,35 +798,19 @@ export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpress
   right() {
     return this.getNodeForProp<GenericExpression>('right');
   }
-
-  build(props: BinaryExpressionProps, children: GenericJsNode[]): this {
-    this.node = ast.builders.binaryExpression(
-      props.operator,
-      props.left.node,
-      props.right.node
-    );
-    return this;
-  }
 }
 
 /*========================================================================
                              Array Expression
 =========================================================================*/
 
-export type ArrayExpressionProps = ExpressionProps & {
-  elements: Array<GenericExpression/* | SpreadElement*/>;
-};
+export type ArrayExpressionProps = ExpressionProps;
 
 @JsNodeFactory.registerType
 export class ArrayExpression extends JsNode<ast.ArrayExpression, ArrayExpressionProps> {
 
-  build(props: ArrayExpressionProps, children: GenericJsNode[]): this {
-    if (!props.elements) {
-      props.elements = [];
-    }
-    this.node = ast.builders.arrayExpression(props.elements.map(n => n.node));
-    return this;
-  }
+  protected builder = (...elements) => b.arrayExpression(elements);
+  protected childTypes = [Expression]; // TODO: should be ArrayExpressionElements
 }
 
 /*========================================================================
@@ -861,14 +869,14 @@ export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDecla
                             Unary Expression
 =========================================================================*/
 export type UnaryExpressionProps = {
-  arguement: GenericExpression,
+  argument: GenericExpression,
   operator: "!" | "delete" | "typeof" | "void" | "+"
 };
 
 @JsNodeFactory.registerType
 export class UnaryExpression extends Expression<ast.UnaryExpression, UnaryExpressionProps> {
   build(props: UnaryExpressionProps, children: GenericJsNode[]): this {
-    this.node = ast.builders.unaryExpression(props.operator, props.arguement.node);
+    this.node = ast.builders.unaryExpression(props.operator, props.argument.node);
     return this;
   }
 }

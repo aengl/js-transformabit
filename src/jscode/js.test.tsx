@@ -273,15 +273,17 @@ describe('jscode/js', () => {
 
     let withMethod = (
       <js.ClassDeclaration id="Foo" superClass='Bar'>
-        <js.MethodDefinition key="foo" kind='method'>
-          <js.FunctionExpression>
-            <js.BlockStatement>
-              <js.ReturnStatement>
-                <js.Literal value={true} />
-              </js.ReturnStatement>
-            </js.BlockStatement>
-          </js.FunctionExpression>
-        </js.MethodDefinition>
+        <js.ClassBody>
+          <js.MethodDefinition key="foo" kind='method'>
+            <js.FunctionExpression>
+              <js.BlockStatement>
+                <js.ReturnStatement>
+                  <js.Literal value={true} />
+                </js.ReturnStatement>
+              </js.BlockStatement>
+            </js.FunctionExpression>
+          </js.MethodDefinition>
+        </js.ClassBody>
       </js.ClassDeclaration>
     ) as js.GenericClassDeclaration;
     expect(withMethod.formatStripped()).toBe("class Foo extends Bar {foo() {return true;}}");
@@ -289,7 +291,8 @@ describe('jscode/js', () => {
     expect(withMethod.methods().first().methodName()).toBe('foo');
 
     let withTwoMethods = (
-      <js.ClassDeclaration id="Foo" superClass='Bar'>
+      <js.ClassDeclaration id='Foo'>
+        <js.Identifier name='Bar' />
         <js.MethodDefinition key="bar" kind='method'>
           <js.FunctionExpression>
             <js.BlockStatement>
@@ -389,27 +392,23 @@ describe('jscode/js', () => {
     let doubleEquals = (
       <js.BinaryExpression
         left={<js.Identifier name="foo" /> as js.Identifier}
-        operator="=="
-        right={<js.Identifier name="bar" /> as js.Identifier}
-        />
+        right={<js.Identifier name="bar" /> as js.Identifier} />
     );
-    expect(doubleEquals.format()).toBe("foo == bar");
+    expect(doubleEquals.format()).toBe("foo === bar");
 
     let tripleNotEquals = (
-      <js.BinaryExpression
-        left={<js.Identifier name="foo" /> as js.Identifier}
-        operator="!=="
-        right={<js.Identifier name="bar" /> as js.Identifier}
-        />
+      <js.BinaryExpression operator="!==">
+        <js.Identifier name="foo" />
+        <js.Identifier name="bar" />
+      </js.BinaryExpression>
     );
     expect(tripleNotEquals.format()).toBe("foo !== bar");
 
     let typeofCheck = (
-      <js.BinaryExpression
-        left={<js.UnaryExpression operator="typeof" arguement={<js.Identifier name="value"/> as js.Identifier}/> as js.UnaryExpression}
-        operator="==="
-        right={<js.Literal value="array"/> as js.Literal}
-        />
+      <js.BinaryExpression>
+        <js.UnaryExpression operator="typeof" argument={<js.Identifier name="value"/> as js.Identifier}/>
+        <js.Literal value="array"/>
+      </js.BinaryExpression>
     );
     expect(typeofCheck.format()).toBe("typeof value === \"array\"");
   });
@@ -468,10 +467,13 @@ describe('jscode/js', () => {
 
 
   it('ArrayExpression', () => {
-    const vars = ['a', 'b', 'c'].map(
-      s => (<js.Identifier name={s} />) as js.Identifier
+    const numbers = (
+      <js.ArrayExpression>
+        {['a', 'b', 'c'].map(
+          s => (<js.Identifier name={s} />) as js.Identifier
+        )}
+      </js.ArrayExpression>
     );
-    const numbers = (<js.ArrayExpression elements={vars} />);
     expect(numbers.format()).toBe("[a, b, c]");
   });
 
@@ -511,10 +513,10 @@ describe('jscode/js', () => {
   });
 
   it('UnaryExpression', () => {
-    const logicalNot = (<js.UnaryExpression operator="!" arguement={<js.Identifier name="success"/> as js.Identifier}/>);
+    const logicalNot = (<js.UnaryExpression operator="!" argument={<js.Identifier name="success"/> as js.Identifier}/>);
     expect(logicalNot.formatStripped()).toBe("!success");
 
-    const typeofCheck = (<js.UnaryExpression operator="typeof" arguement={<js.Identifier name="age"/> as js.Identifier}/>);
+    const typeofCheck = (<js.UnaryExpression operator="typeof" argument={<js.Identifier name="age"/> as js.Identifier}/>);
     expect(typeofCheck.formatStripped()).toBe("typeof age");
 
   });
@@ -567,7 +569,7 @@ describe('jscode/js', () => {
 
 
       const unary = (
-        <js.UnaryExpression operator="!" arguement={<js.Identifier name="secret"/> as js.Identifier}/>
+        <js.UnaryExpression operator="!" argument={<js.Identifier name="secret"/> as js.Identifier}/>
       ) as js.UnaryExpression;
 
       const singleStatement = (
