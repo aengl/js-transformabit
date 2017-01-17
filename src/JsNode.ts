@@ -733,8 +733,8 @@ export class JsNode<T extends ast.Node, P> {
       // From child
       if (children.length > 0 && data.fromChild) {
         let child: any;
-        for (let childData of data.fromChild) {
-          for (let i = 0; i < children.length; i++) {
+        for (let i = 0; i < children.length && !child; i++) {
+          for (let childData of data.fromChild) {
             if (children[i] instanceof childData.type) {
               child = childData.convert ? childData.convert(children[i]) : children[i].node;
             } else if (data.fromString && typeof children[i] === 'string') {

@@ -182,13 +182,12 @@ describe('jscode/js', () => {
   it('ThisExpression', () => {
     let ths = <js.ThisExpression />;
     expect(ths.format()).toBe("this");
-    expect(js.ThisExpression.create().format()).toBe("this");
   });
 
   it('MemberExpression', () => {
     // use properties
     let thisFoo = <js.MemberExpression
-      object={js.ThisExpression.create()}
+      object={<js.ThisExpression /> as js.ThisExpression}
       property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
 
@@ -219,32 +218,27 @@ describe('jscode/js', () => {
       <js.AssignmentExpression
         operator='='
         left='foo'
-        right='foo' />
+        right='bar' />
     );
-    expect(variable.format()).toBe("foo = \"foo\"");
+    expect(variable.format()).toBe('foo = "bar"');
 
-    let limitFunc = (
-      <js.CallExpression callee='limit'>
-        <js.Literal value={4} />
-      </js.CallExpression>
-    );
     let fromFunc = (
-      <js.AssignmentExpression
-        operator='*='
-        left='foo'
-        right={limitFunc as js.CallExpression}
-        />
+      <js.AssignmentExpression operator='*=' left='foo'>
+        <js.CallExpression callee='limit'>
+          <js.Literal value={4} />
+        </js.CallExpression>
+      </js.AssignmentExpression>
     );
     expect(fromFunc.format()).toBe("foo *= limit(4)");
 
-    let thisLevel = <js.MemberExpression
-      object={js.ThisExpression.create()}
-      property='level' />;
     let memberAndIdentifier = (
-      <js.AssignmentExpression
-        operator='='
-        left={thisLevel as js.MemberExpression}
-        right={js.Identifier.fromName('level')} />
+      <js.AssignmentExpression>
+        <js.MemberExpression>
+          <js.ThisExpression />
+          {'level'}
+        </js.MemberExpression>
+        <js.Identifier name='level' />
+      </js.AssignmentExpression>
     );
     expect(memberAndIdentifier.format()).toBe("this.level = level");
   });

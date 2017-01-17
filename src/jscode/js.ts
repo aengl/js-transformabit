@@ -33,7 +33,7 @@ export type ProgramProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class Program extends JsContainerNode<ast.Program, ProgramProps, GenericStatement> {
-  protected builder = (...statements: ast.Node[]) => b.program(statements);
+  protected builder = (...statements) => b.program(statements);
 }
 
 /*========================================================================
@@ -355,7 +355,7 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
     }
   };
 
-  protected builder = (kind, key, value) => b.property(kind, key, value);
+  protected builder = b.property;
 
   key(): Identifier {
     return this.getNodeForProp<Identifier>('key');
@@ -373,61 +373,8 @@ export type ObjectExpressionProps = {
 export class ObjectExpression
   extends JsNode<ast.ObjectExpression, ObjectExpressionProps> {
 
-  build(props: ObjectExpressionProps, children: any[]): this {
-    this.node = b.objectExpression(this.getProperties(children));
-    return this;
-  }
-
-  private getProperties(children: any[]): ast.Property[] {
-    let nodes = Array<ast.Property>();
-    if (children[0] instanceof Array) {
-      let props = new Array<ast.Property>();
-      for (const p of children[0]) {
-        if (p instanceof Property) {
-          props.push(p.node as ast.Property);
-        }
-      }
-      return props;
-    }
-    for (let jsnode of children) {
-      if (jsnode.constructor.name !== "Property") {
-        throw new Error("Children of Object Expression must be all of Property");
-      }
-      nodes.push(jsnode.node as ast.Property);
-    }
-    return nodes;
-  }
-}
-
-/*========================================================================
-              Utility for Expression Statement and Return Statement
-=========================================================================*/
-
-function getSingleExpression(children: GenericExpression[],
-  allowNull: boolean, statement: string): ast.Expression {
-
-  if (children.length === 0 || children == null) {
-    if (!allowNull) {
-      throw new Error("Expression statement must contain 1 statement");
-    }
-    return null;
-  }
-
-  if (children.length > 1) {
-    throw new Error("Expression statement can not contain more than 1 statement");
-  }
-  let node = children[0];
-  switch (node.type()) {
-    case "Identifier":
-    case "Literal":
-    case "CallExpression":
-    case "AssignmentExpression":
-    case "VariableDeclaration":
-      return node.node;
-    default:
-      throw new Error("The expression in an " + statement +
-        " must be either an Identifier, CallExpression, AssignmentExpression, VariableDeclaration, or a Literal");
-  }
+  protected builder = (...properties) => b.objectExpression(properties);
+  protected childTypes = [Property];
 }
 
 /*========================================================================
@@ -440,11 +387,14 @@ export type ExpressionStatementProps = StatementProps;
 export class ExpressionStatement
   extends Statement<ast.ExpressionStatement, ExpressionStatementProps> {
 
-  build(props: ExpressionStatementProps, children: any[]): this {
-    this.node = b.expressionStatement(
-      getSingleExpression(children, false, ExpressionStatement.name));
-    return this;
-  }
+  protected builder = b.expressionStatement;
+  protected childTypes = [
+    Identifier,
+    Literal,
+    CallExpression,
+    AssignmentExpression,
+    VariableDeclaration
+  ];
 }
 
 /*========================================================================
@@ -456,11 +406,15 @@ export type ReturnStatementProps = {
 
 @JsNodeFactory.registerType
 export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
-  build(props: ReturnStatementProps, children: GenericExpression[]): this {
-    this.node = <ast.ReturnStatement>b.returnStatement(
-      getSingleExpression(children, true, ReturnStatement.name));
-    return this;
-  }
+
+  protected builder = (expression) => b.returnStatement(expression || null);
+  protected childTypes = [
+    Identifier,
+    Literal,
+    CallExpression,
+    AssignmentExpression,
+    VariableDeclaration
+  ];
 }
 
 /*========================================================================
@@ -473,14 +427,7 @@ export type ThisExpressionProps = ExpressionProps;
 export class ThisExpression
   extends Expression<ast.ThisExpression, ThisExpressionProps> {
 
-  static create() {
-    return new ThisExpression().build({}, []);
-  }
-
-  build(props: ThisExpressionProps, children: any[]): this {
-    this.node = b.thisExpression();
-    return this;
-  }
+  protected builder = b.thisExpression;
 }
 
 /*========================================================================
@@ -528,13 +475,32 @@ export class MemberExpression
 export type AssignmentOperator = ast.AssignmentOperator;
 export type AssignmentExpressionProps = {
   operator?: ast.AssignmentOperator,
-  left?: string | Identifier | MemberExpression,
-  right?: string | Identifier | Literal | CallExpression | NewExpression | ObjectExpression
+  left?: string | Pattern | MemberExpression,
+  right?: string | GenericExpression
 };
 
 @JsNodeFactory.registerType
 export class AssignmentExpression
   extends Expression<ast.AssignmentExpression, AssignmentExpressionProps> {
+
+  protected meta: JsNodeMeta = {
+    operator: {
+      fromProp: p => p,
+      default: '='
+    },
+    left: {
+      fromProp: p => p,
+      fromChild: [{ type: Identifier }, { type: MemberExpression }],
+      fromString: b.identifier
+    },
+    right: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      fromString: b.literal
+    }
+  };
+
+  protected builder = b.assignmentExpression;
 
   get operator() {
     return this.node.operator;
@@ -550,29 +516,6 @@ export class AssignmentExpression
 
   right(): GenericJsNode {
     return this.getNodeForProp<GenericJsNode>('right');
-  }
-
-  build(props: AssignmentExpressionProps, children: any[]): this {
-    let operator = props.operator || '=';
-    this.node = b.assignmentExpression(
-      operator.toString(),
-      this.getLeft(props, children),
-      this.getRight(props, children));
-    return this;
-  }
-
-  private getLeft(props: AssignmentExpressionProps, children: any[]) {
-    if (children.length > 0) {
-      return this.getNodeOrFallback(children[0], b.identifier);
-    }
-    return this.getNodeOrFallback(props.left, b.identifier);
-  }
-
-  private getRight(props: AssignmentExpressionProps, children: any[]) {
-    if (children.length > 1) {
-      return this.getNodeOrFallback(children[1], b.literal);
-    }
-    return this.getNodeOrFallback(props.right, b.literal);
   }
 }
 
