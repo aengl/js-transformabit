@@ -76,13 +76,12 @@ export class VariableDeclaration<
 
   protected meta: JsNodeMeta = {
     kind: {
-      fromProp: v => v,
+      fromProp: p => p,
       default: 'var'
     }
   };
 
-  protected builder = (kind: ast.VariableKind, ...declarators: ast.VariableDeclarator[]) =>
-    b.variableDeclaration(kind, declarators);
+  protected builder = (kind, ...declarators) => b.variableDeclaration(kind, declarators);
 
   build(props: P, children: any[]): this {
     if (props.name) {
@@ -121,13 +120,12 @@ export class VariableDeclarator
 
   protected meta: JsNodeMeta = {
     name: {
-      fromProp: v => v.node,
-      fromString: s => b.identifier(s)
+      fromProp: p => p.node,
+      fromString: b.identifier
     }
   };
 
-  protected builder = (id: ast.Pattern, init: ast.Expression) =>
-    b.variableDeclarator(id, init || null);
+  protected builder = (id, init) => b.variableDeclarator(id, init || null);
 
   get name(): string {
     return this.id().name;
@@ -162,7 +160,7 @@ export class Literal extends JsNode<ast.Literal, LiteralProps> {
 
   protected meta: JsNodeMeta = {
     value: {
-      fromProp: v => v
+      fromProp: p => p
     }
   };
 
@@ -189,7 +187,7 @@ export type IdentifierProps = ExpressionProps & {
 export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
   protected meta: JsNodeMeta = {
     name: {
-      fromProp: v => v
+      fromProp: p => p
     }
   };
 
@@ -222,8 +220,8 @@ export class CallExpression
 
   protected meta: JsNodeMeta = {
     callee: {
-      fromProp: v => v.node,
-      fromString: s => b.identifier(s)
+      fromProp: p => p.node,
+      fromString: b.identifier
     }
   };
 
@@ -248,45 +246,25 @@ export type FunctionDeclarationProps = {
 export class FunctionDeclaration
   extends JsContainerNode<ast.FunctionDeclaration, FunctionDeclarationProps, GenericStatement> {
 
-  build(props: FunctionDeclarationProps, children: any[]): this {
-    let identifier = b.identifier(props.name);
-    let params = this.getParameters(children);
-    let body = this.getBody(children);
-    this.node = b.functionDeclaration(identifier, params, body);
-    return this;
-  }
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: p => p,
+      fromString: b.identifier
+    },
+    body: {
+      fromChild: [{ type: BlockStatement }],
+      default: null
+    }
+  };
+
+  protected builder = (identifier, body, ...params) =>
+    b.functionDeclaration(identifier, params, body || b.blockStatement([]));
+
+  // TODO
+  // protected childTypes = [Pattern];
 
   protected getChildNodes() {
-    if (this.node.body === null) {
-      this.node.body = b.blockStatement([]);
-    }
     return this.node.body.body;
-  }
-
-  private getParameters(children: any[]): ast.Pattern[] {
-    let params: ast.Pattern[] = [];
-    for (let child of children) {
-      if (child instanceof Identifier) {
-        params.push(child.node);
-      }
-    }
-    return params;
-  }
-
-  private getOrCreateBlock(): GenericBlockStatement {
-    if (this.node.body === null) {
-      this.node.body = b.blockStatement([]);
-    }
-    return this.getNodeForProp<GenericBlockStatement>("body");
-  }
-
-  private getBody(children: any[]): ast.BlockStatement {
-    for (let child of children) {
-      if (child instanceof BlockStatement) {
-        return child.node;
-      }
-    }
-    return b.blockStatement([]);
   }
 }
 
@@ -579,15 +557,15 @@ export class MemberExpression
 
   protected meta: JsNodeMeta = {
     object: {
-      fromProp: v => v.node,
+      fromProp: p => p.node,
       fromChild: [{ type: Expression }],
       fromString: s => s === 'this' ? b.thisExpression() : b.identifier(s),
       default: b.thisExpression
     },
     property: {
-      fromProp: v => v.node,
+      fromProp: p => p.node,
       fromChild: [{ type: Expression }],
-      fromString: s => b.identifier(s)
+      fromString: b.identifier
     }
   };
 

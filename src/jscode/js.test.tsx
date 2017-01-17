@@ -20,7 +20,6 @@ describe('jscode/js', () => {
         <js.VariableDeclarator name="bar" />
       </js.VariableDeclaration>
     );
-
     expect(foobar.format()).toBe("let foo, bar;");
 
     let age = <js.VariableDeclaration name="age" kind='let'><js.Literal value={3} /></js.VariableDeclaration>;
@@ -36,7 +35,6 @@ describe('jscode/js', () => {
         </js.VariableDeclarator>
       </js.VariableDeclaration>
     );
-
     expect(bananasInPajamas.format()).toBe("const b1 = 1, b2 = 2;");
   });
 
@@ -73,6 +71,7 @@ describe('jscode/js', () => {
 
     let thisFoo = <js.MemberExpression object='this' property='foo' />;
     expect(thisFoo.format()).toBe("this.foo");
+
     let memberCall = (
       <js.CallExpression callee={thisFoo as js.MemberExpression}>
         <js.Identifier name="bar" />
@@ -85,7 +84,6 @@ describe('jscode/js', () => {
     let emptyBlock = (
       <js.BlockStatement></js.BlockStatement>
     );
-
     expect(emptyBlock.format()).toBe("{}");
 
     let simpleBlock = (
@@ -95,7 +93,6 @@ describe('jscode/js', () => {
         </js.VariableDeclaration>
       </js.BlockStatement>
     );
-
     expect(simpleBlock.formatStripped()).toBe("{let num = 3;}");
   });
 
@@ -231,7 +228,6 @@ describe('jscode/js', () => {
         <js.Literal value={4} />
       </js.CallExpression>
     );
-
     let fromFunc = (
       <js.AssignmentExpression
         operator='*='

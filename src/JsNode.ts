@@ -746,14 +746,14 @@ export class JsNode<T extends ast.Node, P> {
             }
           }
         }
-        if (!child) {
-          const types = data.fromChild.map((d: any) => d.type.toString()).join(', ');
-          throw new Error(`${this.constructor.name} expected a a child matching one of these types: ${types} for property ${k}`);
+        if (!child && data.default === undefined) {
+          const types = data.fromChild.map((d: any) => d.type.name).join(', ');
+          throw new Error(`${this.constructor.name}: property ${k} expected a child of type: ${types}`);
         }
         return child;
       }
       // Default
-      if (data.default) {
+      if (data.default !== undefined) {
         return typeof data.default === 'function' ? data.default() : data.default;
       }
       throw new Error(`Could not build ${this.constructor.name}; property "${k}" is missing`);
@@ -891,10 +891,6 @@ export class JsContainerNode<T extends ast.Node, P, C extends GenericJsNode>
   }
 
   protected getChildNodes(): ast.Node[] {
-    return this.getProp<ast.Node[]>(this.childrenPropName);
-  }
-
-  protected get childrenPropName(): string {
-    return 'body';
+    return this.getProp<ast.Node[]>('body');
   }
 }
