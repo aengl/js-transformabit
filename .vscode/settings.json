@@ -10,7 +10,7 @@
   },
   "prettier.tabWidth": 2,
   "prettier.printWidth": 100,
-  "prettier.formatOnSave": true,
+  "prettier.formatOnSave": false,
   "prettier.singleQuote": true,
   "prettier.bracketSpacing": true,
   "prettier.trailingComma": false,
