@@ -331,14 +331,16 @@ describe('jscode/js', () => {
 
     let blockWithNoParams = (
       <js.FunctionExpression>
+        <js.Identifier name='foo' />
         <js.BlockStatement>
           <js.VariableDeclaration name="num" kind='let'>
             <js.Literal value={3} />
           </js.VariableDeclaration>
         </js.BlockStatement>
+        <js.Identifier name='bar' />
       </js.FunctionExpression>
     );
-    expect(blockWithNoParams.formatStripped()).toBe("function() {let num = 3;}");
+    expect(blockWithNoParams.formatStripped()).toBe("function(foo, bar) {let num = 3;}");
   });
 
   it('Property', () => {

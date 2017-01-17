@@ -756,7 +756,8 @@ export class JsNode<T extends ast.Node, P> {
       if (data.default !== undefined) {
         return typeof data.default === 'function' ? data.default() : data.default;
       }
-      throw new Error(`Could not build ${this.constructor.name}; property "${k}" is missing`);
+      console.error('Properties and children:', props, children);
+      throw new Error(`${this.constructor.name}: missing child or property for "${k}"`);
     });
     // Convert the remaining children to AST nodes
     const remainingChildren = children.map(child => {
@@ -766,12 +767,16 @@ export class JsNode<T extends ast.Node, P> {
       return child.node;
     });
     // Invoke builder
+    // map() auto-converts JsNode instances to AST nodes
     try {
-      this.node = (builder as any)(...nodes, ...remainingChildren);
+      this.node = (builder as any)(
+        ...nodes.map(n => n instanceof JsNode ? n.node : n),
+        ...remainingChildren.map(c => c instanceof JsNode ? c.node : c)
+      );
     }
     catch (e) {
       console.error('AST nodes passed to the builder:\n', nodes.concat(children));
-      throw new Error(`Failed invoking the AST builder function for ${this.constructor.name}: ${e.message}`);
+      throw new Error(`Failed run the AST builder for ${this.constructor.name}: ${e.message}`);
     }
     return this;
   }
