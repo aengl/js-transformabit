@@ -760,18 +760,20 @@ export class JsNode<T extends ast.Node, P> {
             }
           }
         }
-        if (!child && data.default === undefined) {
+        if (child) {
+          return child;
+        } else if (data.default === undefined) {
+          console.error('Children:', children);
           const types = data.fromChild.map((d: any) => d.type.name).join(', ');
           throw new Error(`${this.constructor.name}: property ${k} expected a child of type: ${types}`);
         }
-        return child;
       }
       // Default
       if (data.default !== undefined) {
-        return typeof data.default === 'function' ? data.default() : data.default;
+        return (typeof data.default === 'function') ? data.default() : data.default;
       }
       console.error('Properties and children:', props, children);
-      throw new Error(`${this.constructor.name}: missing child or property for "${k}"`);
+      throw new Error(`${this.constructor.name}: missing property for "${k}"`);
     });
     // Convert the remaining children to AST nodes
     const remainingChildren = children.map(child => {

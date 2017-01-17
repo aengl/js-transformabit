@@ -5,37 +5,37 @@ const JsCode = js.JsCode;
 describe('jscode/js', () => {
 
   it('VariableDeclaration', () => {
-    let foo = <js.VariableDeclaration name="foo" kind='let'></js.VariableDeclaration>;
-    expect(foo.format()).toBe("let foo;");
+    let foo = <js.VariableDeclaration name='foo' kind='let'></js.VariableDeclaration>;
+    expect(foo.format()).toBe('let foo;');
 
-    let bar = new js.VariableDeclaration().build({ name: "bar" }, []);
-    expect(bar.format()).toBe("var bar;");
+    let bar = new js.VariableDeclaration().build({ name: 'bar' }, []);
+    expect(bar.format()).toBe('var bar;');
 
-    let letbar = new js.VariableDeclaration().build({ name: "bar", kind: 'let' }, []);
-    expect(letbar.format()).toBe("let bar;");
+    let letbar = new js.VariableDeclaration().build({ name: 'bar', kind: 'let' }, []);
+    expect(letbar.format()).toBe('let bar;');
 
     let foobar = (
       <js.VariableDeclaration kind='let'>
-        <js.VariableDeclarator name="foo" />
-        <js.VariableDeclarator name="bar" />
+        <js.VariableDeclarator name='foo' />
+        <js.VariableDeclarator name='bar' />
       </js.VariableDeclaration>
     );
-    expect(foobar.format()).toBe("let foo, bar;");
+    expect(foobar.format()).toBe('let foo, bar;');
 
-    let age = <js.VariableDeclaration name="age" kind='let'><js.Literal value={3} /></js.VariableDeclaration>;
-    expect(age.format()).toBe("let age = 3;");
+    let age = <js.VariableDeclaration name='age' kind='let'><js.Literal value={3} /></js.VariableDeclaration>;
+    expect(age.format()).toBe('let age = 3;');
 
     let bananasInPajamas = (
       <js.VariableDeclaration kind='const'>
-        <js.VariableDeclarator name="b1">
+        <js.VariableDeclarator name='b1'>
           <js.Literal value={1} />
         </js.VariableDeclarator>
-        <js.VariableDeclarator name="b2">
+        <js.VariableDeclarator name='b2'>
           <js.Literal value={2} />
         </js.VariableDeclarator>
       </js.VariableDeclaration>
     );
-    expect(bananasInPajamas.format()).toBe("const b1 = 1, b2 = 2;");
+    expect(bananasInPajamas.format()).toBe('const b1 = 1, b2 = 2;');
   });
 
   it('Literal', () => {
@@ -52,92 +52,92 @@ describe('jscode/js', () => {
 
   it('CallExpression', () => {
     let foo = <js.CallExpression callee='foo' />;
-    expect(foo.format()).toBe("foo()");
+    expect(foo.format()).toBe('foo()');
 
     let isTall = (
       <js.CallExpression callee='isTall'>
         <js.Literal value={193} />
-        <js.Identifier name="isMale" />
+        <js.Identifier name='isMale' />
       </js.CallExpression>
     );
-    expect(isTall.format()).toBe("isTall(193, isMale)");
+    expect(isTall.format()).toBe('isTall(193, isMale)');
 
     let toString = (
       <js.CallExpression callee='toString'>
         {isTall}
       </js.CallExpression>
     );
-    expect(toString.format()).toBe("toString(isTall(193, isMale))");
+    expect(toString.format()).toBe('toString(isTall(193, isMale))');
 
     let thisFoo = <js.MemberExpression object='this' property='foo' />;
-    expect(thisFoo.format()).toBe("this.foo");
+    expect(thisFoo.format()).toBe('this.foo');
 
     let memberCall = (
       <js.CallExpression callee={thisFoo as js.MemberExpression}>
-        <js.Identifier name="bar" />
+        <js.Identifier name='bar' />
       </js.CallExpression>
     );
-    expect(memberCall.format()).toBe("this.foo(bar)");
+    expect(memberCall.format()).toBe('this.foo(bar)');
   });
 
   it('BlockStatement', () => {
     let emptyBlock = (
       <js.BlockStatement></js.BlockStatement>
     );
-    expect(emptyBlock.format()).toBe("{}");
+    expect(emptyBlock.format()).toBe('{}');
 
     let simpleBlock = (
       <js.BlockStatement>
-        <js.VariableDeclaration name="num" kind='let'>
+        <js.VariableDeclaration name='num' kind='let'>
           <js.Literal value={3} />
         </js.VariableDeclaration>
       </js.BlockStatement>
     );
-    expect(simpleBlock.formatStripped()).toBe("{let num = 3;}");
+    expect(simpleBlock.formatStripped()).toBe('{let num = 3;}');
   });
 
   it('FunctionDeclaration', () => {
-    let empty = <js.FunctionDeclaration name="skip" />;
-    expect(empty.format()).toBe("function skip() {}");
+    let empty = <js.FunctionDeclaration name='skip' />;
+    expect(empty.format()).toBe('function skip() {}');
 
     let emptyWithParams = (
-      <js.FunctionDeclaration name="foo">
-        <js.Identifier name="bar" />
-        <js.Identifier name="baz" />
+      <js.FunctionDeclaration name='foo'>
+        <js.Identifier name='bar' />
+        <js.Identifier name='baz' />
       </js.FunctionDeclaration>
     );
-    expect(emptyWithParams.format()).toBe("function foo(bar, baz) {}");
+    expect(emptyWithParams.format()).toBe('function foo(bar, baz) {}');
 
     let blockWithNoParams = (
-      <js.FunctionDeclaration name="foo">
+      <js.FunctionDeclaration name='foo'>
         <js.BlockStatement>
-          <js.VariableDeclaration name="num" kind='let'>
+          <js.VariableDeclaration name='num' kind='let'>
             <js.Literal value={3} />
           </js.VariableDeclaration>
         </js.BlockStatement>
       </js.FunctionDeclaration>
     ) as js.FunctionDeclaration;
-    expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;}");
+    expect(blockWithNoParams.formatStripped()).toBe('function foo() {let num = 3;}');
 
     blockWithNoParams.append(
-      <js.VariableDeclaration name="max" kind='let'>
+      <js.VariableDeclaration name='max' kind='let'>
         <js.Literal value={6} />
       </js.VariableDeclaration> as js.GenericVariableDeclaration
     );
-    expect(blockWithNoParams.formatStripped()).toBe("function foo() {let num = 3;let max = 6;}");
+    expect(blockWithNoParams.formatStripped()).toBe('function foo() {let num = 3;let max = 6;}');
 
     let withParamsAndBody = (
-      <js.FunctionDeclaration name="foo">
-        <js.Identifier name="bar" />
-        <js.Identifier name="baz" />
+      <js.FunctionDeclaration name='foo'>
+        <js.Identifier name='bar' />
+        <js.Identifier name='baz' />
         <js.BlockStatement>
-          <js.VariableDeclaration name="num" kind='let'>
+          <js.VariableDeclaration name='num' kind='let'>
             <js.Literal value={3} />
           </js.VariableDeclaration>
         </js.BlockStatement>
       </js.FunctionDeclaration>
     );
-    expect(withParamsAndBody.formatStripped()).toBe("function foo(bar, baz) {let num = 3;}");
+    expect(withParamsAndBody.formatStripped()).toBe('function foo(bar, baz) {let num = 3;}');
   });
 
   it('ExpressionStatement', () => {
@@ -146,14 +146,14 @@ describe('jscode/js', () => {
         <js.CallExpression callee='foo' />
       </js.ExpressionStatement>
     );
-    expect(call.format()).toBe("foo();");
+    expect(call.format()).toBe('foo();');
 
     let identifier = (
       <js.ExpressionStatement>
-        <js.Identifier name="mevar" />
+        <js.Identifier name='mevar' />
       </js.ExpressionStatement>
     );
-    expect(identifier.format()).toBe("mevar;");
+    expect(identifier.format()).toBe('mevar;');
   });
 
   it('ReturnStatement', () => {
@@ -162,26 +162,26 @@ describe('jscode/js', () => {
         <js.Literal value={true} />
       </js.ReturnStatement>
     );
-    expect(bol.format()).toBe("return true;");
+    expect(bol.format()).toBe('return true;');
 
     let func = (
       <js.ReturnStatement>
         <js.CallExpression callee='toInt'>
-          <js.Identifier name="approx" />
+          <js.Identifier name='approx' />
         </js.CallExpression>
       </js.ReturnStatement>
     );
-    expect(func.format()).toBe("return toInt(approx);");
+    expect(func.format()).toBe('return toInt(approx);');
 
     let nothing = (
       <js.ReturnStatement />
     );
-    expect(nothing.format()).toBe("return;");
+    expect(nothing.format()).toBe('return;');
   });
 
   it('ThisExpression', () => {
     let ths = <js.ThisExpression />;
-    expect(ths.format()).toBe("this");
+    expect(ths.format()).toBe('this');
   });
 
   it('MemberExpression', () => {
@@ -189,7 +189,7 @@ describe('jscode/js', () => {
     let thisFoo = <js.MemberExpression
       object={<js.ThisExpression /> as js.ThisExpression}
       property='foo' />;
-    expect(thisFoo.format()).toBe("this.foo");
+    expect(thisFoo.format()).toBe('this.foo');
 
     // use children
     let thisFoo2 = (
@@ -198,10 +198,10 @@ describe('jscode/js', () => {
         {'foo'}
       </js.MemberExpression>
     );
-    expect(thisFoo2.format()).toBe("this.foo");
+    expect(thisFoo2.format()).toBe('this.foo');
 
     let noThis = <js.MemberExpression property='bar' />;
-    expect(noThis.format()).toBe("this.bar");
+    expect(noThis.format()).toBe('this.bar');
 
     // this.prototype.func.foo
     let thisprototype = new js.MemberExpression().build(
@@ -210,7 +210,7 @@ describe('jscode/js', () => {
       { object: thisprototype, property: 'func' }, []);
     let funcfoo = new js.MemberExpression().build(
       { object: prototypefunc, property: 'foo' }, []);
-    expect(funcfoo.format()).toBe("this.prototype.func.foo");
+    expect(funcfoo.format()).toBe('this.prototype.func.foo');
   });
 
   it('AssignmentExpression', () => {
@@ -229,7 +229,7 @@ describe('jscode/js', () => {
         </js.CallExpression>
       </js.AssignmentExpression>
     );
-    expect(fromFunc.format()).toBe("foo *= limit(4)");
+    expect(fromFunc.format()).toBe('foo *= limit(4)');
 
     let memberAndIdentifier = (
       <js.AssignmentExpression>
@@ -240,18 +240,18 @@ describe('jscode/js', () => {
         <js.Identifier name='level' />
       </js.AssignmentExpression>
     );
-    expect(memberAndIdentifier.format()).toBe("this.level = level");
+    expect(memberAndIdentifier.format()).toBe('this.level = level');
   });
 
   it('MethodDefinition', () => {
     let empty = (
-      <js.MethodDefinition key="bar" kind='method'>
+      <js.MethodDefinition key='bar' kind='method'>
       </js.MethodDefinition>
     );
-    expect(empty.formatStripped()).toBe("bar() {}");
+    expect(empty.formatStripped()).toBe('bar() {}');
 
     let notEmpty = (
-      <js.MethodDefinition key="foo" kind='method'>
+      <js.MethodDefinition key='foo' kind='method'>
         <js.FunctionExpression>
           <js.BlockStatement>
             <js.ReturnStatement>
@@ -261,20 +261,20 @@ describe('jscode/js', () => {
         </js.FunctionExpression>
       </js.MethodDefinition>
     );
-    expect(notEmpty.formatStripped()).toBe("foo() {return true;}");
+    expect(notEmpty.formatStripped()).toBe('foo() {return true;}');
   });
 
   it('ClassDeclaration', () => {
     let empty = (
-      <js.ClassDeclaration id="Foo" superClass='Bar'>
+      <js.ClassDeclaration id='Foo' superClass='Bar'>
       </js.ClassDeclaration>
     );
-    expect(empty.format()).toBe("class Foo extends Bar {}");
+    expect(empty.format()).toBe('class Foo extends Bar {}');
 
     let withMethod = (
-      <js.ClassDeclaration id="Foo" superClass='Bar'>
+      <js.ClassDeclaration id='Foo' superClass='Bar'>
         <js.ClassBody>
-          <js.MethodDefinition key="foo" kind='method'>
+          <js.MethodDefinition key='foo' kind='method'>
             <js.FunctionExpression>
               <js.BlockStatement>
                 <js.ReturnStatement>
@@ -286,14 +286,14 @@ describe('jscode/js', () => {
         </js.ClassBody>
       </js.ClassDeclaration>
     ) as js.GenericClassDeclaration;
-    expect(withMethod.formatStripped()).toBe("class Foo extends Bar {foo() {return true;}}");
+    expect(withMethod.formatStripped()).toBe('class Foo extends Bar {foo() {return true;}}');
     expect(withMethod.methods().size()).toBe(1);
     expect(withMethod.methods().first().methodName()).toBe('foo');
 
     let withTwoMethods = (
       <js.ClassDeclaration id='Foo'>
         <js.Identifier name='Bar' />
-        <js.MethodDefinition key="bar" kind='method'>
+        <js.MethodDefinition key='bar' kind='method'>
           <js.FunctionExpression>
             <js.BlockStatement>
               <js.ReturnStatement>
@@ -302,7 +302,7 @@ describe('jscode/js', () => {
             </js.BlockStatement>
           </js.FunctionExpression>
         </js.MethodDefinition>
-        <js.MethodDefinition key="foo" kind='method'>
+        <js.MethodDefinition key='foo' kind='method'>
           <js.FunctionExpression>
             <js.BlockStatement>
               <js.ReturnStatement>
@@ -313,7 +313,7 @@ describe('jscode/js', () => {
         </js.MethodDefinition>
       </js.ClassDeclaration>
     ) as js.GenericClassDeclaration;
-    expect(withTwoMethods.formatStripped()).toBe("class Foo extends Bar {bar() {return true;}foo() {return true;}}");
+    expect(withTwoMethods.formatStripped()).toBe('class Foo extends Bar {bar() {return true;}foo() {return true;}}');
     expect(withTwoMethods.methods().size()).toBe(2);
     expect(withTwoMethods.methods().at(0).methodName()).toBe('bar');
     expect(withTwoMethods.methods().at(1).methodName()).toBe('foo');
@@ -321,150 +321,146 @@ describe('jscode/js', () => {
 
   it('FunctionExpression', () => {
     let empty = <js.FunctionExpression />;
-    expect(empty.format()).toBe("function() {}");
+    expect(empty.format()).toBe('function() {}');
 
     // let gen = <js.FunctionExpression generator={true}/> as js.FunctionExpression
-    // expect(gen.format()).toBe("function*() {}");
+    // expect(gen.format()).toBe('function*() {}');
 
     let blockWithNoParams = (
       <js.FunctionExpression>
         <js.Identifier name='foo' />
         <js.BlockStatement>
-          <js.VariableDeclaration name="num" kind='let'>
+          <js.VariableDeclaration name='num' kind='let'>
             <js.Literal value={3} />
           </js.VariableDeclaration>
         </js.BlockStatement>
         <js.Identifier name='bar' />
       </js.FunctionExpression>
     );
-    expect(blockWithNoParams.formatStripped()).toBe("function(foo, bar) {let num = 3;}");
+    expect(blockWithNoParams.formatStripped()).toBe('function(foo, bar) {let num = 3;}');
   });
 
   it('Property', () => {
     let valAsChild = (
-      <js.Property key="render" kind='init'>
+      <js.Property key='render' kind='init'>
         <js.FunctionExpression />
       </js.Property>
     );
-    expect(valAsChild.format()).toBe("render: function() {}");
+    expect(valAsChild.format()).toBe('render: function() {}');
 
     let valAsProp = (
-      <js.Property key="num" kind='init' value={js.Literal.fromValue(1)} />
+      <js.Property key='num' kind='init' value={js.Literal.fromValue(1)} />
     );
-    expect(valAsProp.format()).toBe("num: 1");
+    expect(valAsProp.format()).toBe('num: 1');
   });
 
   it('ObjectExpression', () => {
     let empty = (
       <js.ObjectExpression />
     );
-    expect(empty.format()).toBe("{}");
+    expect(empty.format()).toBe('{}');
 
     let abc1 = (
       <js.ObjectExpression>
-        <js.Property key="a" kind='init'>a</js.Property>
-        <js.Property key="b" kind='init'>b</js.Property>
-        <js.Property key="c" kind='init'>c</js.Property>
-        <js.Property key="one" kind='init' value={js.Literal.fromValue(1)} />
+        <js.Property key='a' kind='init'>a</js.Property>
+        <js.Property key='b' kind='init'>b</js.Property>
+        <js.Property key='c' kind='init'>c</js.Property>
+        <js.Property key='one' kind='init' value={js.Literal.fromValue(1)} />
       </js.ObjectExpression>
     );
-    expect(abc1.formatStripped()).toBe(`{a: "a",b: "b",c: "c",one: 1}`);
+    expect(abc1.formatStripped()).toBe('{a: "a",b: "b",c: "c",one: 1}');
   });
 
   it('NewExpression', () => {
     let newEmpty = (
       <js.NewExpression callee='Object' />
     );
-    expect(newEmpty.format()).toBe("new Object()");
+    expect(newEmpty.format()).toBe('new Object()');
 
     let fewArgs = (
       <js.NewExpression callee='Thing'>
         <js.Literal value={3} />
-        <js.Identifier name="bar" />
-        <js.Literal value="foo" />
+        <js.Identifier name='bar' />
+        <js.Literal value='foo' />
       </js.NewExpression>
     );
-    expect(fewArgs.format()).toBe("new Thing(3, bar, \"foo\")");
+    expect(fewArgs.format()).toBe('new Thing(3, bar, "foo")');
 
   });
 
   it('BinaryExpression', () => {
     let doubleEquals = (
       <js.BinaryExpression
-        left={<js.Identifier name="foo" /> as js.Identifier}
-        right={<js.Identifier name="bar" /> as js.Identifier} />
+        left={<js.Identifier name='foo' /> as js.Identifier}
+        right={<js.Identifier name='bar' /> as js.Identifier} />
     );
-    expect(doubleEquals.format()).toBe("foo === bar");
+    expect(doubleEquals.format()).toBe('foo === bar');
 
     let tripleNotEquals = (
-      <js.BinaryExpression operator="!==">
-        <js.Identifier name="foo" />
-        <js.Identifier name="bar" />
+      <js.BinaryExpression operator='!=='>
+        <js.Identifier name='foo' />
+        <js.Identifier name='bar' />
       </js.BinaryExpression>
     );
-    expect(tripleNotEquals.format()).toBe("foo !== bar");
+    expect(tripleNotEquals.format()).toBe('foo !== bar');
 
     let typeofCheck = (
       <js.BinaryExpression>
-        <js.UnaryExpression operator="typeof" argument={<js.Identifier name="value"/> as js.Identifier}/>
-        <js.Literal value="array"/>
+        <js.UnaryExpression operator='typeof' argument={<js.Identifier name='value' /> as js.Identifier} />
+        <js.Literal value='array' />
       </js.BinaryExpression>
     );
-    expect(typeofCheck.format()).toBe("typeof value === \"array\"");
+    expect(typeofCheck.format()).toBe('typeof value === "array"');
   });
 
   it('ImportDeclaration', () => {
     let foo = (
       <js.ImportSpecifier
-        imported={<js.Identifier name="Foo" /> as js.Identifier}
-        local={<js.Identifier name="Foo" /> as js.Identifier}
-        />
+        imported={<js.Identifier name='Foo' /> as js.Identifier}
+        local={<js.Identifier name='Foo' /> as js.Identifier}
+      />
     );
 
     let bar = (
-      <js.ImportSpecifier
-        imported={<js.Identifier name="Bar" /> as js.Identifier}
-        local={<js.Identifier name="Bar" /> as js.Identifier}
-        />
+      <js.ImportSpecifier imported='Bar' />
     );
 
     let one = (
-      <js.ImportDeclaration source={<js.Literal value="Foo" /> as js.Literal}>
+      <js.ImportDeclaration source={<js.Literal value='Foo' /> as js.Literal}>
         {foo}
       </js.ImportDeclaration>
     );
-    expect(one.format()).toBe("import { Foo } from \"Foo\";");
+    expect(one.format()).toBe('import { Foo } from "Foo";');
 
     let two = (
-      <js.ImportDeclaration source={<js.Literal value="Foo" /> as js.Literal}>
+      <js.ImportDeclaration source={<js.Literal value='Foo' /> as js.Literal}>
         {foo}
         {bar}
       </js.ImportDeclaration>
     );
-    expect(two.format()).toBe("import { Foo, Bar } from \"Foo\";");
+    expect(two.format()).toBe('import { Foo, Bar } from "Foo";');
 
     let specifiers = [foo, bar];
     let asArray = (
-      <js.ImportDeclaration source={<js.Literal value="Foo" /> as js.Literal}>
+      <js.ImportDeclaration source={<js.Literal value='Foo' /> as js.Literal}>
         {specifiers}
       </js.ImportDeclaration>
     );
-    expect(asArray.format()).toBe("import { Foo, Bar } from \"Foo\";");
+    expect(asArray.format()).toBe('import { Foo, Bar } from "Foo";');
 
     let barAsBaz = (
       <js.ImportSpecifier
-        imported={<js.Identifier name="Bar" /> as js.Identifier}
-        local={<js.Identifier name="Baz" /> as js.Identifier}
-        />
+        imported={<js.Identifier name='Bar' /> as js.Identifier}
+        local={<js.Identifier name='Baz' /> as js.Identifier}
+      />
     );
     let alias = (
-      <js.ImportDeclaration source={<js.Literal value="Code" /> as js.Literal}>
+      <js.ImportDeclaration source={<js.Literal value='Code' /> as js.Literal}>
         {barAsBaz}
       </js.ImportDeclaration>
     );
-    expect(alias.format()).toBe("import { Bar as Baz } from \"Code\";");
+    expect(alias.format()).toBe('import { Bar as Baz } from "Code";');
   });
-
 
   it('ArrayExpression', () => {
     const numbers = (
@@ -474,207 +470,200 @@ describe('jscode/js', () => {
         )}
       </js.ArrayExpression>
     );
-    expect(numbers.format()).toBe("[a, b, c]");
+    expect(numbers.format()).toBe('[a, b, c]');
   });
 
   it('Program', () => {
-    const empty = <js.Program />
-    expect(empty.format()).toBe("");
+    const empty = <js.Program />;
+    expect(empty.format()).toBe('');
 
     const single = (
       <js.Program>
         <js.ExpressionStatement>
-          <js.AssignmentExpression operator='=' left='foo' right={<js.Identifier name="foo" /> as js.Identifier} />
+          <js.AssignmentExpression operator='=' left='foo' right={<js.Identifier name='foo' /> as js.Identifier} />
         </js.ExpressionStatement>
       </js.Program>
     ) as js.Program;
-    expect(single.format()).toBe("foo = foo;");
+    expect(single.format()).toBe('foo = foo;');
 
     single.append(
       <js.ExpressionStatement>
-        <js.AssignmentExpression operator='=' left='bar' right={<js.Identifier name="bar" /> as js.Identifier} />
+        <js.AssignmentExpression operator='=' left='bar' right={<js.Identifier name='bar' /> as js.Identifier} />
       </js.ExpressionStatement> as js.ExpressionStatement
     );
-    expect(single.formatStripped()).toBe("foo = foo;bar = bar;");
+    expect(single.formatStripped()).toBe('foo = foo;bar = bar;');
 
     single.prepend(
       <js.ExpressionStatement>
-        <js.AssignmentExpression operator='=' left='fofo' right={<js.Identifier name="fofo" /> as js.Identifier} />
+        <js.AssignmentExpression operator='=' left='fofo' right={<js.Identifier name='fofo' /> as js.Identifier} />
       </js.ExpressionStatement> as js.ExpressionStatement
     );
-    expect(single.formatStripped()).toBe("fofo = fofo;foo = foo;bar = bar;");
+    expect(single.formatStripped()).toBe('fofo = fofo;foo = foo;bar = bar;');
 
     single.insert(1,
       <js.ExpressionStatement>
-        <js.AssignmentExpression operator='=' left='wolly' right={<js.Identifier name="wolly" /> as js.Identifier} />
+        <js.AssignmentExpression operator='=' left='wolly' right={<js.Identifier name='wolly' /> as js.Identifier} />
       </js.ExpressionStatement> as js.ExpressionStatement
     );
-    expect(single.formatStripped()).toBe("fofo = fofo;wolly = wolly;foo = foo;bar = bar;");
+    expect(single.formatStripped()).toBe('fofo = fofo;wolly = wolly;foo = foo;bar = bar;');
   });
 
   it('UnaryExpression', () => {
-    const logicalNot = (<js.UnaryExpression operator="!" argument={<js.Identifier name="success"/> as js.Identifier}/>);
-    expect(logicalNot.formatStripped()).toBe("!success");
+    const logicalNot = <js.UnaryExpression operator='!' argument='success' />;
+    expect(logicalNot.formatStripped()).toBe('!success');
 
-    const typeofCheck = (<js.UnaryExpression operator="typeof" argument={<js.Identifier name="age"/> as js.Identifier}/>);
-    expect(typeofCheck.formatStripped()).toBe("typeof age");
-
+    const typeofCheck = (
+      <js.UnaryExpression operator='typeof'>
+        <js.Identifier name='age' />
+      </js.UnaryExpression>
+    );
+    expect(typeofCheck.formatStripped()).toBe('typeof age');
   });
 
-   it('IfStatement', () => {
-      const test1 = (
-        <js.BinaryExpression
-          left={<js.Identifier name="foo" /> as js.Identifier}
-          operator="!=="
-          right={<js.Identifier name="bar" /> as js.Identifier}
-          />
-      ) as js.BinaryExpression;
+  it('IfStatement', () => {
+    const test1 = (
+      <js.BinaryExpression
+        left={<js.Identifier name='foo' /> as js.Identifier}
+        operator='!=='
+        right={<js.Identifier name='bar' /> as js.Identifier}
+      />
+    ) as js.BinaryExpression;
 
-      const empty = (
-        <js.IfStatement test={test1}/>
-      ) as js.IfStatement;
-      expect(empty.formatStripped()).toBe("if (foo !== bar){}");
-      expect(empty.consequent().formatStripped()).toBe('{}');
+    const empty = (
+      <js.IfStatement test={test1} />
+    ) as js.IfStatement;
+    expect(empty.formatStripped()).toBe('if (foo !== bar){}');
+    expect(empty.consequent().formatStripped()).toBe('{}');
 
-      const blockStatement = (
+    const withBlockStatement = (
+      <js.IfStatement test={test1}>
         <js.BlockStatement>
           <js.ExpressionStatement>
             <js.AssignmentExpression
               operator='='
               left='c'
-              right={<js.Identifier name="a"/> as js.Identifier} />
+              right={<js.Identifier name='a' /> as js.Identifier} />
           </js.ExpressionStatement>
           <js.ExpressionStatement>
             <js.AssignmentExpression
               operator='='
               left='a'
-              right={<js.Identifier name="b"/> as js.Identifier} />
+              right={<js.Identifier name='b' /> as js.Identifier} />
           </js.ExpressionStatement>
           <js.ExpressionStatement>
             <js.AssignmentExpression
               operator='='
               left='b'
-              right={<js.Identifier name="c"/> as js.Identifier}/>
+              right={<js.Identifier name='c' /> as js.Identifier} />
           </js.ExpressionStatement>
         </js.BlockStatement>
-      ) as js.GenericBlockStatement;
+      </js.IfStatement>
+    ) as js.IfStatement;
+    expect(withBlockStatement.formatStripped()).toBe('if (foo !== bar) {c = a;a = b;b = c;}');
+    expect(withBlockStatement.consequent().formatStripped()).toBe('{c = a;a = b;b = c;}');
 
-      const withBlockStatement = (
-        <js.IfStatement test={test1}>
-          {blockStatement}
-        </js.IfStatement>
-      ) as js.IfStatement;
-      expect(withBlockStatement.formatStripped()).toBe("if (foo !== bar) {c = a;a = b;b = c;}");
-      expect(withBlockStatement.consequent().formatStripped()).toBe("{c = a;a = b;b = c;}");
+    const singleStatement = (
+      <js.IfStatement>
+        <js.UnaryExpression operator='!' argument='secret' />
+        <js.ExpressionStatement>
+          <js.AssignmentExpression
+            operator='='
+            left='secret'
+            right={<js.Identifier name='password' /> as js.Identifier} />
+        </js.ExpressionStatement>
+      </js.IfStatement>
+    ) as js.IfStatement;
+    expect(singleStatement.formatStripped()).toBe('if (!secret)secret = password;');
+    expect(singleStatement.consequent().formatStripped()).toBe('secret = password;');
+  });
 
-
-      const unary = (
-        <js.UnaryExpression operator="!" argument={<js.Identifier name="secret"/> as js.Identifier}/>
-      ) as js.UnaryExpression;
-
-      const singleStatement = (
-        <js.IfStatement test={unary}>
-          <js.ExpressionStatement>
-            <js.AssignmentExpression
-              operator='='
-              left='secret'
-              right={<js.Identifier name="password"/> as js.Identifier}/>
-          </js.ExpressionStatement>
-        </js.IfStatement>
-      ) as js.IfStatement;
-      expect(singleStatement.formatStripped()).toBe("if (!secret) {secret = password;}");
-      expect(singleStatement.consequent().formatStripped()).toBe("{secret = password;}");
-
-   });
-
-
-   it('JSXIdentifier', () => {
-     const id = (<js.JSXIdentifier name="div"/>);
-     expect(id.format()).toBe("div");
-   });
+  it('JSXIdentifier', () => {
+    const id = (<js.JSXIdentifier name='div' />);
+    expect(id.format()).toBe('div');
+  });
 
   it('JSXExpressionContainer', () => {
-    const numProp = (<js.JSXExpressionContainer expression={3}/>);
-    expect(numProp.format()).toBe("{3}");
-    const bool = (<js.JSXExpressionContainer expression={true}/>);
-    expect(bool.format()).toBe("{true}");
+    const numProp = (<js.JSXExpressionContainer expression={3} />);
+    expect(numProp.format()).toBe('{3}');
+    const bool = (<js.JSXExpressionContainer expression={true} />);
+    expect(bool.format()).toBe('{true}');
 
-    const callExpressionProp = (<js.JSXExpressionContainer expression={<js.CallExpression callee="hello"/> as js.CallExpression}/>);
-    expect(callExpressionProp.format()).toBe("{hello()}");
+    const callExpressionProp = (<js.JSXExpressionContainer expression={<js.CallExpression callee='hello' /> as js.CallExpression} />);
+    expect(callExpressionProp.format()).toBe('{hello()}');
 
-    const callExpressionChild = (<js.JSXExpressionContainer><js.CallExpression callee="hello"/></js.JSXExpressionContainer>);
-    expect(callExpressionChild.format()).toBe("{hello()}");
+    const callExpressionChild = (<js.JSXExpressionContainer><js.CallExpression callee='hello' /></js.JSXExpressionContainer>);
+    expect(callExpressionChild.format()).toBe('{hello()}');
   });
 
   it('JSXAttribute', () => {
-    const str = (<js.JSXAttribute name="className" value="item"/>);
-    expect(str.format()).toBe("className=\"item\"");
+    const str = (<js.JSXAttribute name='className' value='item' />);
+    expect(str.format()).toBe('className="item"');
 
-    const num = (<js.JSXAttribute name="max" value={10}/>);
-    expect(num.format()).toBe("max={10}");
+    const num = (<js.JSXAttribute name='max' value={10} />);
+    expect(num.format()).toBe('max={10}');
 
-    const bool = (<js.JSXAttribute name="readonly" value={true}/>);
-    expect(bool.format()).toBe("readonly={true}");
+    const bool = (<js.JSXAttribute name='readonly' value={true} />);
+    expect(bool.format()).toBe('readonly={true}');
 
-    const exp = (<js.JSXAttribute name="x-id" value={<js.CallExpression callee="get_id"/> as js.CallExpression}/>);
-    expect(exp.format()).toBe("x-id={get_id()}");
+    const exp = (<js.JSXAttribute name='x-id' value={<js.CallExpression callee='get_id' /> as js.CallExpression} />);
+    expect(exp.format()).toBe('x-id={get_id()}');
 
-    const jsxexp = (<js.JSXAttribute name="x-foo" value={<js.JSXExpressionContainer expression={<js.Identifier name="foo"/> as js.Identifier}/> as js.JSXExpressionContainer}/>);
-    expect(jsxexp.format()).toBe("x-foo={foo}");
+    const jsxexp = (<js.JSXAttribute name='x-foo' value={<js.JSXExpressionContainer expression={<js.Identifier name='foo' /> as js.Identifier} /> as js.JSXExpressionContainer} />);
+    expect(jsxexp.format()).toBe('x-foo={foo}');
 
-    const novalue = (<js.JSXAttribute name="required"/>);
-    expect(novalue.format()).toBe("required");
+    const novalue = (<js.JSXAttribute name='required' />);
+    expect(novalue.format()).toBe('required');
   });
 
   it('JSXOpeningElement', () => {
     const onlyName = (
-      <js.JSXOpeningElement name="div"/>
+      <js.JSXOpeningElement name='div' />
     );
-    expect(onlyName.format()).toBe("<div>");
+    expect(onlyName.format()).toBe('<div>');
 
     const selfClosing = (
-      <js.JSXOpeningElement name="hr" selfClosing={true}/>
+      <js.JSXOpeningElement name='hr' selfClosing={true} />
     );
-    expect(selfClosing.format()).toBe("<hr />");
+    expect(selfClosing.format()).toBe('<hr />');
 
     const childAttributes = (
-      <js.JSXOpeningElement name="div">
-        <js.JSXAttribute name="id" value="foo"/>
-        <js.JSXAttribute name="className" value="foo-style"/>
+      <js.JSXOpeningElement name='div'>
+        <js.JSXAttribute name='id' value='foo' />
+        <js.JSXAttribute name='className' value='foo-style' />
       </js.JSXOpeningElement>
     );
-    expect(childAttributes.format()).toBe("<div id=\"foo\" className=\"foo-style\">");
+    expect(childAttributes.format()).toBe('<div id="foo" className="foo-style">');
 
     const attrs = [
-      <js.JSXAttribute name="id" value="foo"/>, <js.JSXAttribute name="className" value="foo-style"/>
+      <js.JSXAttribute name='id' value='foo' />, <js.JSXAttribute name='className' value='foo-style' />
     ] as js.JSXAttribute[];
     const propsAttributes = (
-      <js.JSXOpeningElement name="div" attributes={attrs}>
+      <js.JSXOpeningElement name='div' attributes={attrs}>
       </js.JSXOpeningElement>
     );
-    expect(propsAttributes.format()).toBe("<div id=\"foo\" className=\"foo-style\">");
+    expect(propsAttributes.format()).toBe('<div id="foo" className="foo-style">');
   });
 
   it('JSXClosingElement', () => {
-    const str = (<js.JSXClosingElement name="div"/>);
-    expect(str.format()).toBe("</div>");
-    const jsxId = (<js.JSXClosingElement name={<js.JSXIdentifier name="span"/> as js.JSXIdentifier}/>);
-    expect(jsxId.format()).toBe("</span>");
-    const id = (<js.JSXClosingElement name={<js.Identifier name="section"/> as js.Identifier}/>);
-    expect(id.format()).toBe("</section>");
+    const str = (<js.JSXClosingElement name='div' />);
+    expect(str.format()).toBe('</div>');
+    const jsxId = (<js.JSXClosingElement name={<js.JSXIdentifier name='span' /> as js.JSXIdentifier} />);
+    expect(jsxId.format()).toBe('</span>');
+    const id = (<js.JSXClosingElement name={<js.Identifier name='section' /> as js.Identifier} />);
+    expect(id.format()).toBe('</section>');
   });
 
 
   it('JSXElement', () => {
-    const empty = (<js.JSXElement name="div"/>);
-    expect(empty.format()).toBe("<div></div>");
+    const empty = (<js.JSXElement name='div' />);
+    expect(empty.format()).toBe('<div></div>');
 
-    const withAttribute = (<js.JSXElement name="div" attributes={[<js.JSXAttribute name="display" value="block"/> as js.JSXAttribute]}/>);
+    const withAttribute = (<js.JSXElement name='div' attributes={[<js.JSXAttribute name='display' value='block' /> as js.JSXAttribute]} />);
     expect(withAttribute.format()).toBe(`<div display="block"></div>`);
 
     const withChildren = (
-      <js.JSXElement name="div">
-        <js.JSXElement name="h1">Title</js.JSXElement>
+      <js.JSXElement name='div'>
+        <js.JSXElement name='h1'>Title</js.JSXElement>
       </js.JSXElement>
     );
     expect(withChildren.formatStripped()).toBe(`<div><h1>Title</h1></div>`);

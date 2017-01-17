@@ -991,14 +991,15 @@ export declare namespace ast {
     ) => JSXIdentifier;
     ifStatement: (
       test: Expression,
-      consequent: Statement
+      consequent: Statement,
+      alternate?: Statement
     ) => IfStatement,
     unaryExpression: (
       operator: UnaryOperator,
       arguement: Expression
     ) => UnaryExpression,
     importDeclaration: (
-      speicifiers: Node[],
+      specifiers: Node[],
       source: Literal
     ) => ImportDeclaration;
     importSpecifier: (

@@ -315,7 +315,7 @@ export type BlockStatementProps = {
 
 @JsNodeFactory.registerType
 export class BlockStatement<T extends ast.BlockStatement, P extends BlockStatementProps>
-  extends JsContainerNode<T, P, GenericStatement> {
+  extends Statement<T, P> {
 
   protected builder = (...statements) => b.blockStatement(statements);
 }
@@ -818,19 +818,29 @@ export class ArrayExpression extends JsNode<ast.ArrayExpression, ArrayExpression
 =========================================================================*/
 
 export type ImportSpecifierProps = {
-  imported: Identifier,
-  local: Identifier
+  imported?: string | Identifier,
+  local?: string | Identifier
 };
 
 @JsNodeFactory.registerType
 export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifierProps> {
-  build(props: ImportSpecifierProps, children: GenericJsNode[]): this {
-    this.node = ast.builders.importSpecifier(
-      props.imported.node,
-      props.local.node
-    );
-    return this;
-  }
+  protected meta: JsNodeMeta = {
+    imported: {
+      fromProp: p => p,
+      fromChild: [{ type: Identifier }],
+      fromString: b.identifier,
+      default: null
+    },
+    local: {
+      fromProp: p => p,
+      fromChild: [{ type: Identifier }],
+      fromString: b.identifier,
+      default: null
+    }
+  };
+
+  protected builder = (imported, local) =>
+    b.importSpecifier(imported || local, local || imported);
 }
 
 /*========================================================================
@@ -843,80 +853,75 @@ export type ImportDeclarationProps = {
 
 @JsNodeFactory.registerType
 export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDeclarationProps> {
-  build(props: ImportDeclarationProps, children: GenericJsNode[]): this {
-    this.node = ast.builders.importDeclaration(
-      this.getSpecifiers(children, new Array<ast.Node>()),
-      props.source.node
-    );
-    return this;
-  }
-
-  private getSpecifiers(children: GenericJsNode[], nodes: ast.Node[]): ast.Node[] {
-    for (const child of children) {
-      if (child instanceof ImportSpecifier) {
-        nodes.push(child.node);
-      } else if (child instanceof Array) {
-        nodes = this.getSpecifiers(child, nodes);
-      } else {
-        throw new Error("Import Delcaration child must be Import Specifiers or arrays of Import Specifiers");
-      }
+  protected meta: JsNodeMeta = {
+    source: {
+      fromProp: p => p,
+      fromChild: [{ type: Literal }],
+      fromString: b.literal
     }
-    return nodes;
-  }
+  };
+
+  protected builder = (source, ...specifiers) => b.importDeclaration(specifiers, source);
 }
 
 /*========================================================================
                             Unary Expression
 =========================================================================*/
+
 export type UnaryExpressionProps = {
-  argument: GenericExpression,
-  operator: "!" | "delete" | "typeof" | "void" | "+"
+  operator: '!' | 'delete' | 'typeof' | 'void' | '+',
+  argument?: string | GenericExpression
 };
 
 @JsNodeFactory.registerType
 export class UnaryExpression extends Expression<ast.UnaryExpression, UnaryExpressionProps> {
-  build(props: UnaryExpressionProps, children: GenericJsNode[]): this {
-    this.node = ast.builders.unaryExpression(props.operator, props.argument.node);
-    return this;
-  }
+  protected meta: JsNodeMeta = {
+    operator: {
+      fromProp: p => p
+    },
+    argument: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      fromString: b.identifier
+    }
+  };
+
+  protected builder = b.unaryExpression;
 }
 
 /*========================================================================
                             If Statement
 =========================================================================*/
+
 export type IfStatementProps = {
-  test: GenericExpression
+  test?: GenericExpression
 };
 
 @JsNodeFactory.registerType
 export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
-  build(props: IfStatementProps, children: GenericJsNode[]): this {
-    this.node = ast.builders.ifStatement(props.test.node, this.getConsequent(children));
-    return this;
-  }
+  protected meta: JsNodeMeta = {
+    test: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }]
+    },
+    consequent: {
+      fromProp: p => p,
+      fromChild: [{ type: Statement }],
+      default: () => b.blockStatement([])
+    },
+    alternate: {
+      fromProp: p => p,
+      fromChild: [{ type: Statement }],
+      default: null
+    }
+  };
+
+  protected builder = (a, x, c) => b.ifStatement(a, x, c);
 
   consequent(): GenericStatement {
     return this.getNodeForProp('consequent') as GenericStatement;
   }
-
-  private getConsequent(children: GenericJsNode[]): ast.Statement {
-    if (children.length === 0) {
-      return ast.builders.blockStatement([]);
-    }
-    const first = children[0];
-    if (children.length === 1 && first instanceof BlockStatement) {
-      return first.node;
-    }
-    return ast.builders.blockStatement(children.map(child => {
-      if (child instanceof Statement) {
-        return child.node as ast.Statement;
-      }
-      throw new Error("Children of an IfStatement must be statements");
-    }));
-  }
-
 }
-
 
 /*========================================================================
                             JSX Identifier
@@ -958,13 +963,13 @@ export class JSXExpressionContainer extends Expression<ast.JSXExpressionContaine
       return ast.builders.literal(props.expression);
     }
     if (children.length === 0) {
-      throw new Error("Expression must be specified as a property or as a child element");
+      throw new Error('Expression must be specified as a property or as a child element');
     }
     const first = children[0];
     if (first instanceof Expression) {
       return first.node;
     }
-    throw new Error("Child must be of type Expression");
+    throw new Error('Child must be of type Expression');
   }
 }
 
@@ -991,7 +996,7 @@ export class JSXAttribute extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
     if (props.value instanceof JSXExpressionContainer) {
       return props.value.node;
     }
-    if (typeof props.value === "string") {
+    if (typeof props.value === 'string') {
       return ast.builders.literal(props.value);
     }
     if (props.value instanceof Expression) {
@@ -1004,7 +1009,7 @@ export class JSXAttribute extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
     if (props.name instanceof JSXIdentifier) {
       return props.name.node;
     }
-    if (typeof props.name === "string") {
+    if (typeof props.name === 'string') {
       return ast.builders.jsxIdentifier(props.name);
     }
     return ast.builders.jsxIdentifier(props.name.name);
@@ -1032,7 +1037,7 @@ export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningE
     if (props.name instanceof JSXIdentifier) {
       return props.name.node;
     }
-    if (typeof props.name === "string") {
+    if (typeof props.name === 'string') {
       return ast.builders.jsxIdentifier(props.name);
     }
     return ast.builders.jsxIdentifier(props.name.name);
@@ -1051,14 +1056,14 @@ export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningE
       if (child instanceof JSXAttribute) {
         attrs.push(child.node);
       } else {
-        throw new Error("Children of JSXOpeningElement must be of type JSXAttribute");
+        throw new Error('Children of JSXOpeningElement must be of type JSXAttribute');
       }
     }
     return attrs;
   }
 
   private isSelfClosing(props: JSXOpeningElementProps): boolean {
-    if (typeof props.selfClosing === "undefined") {
+    if (typeof props.selfClosing === 'undefined') {
       return false;
     }
     return props.selfClosing;
@@ -1085,7 +1090,7 @@ export class JSXClosingElement extends JsNode<ast.JSXClosingElement, JSXClosingE
     if (props.name instanceof JSXIdentifier) {
       return props.name.node;
     }
-    if (typeof props.name === "string") {
+    if (typeof props.name === 'string') {
       return ast.builders.jsxIdentifier(props.name);
     }
     return ast.builders.jsxIdentifier(props.name.name);
@@ -1126,10 +1131,10 @@ export class JSXElement extends JsNode<ast.JSXElement, JSXElementProps> {
     for (const child of children) {
       if (child instanceof Literal || child instanceof JSXExpressionContainer || child instanceof JSXElement) {
         childNodes.push(child.node);
-      } else if (typeof child === "string") {
+      } else if (typeof child === 'string') {
         childNodes.push(ast.builders.literal(child));
       } else {
-        throw new Error("Children of JSXElement must be either of type Literal, JSXExpressionContainer, or JSXElement");
+        throw new Error('Children of JSXElement must be either of type Literal, JSXExpressionContainer, or JSXElement');
       }
     }
     return childNodes;
@@ -1143,7 +1148,7 @@ export class JSXElement extends JsNode<ast.JSXElement, JSXElementProps> {
   }
 
   private isSelfClosing(props: JSXOpeningElementProps): boolean {
-    if (typeof props.selfClosing === "undefined") {
+    if (typeof props.selfClosing === 'undefined') {
       return false;
     }
     return props.selfClosing;
@@ -1153,7 +1158,7 @@ export class JSXElement extends JsNode<ast.JSXElement, JSXElementProps> {
     if (name instanceof JSXIdentifier) {
       return name.node;
     }
-    if (typeof name === "string") {
+    if (typeof name === 'string') {
       return ast.builders.jsxIdentifier(name);
     }
     return ast.builders.jsxIdentifier(name.name);
