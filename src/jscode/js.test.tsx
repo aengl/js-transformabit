@@ -39,15 +39,13 @@ describe('jscode/js', () => {
   });
 
   it('Literal', () => {
-    expect(js.Literal.fromValue(8).format()).toBe('8');
-    expect(js.Literal.fromValue(true).format()).toBe('true');
-    expect(js.Literal.fromValue('Hello').format()).toBe('"Hello"');
+    expect((<js.Literal value={8} />).format()).toBe('8');
+    expect((<js.Literal value={true} />).format()).toBe('true');
+    expect((<js.Literal value='Hello' />).format()).toBe('"Hello"');
   });
 
   it('Identifier', () => {
-    expect(js.Identifier.fromName('foo').format()).toBe('foo');
-    expect((<js.Identifier name='bar' />).format()).toBe('bar');
-    expect(new js.Identifier().build({ name: 'baz' }, []).format()).toBe('baz');
+    expect((<js.Identifier name='foo' />).format()).toBe('foo');
   });
 
   it('CallExpression', () => {
@@ -349,7 +347,7 @@ describe('jscode/js', () => {
     expect(valAsChild.format()).toBe('render: function() {}');
 
     let valAsProp = (
-      <js.Property key='num' kind='init' value={js.Literal.fromValue(1)} />
+      <js.Property key='num' kind='init' value={1} />
     );
     expect(valAsProp.format()).toBe('num: 1');
   });
@@ -365,7 +363,7 @@ describe('jscode/js', () => {
         <js.Property key='a' kind='init'>a</js.Property>
         <js.Property key='b' kind='init'>b</js.Property>
         <js.Property key='c' kind='init'>c</js.Property>
-        <js.Property key='one' kind='init' value={js.Literal.fromValue(1)} />
+        <js.Property key='one' kind='init' value={1} />
       </js.ObjectExpression>
     );
     expect(abc1.formatStripped()).toBe('{a: "a",b: "b",c: "c",one: 1}');

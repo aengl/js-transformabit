@@ -159,16 +159,14 @@ export class VariableDeclarator
                             Literal
 =========================================================================*/
 
+export type LiteralValue = ast.LiteralValue;
+
 export type LiteralProps = JsNodeProps & {
-  value: ast.LiteralValue
+  value: LiteralValue
 };
 
 @JsNodeFactory.registerType
 export class Literal extends Expression<ast.Literal, LiteralProps> {
-  static fromValue(value: any) {
-    return new Literal().build({ value: value }, []);
-  }
-
   protected meta: JsNodeMeta = {
     value: {
       fromProp: p => p
@@ -177,11 +175,11 @@ export class Literal extends Expression<ast.Literal, LiteralProps> {
 
   protected builder = b.literal;
 
-  get value(): ast.LiteralValue {
+  get value(): LiteralValue {
     return this.node.value;
   }
 
-  set value(value: ast.LiteralValue) {
+  set value(value: LiteralValue) {
     this.node.value = value;
   }
 }
@@ -203,10 +201,6 @@ export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
   };
 
   protected builder = b.identifier;
-
-  static fromName(name: string) {
-    return new Identifier().build({ name: name }, []);
-  }
 
   get name(): string {
     return this.node.name;
@@ -346,8 +340,8 @@ export type GenericBlockStatement = BlockStatement<ast.BlockStatement, BlockStat
 =========================================================================*/
 
 export type PropertyProps = {
-  key: string | Identifier,
-  value?: FunctionExpression | Literal,
+  key: LiteralValue | Identifier,
+  value?: LiteralValue | FunctionExpression | Literal,
   kind: ast.PropertyKind,
   method?: boolean,
   shorthand?: boolean,
