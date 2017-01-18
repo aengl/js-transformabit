@@ -4,7 +4,5 @@ import * as js from './JsCode';
 const JsCode = js.JsCode;
 
 console.log(
-  (<js.JSXElement name='div'>
-    <js.JSXAttribute name='display' value='block' />
-  </js.JSXElement>).format()
+  (<js.ObjectExpression />).format()
 );

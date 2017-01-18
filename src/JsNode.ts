@@ -26,10 +26,7 @@ export type JsNodeMeta = {
 
 export type JsNodeMetaProp = {
   fromProp?: (v: GenericJsNode) => any,
-  fromChild?: Array<{
-    type: JsNodeType<any>,
-    convert?: (c: GenericJsNode) => any
-  }>,
+  fromChild?: Array<string | JsNodeType<any>>,
   fromChildren?: Array<string | JsNodeType<any>>,
   /**
    * Called for all non-JsNode values in props and children.
@@ -736,26 +733,19 @@ export class JsNode<T extends ast.Node, P> {
     builder = builder || this.builder;
     children = flatten(children);
     // Create AST nodes from meta definitions
-    const nodes = this.buildNodes(props, children, meta);
-    // Convert the remaining children to AST nodes
-    const remainingChildren = children.map(child => {
-      if (!this.childTypes.some(type => child instanceof type)) {
-        console.error('Children:', children);
-        throw new Error(`${this.constructor.name} no child with suitable type; ` +
-          `only following types are allowed: ${this.childTypes.map(t => t.name)}`);
-      }
-      return child.node;
-    });
-    // Invoke builder
     // map() auto-converts JsNode instances to AST nodes
+    const nodes = this
+      .buildNodes(props, children, meta)
+      .map(n => n instanceof JsNode ? n.node : n);
+    if (children.length > 0) {
+      throw new Error(`${this.constructor.name}: Invalid children: ${children}`);
+    }
+    // Invoke builder
     try {
-      this.node = (builder as any)(
-        ...nodes.map(n => n instanceof JsNode ? n.node : n),
-        ...remainingChildren.map(c => c instanceof JsNode ? c.node : c)
-      );
+      this.node = (builder as any)(...nodes);
     }
     catch (e) {
-      console.error('AST nodes passed to the builder:\n', nodes.concat(children));
+      console.error('AST nodes passed to the builder:\n', nodes);
       throw new Error(`Failed run the AST builder for ${this.constructor.name}: ${e.message}`);
     }
     if (this.node === undefined) {
@@ -767,7 +757,9 @@ export class JsNode<T extends ast.Node, P> {
   /**
    * Helper to check a type.
    */
-  protected checkType<T extends GenericJsNode>(node: GenericJsNode, type: JsNodeType<T>): node is T {
+  protected checkType<T extends GenericJsNode>(
+    node: GenericJsNode, type: JsNodeType<T>): node is T {
+
     return type.check ? type.check(node) : node instanceof type;
   }
 
@@ -880,6 +872,11 @@ export class JsNode<T extends ast.Node, P> {
     }
   }
 
+  private buildCheckType(child, type) {
+    return (typeof type === 'string') ?
+     typeof child === 'string' : child instanceof type;
+  }
+
   private buildNodeFromProp(prop: any, metaProp: JsNodeMetaProp) {
     if (prop && metaProp.fromProp) {
       return this.buildConvert(metaProp.fromProp(prop), metaProp);
@@ -887,21 +884,13 @@ export class JsNode<T extends ast.Node, P> {
   }
 
   private buildNodeFromChild(children: JsNodeChildren, metaProp: JsNodeMetaProp) {
-    if (children.length > 0 && metaProp.fromChild) {
-      let child: any;
+    if (metaProp.fromChild) {
       for (let i = 0; i < children.length; i++) {
-        for (let childData of metaProp.fromChild) {
-          if (!(children[i] instanceof JsNode) ||
-            (children[i] instanceof childData.type)) {
-            // Child is either a non-JsNode value (string, int, ...) or matches
-            // the type constraints for this metaProp
-            child = this.buildConvert(children[i], metaProp);
-          }
-          if (child) {
-            // We're done with this child; remove it from the input
-            children.splice(i, 1);
-            return child;
-          }
+        // Figure out if the child matches at least one of the type constraints
+        if (metaProp.fromChild.some(type => this.buildCheckType(children[i], type))) {
+          // We're done with this child; remove it from the input
+          const child = children.splice(i, 1)[0];
+          return this.buildConvert(child, metaProp);
         }
       }
     }
@@ -912,11 +901,10 @@ export class JsNode<T extends ast.Node, P> {
       let matches = [];
       for (let i = 0; i < children.length; i++) {
         // Figure out if the child matches at least one of the type constraints
-        if (metaProp.fromChildren.some(type => (typeof type === 'string') ?
-          typeof children[i] === 'string' : children[i] instanceof type)) {
-          matches.push(this.buildConvert(children[i], metaProp));
+        if (metaProp.fromChildren.some(type => this.buildCheckType(children[i], type))) {
           // We're done with this child; remove it from the input
-          children.splice(i, 1);
+          const child = children.splice(i--, 1)[0];
+          matches.push(this.buildConvert(child, metaProp));
         }
       }
       return matches;

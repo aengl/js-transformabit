@@ -8,12 +8,6 @@ describe('jscode/js', () => {
     let foo = <js.VariableDeclaration name='foo' kind='let'></js.VariableDeclaration>;
     expect(foo.format()).toBe('let foo;');
 
-    let bar = new js.VariableDeclaration().build({ name: 'bar' }, []);
-    expect(bar.format()).toBe('var bar;');
-
-    let letbar = new js.VariableDeclaration().build({ name: 'bar', kind: 'let' }, []);
-    expect(letbar.format()).toBe('let bar;');
-
     let foobar = (
       <js.VariableDeclaration kind='let'>
         <js.VariableDeclarator name='foo' />
