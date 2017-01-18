@@ -489,7 +489,7 @@ export type AssignmentOperator = ast.AssignmentOperator;
 export type AssignmentExpressionProps = {
   operator?: ast.AssignmentOperator,
   left?: string | Pattern | MemberExpression,
-  right?: string | GenericExpression
+  right?: LiteralValue | GenericExpression
 };
 
 @JsNodeFactory.registerType
@@ -771,8 +771,8 @@ export type Pattern =
 export type BinaryOperator = ast.BinaryOperator;
 export type BinaryExpressionProps = ExpressionProps & {
   operator?: string,
-  left?: GenericExpression,
-  right?: GenericExpression
+  left?: string | GenericExpression,
+  right?: LiteralValue | GenericExpression
 };
 
 @JsNodeFactory.registerType
@@ -861,7 +861,7 @@ export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifier
 =========================================================================*/
 
 export type ImportDeclarationProps = {
-  source: Literal
+  source: LiteralValue | Literal
 };
 
 @JsNodeFactory.registerType
@@ -961,7 +961,7 @@ export class JSXIdentifier extends Expression<ast.JSXIdentifier, JSXIdentifierPr
 =========================================================================*/
 
 export type JSXExpressionContainerProps = {
-  expression?: GenericExpression | number | boolean
+  expression?: LiteralValue | GenericExpression
 };
 
 @JsNodeFactory.registerType
@@ -984,41 +984,37 @@ export class JSXExpressionContainer
 =========================================================================*/
 
 export type JSXAttributeProps = {
-  name: string | JSXIdentifier | Identifier
-  value?: string | boolean | number | GenericExpression| JSXExpressionContainer
+  name?: string | JSXIdentifier
+  value?: LiteralValue | GenericExpression | JSXExpressionContainer
 };
 
 @JsNodeFactory.registerType
-export class JSXAttribute extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
-  build(props: JSXAttributeProps, children: any[]): this {
-    this.node = b.jsxAttribute(this.getName(props), this.getValue(props));
-    return this;
-  }
+export class JSXAttribute
+  extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
 
-  private getValue(props: JSXAttributeProps): ast.Literal | ast.JSXExpressionContainer {
-    if (!props.value) {
-      return null;
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: p => p,
+      fromChild: [{ type: JSXIdentifier }],
+      convert: b.jsxIdentifier
+    },
+    value: {
+      fromProp: p => p,
+      fromChild: [{ type: Literal }, { type: JSXExpressionContainer }],
+      convert: b.literal,
+      default: null
     }
-    if (props.value instanceof JSXExpressionContainer) {
-      return props.value.node;
-    }
-    if (typeof props.value === 'string') {
-      return ast.builders.literal(props.value);
-    }
-    if (props.value instanceof Expression) {
-      return ast.builders.jsxExpressionContainer(props.value.node);
-    }
-    return ast.builders.jsxExpressionContainer(ast.builders.literal(props.value));
-  }
+  };
 
-  private getName(props: JSXAttributeProps): ast.JSXIdentifier {
-    if (props.name instanceof JSXIdentifier) {
-      return props.name.node;
+  protected builder = (name, value) => {
+    // Wrap all values that are not strings, expression containers or null in
+    // an expression container
+    if (!value
+      || value.type === 'JSXExpressionContainer'
+      || typeof value.value === 'string') {
+      return b.jsxAttribute(name, value);
     }
-    if (typeof props.name === 'string') {
-      return ast.builders.jsxIdentifier(props.name);
-    }
-    return ast.builders.jsxIdentifier(props.name.name);
+    return b.jsxAttribute(name, b.jsxExpressionContainer(value));
   }
 }
 
@@ -1027,54 +1023,30 @@ export class JSXAttribute extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
 =========================================================================*/
 
 export type JSXOpeningElementProps = {
-  name: string | JSXIdentifier | Identifier
-  attributes?: JSXAttribute[],
+  name?: string | JSXIdentifier
   selfClosing?: boolean
 };
 
 @JsNodeFactory.registerType
-export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningElementProps> {
-  build(props: JSXOpeningElementProps, children: any[]): this {
-    this.node = b.jsxOpeningElement(this.getName(props), this.getAttributes(props, children), this.isSelfClosing(props));
-    return this;
-  }
+export class JSXOpeningElement
+  extends JsNode<ast.JSXOpeningElement, JSXOpeningElementProps> {
 
-  private getName(props: JSXOpeningElementProps): ast.JSXIdentifier {
-    if (props.name instanceof JSXIdentifier) {
-      return props.name.node;
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: p => p,
+      fromChild: [{ type: JSXIdentifier }],
+      convert: b.jsxIdentifier
+    },
+    selfClosing: {
+      fromProp: p => p,
+      default: false
     }
-    if (typeof props.name === 'string') {
-      return ast.builders.jsxIdentifier(props.name);
-    }
-    return ast.builders.jsxIdentifier(props.name.name);
-  }
+  };
 
-  private getAttributes(props: JSXOpeningElementProps, children: any[]): ast.JSXAttribute[] {
-    if (!props.attributes) {
-      return this.getAttributesFromChildren(children);
-    }
-    return props.attributes.map(attr => attr.node);
-  }
+  protected builder = (name, selfClosing, ...attributes) =>
+    b.jsxOpeningElement(name, attributes, selfClosing);
 
-  private getAttributesFromChildren(children: any[]): ast.JSXAttribute[] {
-    let attrs: ast.JSXAttribute[] = [];
-    for (const child of children) {
-      if (child instanceof JSXAttribute) {
-        attrs.push(child.node);
-      } else {
-        throw new Error('Children of JSXOpeningElement must be of type JSXAttribute');
-      }
-    }
-    return attrs;
-  }
-
-  private isSelfClosing(props: JSXOpeningElementProps): boolean {
-    if (typeof props.selfClosing === 'undefined') {
-      return false;
-    }
-    return props.selfClosing;
-  }
-
+  protected childTypes = [JSXAttribute];
 }
 
 /*========================================================================
@@ -1082,25 +1054,22 @@ export class JSXOpeningElement extends JsNode<ast.JSXOpeningElement, JSXOpeningE
 =========================================================================*/
 
 export type JSXClosingElementProps = {
-  name: string | JSXIdentifier | Identifier
+  name?: string | JSXIdentifier
 };
 
 @JsNodeFactory.registerType
-export class JSXClosingElement extends JsNode<ast.JSXClosingElement, JSXClosingElementProps> {
-  build(props: JSXClosingElementProps, children: any[]): this {
-    this.node = b.jsxClosingElement(this.getName(props));
-    return this;
-  }
+export class JSXClosingElement
+  extends JsNode<ast.JSXClosingElement, JSXClosingElementProps> {
 
-  private getName(props: JSXClosingElementProps): ast.JSXIdentifier {
-    if (props.name instanceof JSXIdentifier) {
-      return props.name.node;
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: p => p,
+      fromChild: [{ type: JSXIdentifier }],
+      convert: b.jsxIdentifier
     }
-    if (typeof props.name === 'string') {
-      return ast.builders.jsxIdentifier(props.name);
-    }
-    return ast.builders.jsxIdentifier(props.name.name);
-  }
+  };
+
+  protected builder = b.jsxClosingElement;
 }
 
 /*========================================================================
@@ -1108,65 +1077,37 @@ export class JSXClosingElement extends JsNode<ast.JSXClosingElement, JSXClosingE
 =========================================================================*/
 
 export type JSXElementProps = {
-  name: string | JSXIdentifier | Identifier,
-  attributes?: JSXAttribute[],
+  name?: string | JSXIdentifier,
   selfClosing?: boolean
 };
 
 @JsNodeFactory.registerType
-export class JSXElement extends JsNode<ast.JSXElement, JSXElementProps> {
-  build(props: JSXElementProps, children: any[]): this {
-    this.node = b.jsxElement(
-      this.getOpeningElement(props),
-      ast.builders.jsxClosingElement(this.getName(props.name)),
-      this.getElementChildren(children)
+export class JSXElement
+  extends JsNode<ast.JSXElement, JSXElementProps> {
+
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: p => p,
+      fromChild: [{ type: JSXIdentifier }],
+      convert: b.jsxIdentifier
+    },
+    attributes: {
+      fromChildren: [JSXAttribute]
+    },
+    selfClosing: {
+      fromProp: p => p,
+      default: false
+    },
+    children: {
+      fromChildren: [Literal, JSXExpressionContainer, JSXElement, 'string'],
+      convert: b.literal
+    }
+  };
+
+  protected builder = (name, attributes, selfClosing, children) =>
+    b.jsxElement(
+      b.jsxOpeningElement(name, attributes, selfClosing),
+      b.jsxClosingElement(name),
+      children
     );
-    return this;
-  }
-
-  private getOpeningElement(props: JSXElementProps): ast.JSXOpeningElement {
-    return ast.builders.jsxOpeningElement(
-      this.getName(props.name),
-      this.getAttributes(props),
-      this.isSelfClosing(props)
-    );
-  }
-
-  private getElementChildren(children: any[]): (ast.Literal | ast.JSXExpressionContainer | ast.JSXElement)[] {
-    let childNodes: (ast.Literal | ast.JSXExpressionContainer | ast.JSXElement)[] = [];
-    for (const child of children) {
-      if (child instanceof Literal || child instanceof JSXExpressionContainer || child instanceof JSXElement) {
-        childNodes.push(child.node);
-      } else if (typeof child === 'string') {
-        childNodes.push(ast.builders.literal(child));
-      } else {
-        throw new Error('Children of JSXElement must be either of type Literal, JSXExpressionContainer, or JSXElement');
-      }
-    }
-    return childNodes;
-  }
-
-  private getAttributes(props: JSXElementProps): ast.JSXAttribute[] {
-    if (!props.attributes) {
-      return [];
-    }
-    return props.attributes.map(attr => attr.node);
-  }
-
-  private isSelfClosing(props: JSXOpeningElementProps): boolean {
-    if (typeof props.selfClosing === 'undefined') {
-      return false;
-    }
-    return props.selfClosing;
-  }
-
-  private getName(name: string | JSXIdentifier | Identifier): ast.JSXIdentifier {
-    if (name instanceof JSXIdentifier) {
-      return name.node;
-    }
-    if (typeof name === 'string') {
-      return ast.builders.jsxIdentifier(name);
-    }
-    return ast.builders.jsxIdentifier(name.name);
-  }
 }

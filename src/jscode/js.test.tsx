@@ -389,7 +389,7 @@ describe('jscode/js', () => {
   it('BinaryExpression', () => {
     let doubleEquals = (
       <js.BinaryExpression
-        left={<js.Identifier name='foo' /> as js.Identifier}
+        left='foo'
         right={<js.Identifier name='bar' /> as js.Identifier} />
     );
     expect(doubleEquals.format()).toBe('foo === bar');
@@ -403,9 +403,8 @@ describe('jscode/js', () => {
     expect(tripleNotEquals.format()).toBe('foo !== bar');
 
     let typeofCheck = (
-      <js.BinaryExpression>
-        <js.UnaryExpression operator='typeof' argument={<js.Identifier name='value' /> as js.Identifier} />
-        <js.Literal value='array' />
+      <js.BinaryExpression right='array'>
+        <js.UnaryExpression operator='typeof' argument='value' />
       </js.BinaryExpression>
     );
     expect(typeofCheck.format()).toBe('typeof value === "array"');
@@ -413,10 +412,7 @@ describe('jscode/js', () => {
 
   it('ImportDeclaration', () => {
     let foo = (
-      <js.ImportSpecifier
-        imported={<js.Identifier name='Foo' /> as js.Identifier}
-        local={<js.Identifier name='Foo' /> as js.Identifier}
-      />
+      <js.ImportSpecifier imported='Foo' local='Foo' />
     );
 
     let bar = (
@@ -424,14 +420,14 @@ describe('jscode/js', () => {
     );
 
     let one = (
-      <js.ImportDeclaration source={<js.Literal value='Foo' /> as js.Literal}>
+      <js.ImportDeclaration source='Foo'>
         {foo}
       </js.ImportDeclaration>
     );
     expect(one.format()).toBe('import { Foo } from "Foo";');
 
     let two = (
-      <js.ImportDeclaration source={<js.Literal value='Foo' /> as js.Literal}>
+      <js.ImportDeclaration source='Foo'>
         {foo}
         {bar}
       </js.ImportDeclaration>
@@ -440,7 +436,7 @@ describe('jscode/js', () => {
 
     let specifiers = [foo, bar];
     let asArray = (
-      <js.ImportDeclaration source={<js.Literal value='Foo' /> as js.Literal}>
+      <js.ImportDeclaration source='Foo'>
         {specifiers}
       </js.ImportDeclaration>
     );
@@ -453,7 +449,7 @@ describe('jscode/js', () => {
       />
     );
     let alias = (
-      <js.ImportDeclaration source={<js.Literal value='Code' /> as js.Literal}>
+      <js.ImportDeclaration source='Code'>
         {barAsBaz}
       </js.ImportDeclaration>
     );
@@ -500,10 +496,10 @@ describe('jscode/js', () => {
 
     single.insert(1,
       <js.ExpressionStatement>
-        <js.AssignmentExpression operator='=' left='wolly' right={<js.Identifier name='wolly' /> as js.Identifier} />
+        <js.AssignmentExpression operator='=' left='wolly' right='wolly' />
       </js.ExpressionStatement> as js.ExpressionStatement
     );
-    expect(single.formatStripped()).toBe('fofo = fofo;wolly = wolly;foo = foo;bar = bar;');
+    expect(single.formatStripped()).toBe('fofo = fofo;wolly = "wolly";foo = foo;bar = bar;');
   });
 
   it('UnaryExpression', () => {
@@ -630,15 +626,6 @@ describe('jscode/js', () => {
       </js.JSXOpeningElement>
     );
     expect(childAttributes.format()).toBe('<div id="foo" className="foo-style">');
-
-    const attrs = [
-      <js.JSXAttribute name='id' value='foo' />, <js.JSXAttribute name='className' value='foo-style' />
-    ] as js.JSXAttribute[];
-    const propsAttributes = (
-      <js.JSXOpeningElement name='div' attributes={attrs}>
-      </js.JSXOpeningElement>
-    );
-    expect(propsAttributes.format()).toBe('<div id="foo" className="foo-style">');
   });
 
   it('JSXClosingElement', () => {
@@ -646,26 +633,27 @@ describe('jscode/js', () => {
     expect(str.format()).toBe('</div>');
     const jsxId = (<js.JSXClosingElement name={<js.JSXIdentifier name='span' /> as js.JSXIdentifier} />);
     expect(jsxId.format()).toBe('</span>');
-    const id = (<js.JSXClosingElement name={<js.Identifier name='section' /> as js.Identifier} />);
+    const id = (<js.JSXClosingElement name='section' />);
     expect(id.format()).toBe('</section>');
   });
-
 
   it('JSXElement', () => {
     const empty = (<js.JSXElement name='div' />);
     expect(empty.format()).toBe('<div></div>');
 
-    const withAttribute = (<js.JSXElement name='div' attributes={[<js.JSXAttribute name='display' value='block' /> as js.JSXAttribute]} />);
+    const withAttribute = (
+      <js.JSXElement name='div'>
+        <js.JSXAttribute name='display' value='block' />
+      </js.JSXElement>);
     expect(withAttribute.format()).toBe(`<div display="block"></div>`);
 
     const withChildren = (
       <js.JSXElement name='div'>
+        <js.JSXAttribute name='foo' value='bar' />
         <js.JSXElement name='h1'>Title</js.JSXElement>
       </js.JSXElement>
     );
-    expect(withChildren.formatStripped()).toBe(`<div><h1>Title</h1></div>`);
-
+    expect(withChildren.formatStripped()).toBe(`<div foo="bar"><h1>Title</h1></div>`);
   });
-
 });
 

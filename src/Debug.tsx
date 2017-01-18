@@ -4,8 +4,7 @@ import * as js from './JsCode';
 const JsCode = js.JsCode;
 
 console.log(
-  (<js.Property key='render' kind='init'>
-    <js.FunctionExpression />
-  </js.Property>
-  ).format()
+  (<js.JSXElement name='div'>
+    <js.JSXAttribute name='display' value='block' />
+  </js.JSXElement>).format()
 );

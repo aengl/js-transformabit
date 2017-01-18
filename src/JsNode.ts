@@ -30,6 +30,7 @@ export type JsNodeMetaProp = {
     type: JsNodeType<any>,
     convert?: (c: GenericJsNode) => any
   }>,
+  fromChildren?: Array<string | JsNodeType<any>>,
   /**
    * Called for all non-JsNode values in props and children.
    */
@@ -757,6 +758,9 @@ export class JsNode<T extends ast.Node, P> {
       console.error('AST nodes passed to the builder:\n', nodes.concat(children));
       throw new Error(`Failed run the AST builder for ${this.constructor.name}: ${e.message}`);
     }
+    if (this.node === undefined) {
+      throw new Error(`Builder for ${this.constructor.name} did not return anything`);
+    }
     return this;
   }
 
@@ -853,6 +857,7 @@ export class JsNode<T extends ast.Node, P> {
       const metaProp = meta[metaPropName];
       const node =
         this.buildNodeFromProp(props[metaPropName], metaProp) ||
+        this.buildNodeFromChild(children, metaProp) ||
         this.buildNodeFromChildren(children, metaProp) ||
         this.buildNodeFromDefault(metaProp);
       if (node === undefined) {
@@ -881,7 +886,7 @@ export class JsNode<T extends ast.Node, P> {
     }
   }
 
-  private buildNodeFromChildren(children: JsNodeChildren, metaProp: JsNodeMetaProp) {
+  private buildNodeFromChild(children: JsNodeChildren, metaProp: JsNodeMetaProp) {
     if (children.length > 0 && metaProp.fromChild) {
       let child: any;
       for (let i = 0; i < children.length; i++) {
@@ -899,6 +904,22 @@ export class JsNode<T extends ast.Node, P> {
           }
         }
       }
+    }
+  }
+
+  private buildNodeFromChildren(children: JsNodeChildren, metaProp: JsNodeMetaProp) {
+    if (metaProp.fromChildren) {
+      let matches = [];
+      for (let i = 0; i < children.length; i++) {
+        // Figure out if the child matches at least one of the type constraints
+        if (metaProp.fromChildren.some(type => (typeof type === 'string') ?
+          typeof children[i] === 'string' : children[i] instanceof type)) {
+          matches.push(this.buildConvert(children[i], metaProp));
+          // We're done with this child; remove it from the input
+          children.splice(i, 1);
+        }
+      }
+      return matches;
     }
   }
 
