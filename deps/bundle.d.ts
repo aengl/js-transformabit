@@ -965,6 +965,7 @@ export declare namespace ast {
   };
 
   export var builders: {
+    file: (program: Program) => File;
     program: (statements: Node[]) => Program;
     jsxElement: (
       openingElement: JSXOpeningElement,

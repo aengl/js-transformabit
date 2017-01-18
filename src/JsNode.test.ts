@@ -382,11 +382,11 @@ describe('JsContainerNode', () => {
     const program = JsNode
       .fromModuleCode('')
       .findFirstChildOfType(js.Program);
-    let node = <js.GenericStatement>JsNode.fromCode('let foo;').first();
+    let node = JsNode.fromCode<js.GenericStatement>('let foo;').first();
     expect(program.append(node).format()).toBe('let foo;');
-    node = <js.GenericStatement>JsNode.fromCode('let bar;').first();
+    node = JsNode.fromCode<js.GenericStatement>('let bar;').first();
     expect(program.prepend(node).format()).toBe('let bar;let foo;');
-    node = <js.GenericStatement>JsNode.fromCode('let baz;').first();
+    node = JsNode.fromCode<js.GenericStatement>('let baz;').first();
     expect(program.insert(1, node).format()).toBe('let bar;let baz;let foo;');
   });
 });

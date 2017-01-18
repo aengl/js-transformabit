@@ -892,27 +892,28 @@ declare global {
 }
 
 /**
- * A class of nodes that contains a list of other nodes.
+ * A compositional decorator for nodes that contain a list of other nodes.
  */
-export class JsContainerNode<T extends ast.Node, P, C extends GenericJsNode>
-  extends JsNode<T, P> {
-
-  append(node: C): this {
-    this.getChildNodes().push(node.node);
-    return this;
-  }
-
-  insert(index: number, node: C): this {
-    this.getChildNodes().splice(index, 0, node.node);
-    return this;
-  }
-
-  prepend(node: C): this {
-    this.getChildNodes().splice(0, 0, node.node);
-    return this;
-  }
-
-  protected getChildNodes(): ast.Node[] {
-    return this.getProp<ast.Node[]>('body');
-  }
+export function JsContainerNode(options?: {
+  getChildNodes?: () => ast.Node[]
+}) {
+  return function(target) {
+    target.prototype.getChildNodes = (options && options.getChildNodes) ?
+      options.getChildNodes :
+      function(): ast.Node[] {
+        return this.node.body;
+      };
+    target.prototype.append = function(node: GenericJsNode) {
+      this.getChildNodes().push(node.node);
+      return this;
+    };
+    target.prototype.insert = function(index: number, node: GenericJsNode) {
+      this.getChildNodes().splice(index, 0, node.node);
+      return this;
+    };
+    target.prototype.prepend = function(node: GenericJsNode) {
+      this.getChildNodes().splice(0, 0, node.node);
+      return this;
+    };
+  };
 }

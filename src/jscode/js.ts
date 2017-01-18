@@ -20,9 +20,13 @@ export type FileProps = JsNodeProps;
 
 @JsNodeFactory.registerType
 export class File extends JsNode<ast.File, FileProps> {
-  build(props: FileProps, children: any[]): this {
-    return this;
-  }
+  protected meta: JsNodeMeta = {
+    program: {
+      fromChild: [{ type: Program }]
+    }
+  };
+
+  protected builder = b.file;
 }
 
 /*========================================================================
@@ -32,8 +36,15 @@ export class File extends JsNode<ast.File, FileProps> {
 export type ProgramProps = JsNodeProps;
 
 @JsNodeFactory.registerType
-export class Program extends JsContainerNode<ast.Program, ProgramProps, GenericStatement> {
+@JsContainerNode()
+export class Program
+  extends JsNode<ast.Program, ProgramProps> {
+
   protected builder = (...statements) => b.program(statements);
+
+  append: (node: GenericStatement) => this;
+  insert: (index: number, node: GenericStatement) => this;
+  prepend: (node: GenericStatement) => this;
 }
 
 /*========================================================================
@@ -243,8 +254,11 @@ export type FunctionDeclarationProps = {
 };
 
 @JsNodeFactory.registerType
+@JsContainerNode({
+  getChildNodes: function() { return (this as FunctionDeclaration).node.body.body; }
+})
 export class FunctionDeclaration
-  extends JsContainerNode<ast.FunctionDeclaration, FunctionDeclarationProps, GenericStatement> {
+  extends JsNode<ast.FunctionDeclaration, FunctionDeclarationProps> {
 
   protected meta: JsNodeMeta = {
     name: {
@@ -263,9 +277,9 @@ export class FunctionDeclaration
   // TODO
   // protected childTypes = [Pattern];
 
-  protected getChildNodes() {
-    return this.node.body.body;
-  }
+  append: (node: GenericStatement) => this;
+  insert: (index: number, node: GenericStatement) => this;
+  prepend: (node: GenericStatement) => this;
 }
 
 /*========================================================================
@@ -314,10 +328,15 @@ export type BlockStatementProps = {
 };
 
 @JsNodeFactory.registerType
+@JsContainerNode()
 export class BlockStatement<T extends ast.BlockStatement, P extends BlockStatementProps>
   extends Statement<T, P> {
 
   protected builder = (...statements) => b.blockStatement(statements);
+
+  append: (node: GenericStatement) => this;
+  insert: (index: number, node: GenericStatement) => this;
+  prepend: (node: GenericStatement) => this;
 }
 
 export type GenericBlockStatement = BlockStatement<ast.BlockStatement, BlockStatementProps>;
