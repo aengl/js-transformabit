@@ -132,7 +132,7 @@ export class VariableDeclarator
   protected meta: JsNodeMeta = {
     name: {
       fromProp: p => p,
-      fromString: b.identifier
+      convert: b.identifier
     }
   };
 
@@ -232,7 +232,7 @@ export class CallExpression
   protected meta: JsNodeMeta = {
     callee: {
       fromProp: p => p,
-      fromString: b.identifier
+      convert: b.identifier
     }
   };
 
@@ -263,7 +263,7 @@ export class FunctionDeclaration
   protected meta: JsNodeMeta = {
     name: {
       fromProp: p => p,
-      fromString: b.identifier
+      convert: b.identifier
     },
     body: {
       fromChild: [{ type: BlockStatement }],
@@ -299,7 +299,7 @@ export class FunctionExpression
   protected meta: JsNodeMeta = {
     id: {
       fromProp: p => p,
-      fromString: b.identifier,
+      convert: b.identifier,
       default: null
     },
     body: {
@@ -365,12 +365,12 @@ export class Property extends JsNode<ast.Property, PropertyProps> {
     key: {
       fromProp: p => p,
       fromChild: [{ type: Identifier }],
-      fromString: b.identifier
+      convert: b.identifier
     },
     value: {
       fromProp: p => p,
       fromChild: [{ type: Expression }/*, { type: Pattern }*/],
-      fromString: b.literal
+      convert: b.literal
     }
   };
 
@@ -466,13 +466,13 @@ export class MemberExpression
     object: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: s => s === 'this' ? b.thisExpression() : b.identifier(s),
+      convert: s => s === 'this' ? b.thisExpression() : b.identifier(s),
       default: b.thisExpression
     },
     property: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.identifier
+      convert: b.identifier
     }
   };
 
@@ -510,12 +510,12 @@ export class AssignmentExpression
     left: {
       fromProp: p => p,
       fromChild: [{ type: Identifier }, { type: MemberExpression }],
-      fromString: b.identifier
+      convert: b.identifier
     },
     right: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.literal
+      convert: b.literal
     }
   };
 
@@ -554,12 +554,12 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
   protected meta: JsNodeMeta = {
     id: {
       fromProp: p => p,
-      fromString: b.identifier
+      convert: b.identifier
     },
     superClass: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.identifier,
+      convert: b.identifier,
       default: null
     },
     body: {
@@ -685,7 +685,7 @@ export class MethodDefinition
     key: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.identifier
+      convert: b.identifier
     },
     static: {
       fromProp: p => p,
@@ -753,7 +753,7 @@ export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps>
     callee: {
       fromProp: p => p,
       fromChild: [{ type: Expression }/*, { type: Super }*/],
-      fromString: b.identifier
+      convert: b.identifier
     }
   };
 
@@ -791,12 +791,12 @@ export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpress
     left: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.identifier
+      convert: b.identifier
     },
     right: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.literal
+      convert: b.literal
     }
   };
 
@@ -847,13 +847,13 @@ export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifier
     imported: {
       fromProp: p => p,
       fromChild: [{ type: Identifier }],
-      fromString: b.identifier,
+      convert: b.identifier,
       default: null
     },
     local: {
       fromProp: p => p,
       fromChild: [{ type: Identifier }],
-      fromString: b.identifier,
+      convert: b.identifier,
       default: null
     }
   };
@@ -876,7 +876,7 @@ export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDecla
     source: {
       fromProp: p => p,
       fromChild: [{ type: Literal }],
-      fromString: b.literal
+      convert: b.literal
     }
   };
 
@@ -901,7 +901,7 @@ export class UnaryExpression extends Expression<ast.UnaryExpression, UnaryExpres
     argument: {
       fromProp: p => p,
       fromChild: [{ type: Expression }],
-      fromString: b.identifier
+      convert: b.identifier
     }
   };
 
@@ -935,7 +935,7 @@ export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
     }
   };
 
-  protected builder = (a, x, c) => b.ifStatement(a, x, c);
+  protected builder = b.ifStatement;
 
   consequent(): GenericStatement {
     return this.getNodeForProp('consequent') as GenericStatement;
@@ -953,10 +953,13 @@ export type JSXIdentifierProps = {
 @JsNodeFactory.registerType
 export class JSXIdentifier extends Expression<ast.JSXIdentifier, JSXIdentifierProps> {
 
-  build(props: JSXIdentifierProps, children: any[]): this {
-    this.node = b.jsxIdentifier(props.name);
-    return this;
-  }
+  protected meta: JsNodeMeta = {
+    name: {
+      fromProp: p => p
+    }
+  };
+
+  protected builder = b.jsxIdentifier;
 }
 
 /*========================================================================
@@ -968,28 +971,18 @@ export type JSXExpressionContainerProps = {
 };
 
 @JsNodeFactory.registerType
-export class JSXExpressionContainer extends Expression<ast.JSXExpressionContainer, JSXExpressionContainerProps> {
-  build(props: JSXExpressionContainerProps, children: any[]): this {
-    this.node = b.jsxExpressionContainer(this.getExpression(props, children));
-    return this;
-  }
+export class JSXExpressionContainer
+  extends Expression<ast.JSXExpressionContainer, JSXExpressionContainerProps> {
 
-  private getExpression(props: JSXExpressionContainerProps, children: any[]): ast.Expression {
-    if (props.expression) {
-      if (props.expression instanceof Expression) {
-        return props.expression.node;
-      }
-      return ast.builders.literal(props.expression);
+  protected meta: JsNodeMeta = {
+    expression: {
+      fromProp: p => p,
+      fromChild: [{ type: Expression }],
+      convert: b.literal
     }
-    if (children.length === 0) {
-      throw new Error('Expression must be specified as a property or as a child element');
-    }
-    const first = children[0];
-    if (first instanceof Expression) {
-      return first.node;
-    }
-    throw new Error('Child must be of type Expression');
-  }
+  };
+
+  protected builder = b.jsxExpressionContainer;
 }
 
 /*========================================================================

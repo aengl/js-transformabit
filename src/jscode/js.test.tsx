@@ -525,8 +525,7 @@ describe('jscode/js', () => {
       <js.BinaryExpression
         left={<js.Identifier name='foo' /> as js.Identifier}
         operator='!=='
-        right={<js.Identifier name='bar' /> as js.Identifier}
-      />
+        right={<js.Identifier name='bar' /> as js.Identifier} />
     ) as js.BinaryExpression;
 
     const empty = (

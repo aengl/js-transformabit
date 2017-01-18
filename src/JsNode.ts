@@ -18,6 +18,8 @@ export type JsNodeProps = {
   [key: string]: any
 };
 
+export type JsNodeChildren = any[];
+
 export type JsNodeMeta = {
   [key: string]: JsNodeMetaProp
 };
@@ -28,7 +30,10 @@ export type JsNodeMetaProp = {
     type: JsNodeType<any>,
     convert?: (c: GenericJsNode) => any
   }>,
-  fromString?: (s: string) => any,
+  /**
+   * Called for all non-JsNode values in props and children.
+   */
+  convert?: (s: string) => any,
   default?: any
 };
 
@@ -723,63 +728,20 @@ export class JsNode<T extends ast.Node, P> {
    * method is usually only called through JsCode and requires the meta and
    * builder class properties to be assigned.
    */
-  build(props: JsNodeProps, children: any[] = [],
+  build(props: JsNodeProps, children: JsNodeChildren = [],
     meta?: JsNodeMeta, builder?: JsNodeBuilder): this {
 
-    if (!meta) {
-      meta = this.meta;
-    }
-    if (!builder) {
-      builder = this.builder;
-    }
+    meta = meta || this.meta;
+    builder = builder || this.builder;
     children = flatten(children);
     // Create AST nodes from meta definitions
-    const nodes = Object.keys(meta).map(k => {
-      const data = meta[k];
-      // From prop
-      const prop = props[k];
-      if (prop && data.fromProp) {
-        if (data.fromString && typeof prop === 'string') {
-          return data.fromString(prop);
-        }
-        return data.fromProp(prop);
-      }
-      // From child
-      if (children.length > 0 && data.fromChild) {
-        let child: any;
-        for (let i = 0; i < children.length && !child; i++) {
-          for (let childData of data.fromChild) {
-            if (children[i] instanceof childData.type) {
-              child = childData.convert ? childData.convert(children[i]) : children[i].node;
-            } else if (data.fromString && typeof children[i] === 'string') {
-              child = data.fromString(children[i]);
-            }
-            if (child) {
-              children.splice(i, 1);
-              break;
-            }
-          }
-        }
-        if (child) {
-          return child;
-        } else if (data.default === undefined) {
-          console.error('Children:', children);
-          const types = data.fromChild.map((d: any) => d.type.name).join(', ');
-          throw new Error(`${this.constructor.name}: property ${k} expected a child of type: ${types}`);
-        }
-      }
-      // Default
-      if (data.default !== undefined) {
-        return (typeof data.default === 'function') ? data.default() : data.default;
-      }
-      console.error('Properties and children:', props, children);
-      throw new Error(`${this.constructor.name}: missing property for "${k}"`);
-    });
+    const nodes = this.buildNodes(props, children, meta);
     // Convert the remaining children to AST nodes
     const remainingChildren = children.map(child => {
       if (!this.childTypes.some(type => child instanceof type)) {
         console.error('Children:', children);
-        throw new Error(`${this.constructor.name} no child with suitable type; only following types are allowed: ${this.childTypes.map(t => t.name)}`);
+        throw new Error(`${this.constructor.name} no child with suitable type; ` +
+          `only following types are allowed: ${this.childTypes.map(t => t.name)}`);
       }
       return child.node;
     });
@@ -878,6 +840,72 @@ export class JsNode<T extends ast.Node, P> {
     // TODO
     // this.path = JsNode.fromCollection(js(this.node)).path;
     return this;
+  }
+
+  /**
+   * Maps each key in the meta object to an AST node.
+   *
+   * Important: if a child was mapped to a node it will be removed in-place from
+   * the children array!
+   */
+  private buildNodes(props: JsNodeProps, children: JsNodeChildren, meta: JsNodeMeta) {
+    return Object.keys(meta).map(metaPropName => {
+      const metaProp = meta[metaPropName];
+      const node =
+        this.buildNodeFromProp(props[metaPropName], metaProp) ||
+        this.buildNodeFromChildren(children, metaProp) ||
+        this.buildNodeFromDefault(metaProp);
+      if (node === undefined) {
+        console.error('Properties and children:', props, children);
+        throw new Error(
+          `${this.constructor.name}: missing child or property for "${metaPropName}"`
+        );
+      }
+      return node;
+    });
+  }
+
+  private buildConvert(v, metaProp: JsNodeMetaProp) {
+    if (v instanceof JsNode) {
+      return v.node;
+    } else if (metaProp.convert) {
+      return metaProp.convert(v);
+    } else {
+      return v;
+    }
+  }
+
+  private buildNodeFromProp(prop: any, metaProp: JsNodeMetaProp) {
+    if (prop && metaProp.fromProp) {
+      return this.buildConvert(metaProp.fromProp(prop), metaProp);
+    }
+  }
+
+  private buildNodeFromChildren(children: JsNodeChildren, metaProp: JsNodeMetaProp) {
+    if (children.length > 0 && metaProp.fromChild) {
+      let child: any;
+      for (let i = 0; i < children.length; i++) {
+        for (let childData of metaProp.fromChild) {
+          if (!(children[i] instanceof JsNode) ||
+            (children[i] instanceof childData.type)) {
+            // Child is either a non-JsNode value (string, int, ...) or matches
+            // the type constraints for this metaProp
+            child = this.buildConvert(children[i], metaProp);
+          }
+          if (child) {
+            // We're done with this child; remove it from the input
+            children.splice(i, 1);
+            return child;
+          }
+        }
+      }
+    }
+  }
+
+  private buildNodeFromDefault(metaProp: JsNodeMetaProp) {
+    if (metaProp.default !== undefined) {
+      return (typeof metaProp.default === 'function') ? metaProp.default() : metaProp.default;
+    }
   }
 }
 

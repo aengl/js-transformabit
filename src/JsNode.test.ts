@@ -356,14 +356,14 @@ describe('JsNode', () => {
     const foo = node
       .findFirstChildOfType(js.ClassBody)
       .addMethod(
-      b.methodDefinition('method',
-        b.identifier('bar'),
-        b.functionExpression(null, [], b.blockStatement([
-          b.variableDeclaration('let', [
-            b.variableDeclarator(b.identifier('foo'), null)
-          ])
-        ]))
-      )
+        b.methodDefinition('method',
+          b.identifier('bar'),
+          b.functionExpression(null, [], b.blockStatement([
+            b.variableDeclaration('let', [
+              b.variableDeclarator(b.identifier('foo'), null)
+            ])
+          ]))
+        )
       )
       .findChildrenOfType(js.Identifier)
       .last();
