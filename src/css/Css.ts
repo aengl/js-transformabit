@@ -15,6 +15,14 @@ export class StyleSheet {
     }
     return rules;
   }
+
+  toString(): string {
+    return css.stringify(this.css);
+  }
+
+  toSlimString(): string {
+    return this.toString().replace(/\n([\s]*)/g, "");
+  }
 }
 
 
@@ -40,12 +48,32 @@ export class Rule {
   hasDeclaration(property: string): boolean {
     return this.getDeclarations().filter(dec => dec.getProperty() === property).length !== 0;
   }
+
+  addDeclaration(declaration: Declaration) {
+    this.ruleObj.declarations.push(declaration.object);
+  }
+
+  addCustomDeclaration(property: string, value: string) {
+    this.ruleObj.declarations.push(Declaration.custom(property, value).object);
+  }
 }
 
 export class Declaration {
   private declarationObj: any;
   constructor(obj: any) {
     this.declarationObj = obj;
+  }
+
+  static custom(property: string, value: string): Declaration {
+    return new Declaration({
+      "type": "declaration",
+      "property": property,
+      "value": value
+    });
+  }
+
+  get object() {
+    return this.declarationObj;
   }
 
   getProperty(): string {

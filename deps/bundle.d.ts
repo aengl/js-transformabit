@@ -1,5 +1,6 @@
 export declare namespace css {
   function parse(s: string): any;
+  function stringify(s: any): string;
 }
 
 export declare namespace ast {

@@ -1,4 +1,4 @@
-import {StyleSheet} from './Css';
+import {StyleSheet, Declaration} from './Css';
 
 describe('Css', () => {
 
@@ -79,6 +79,26 @@ describe('Css', () => {
     expect(rule.hasDeclaration("foo-bar")).toBeFalsy();
 
   });
+
+  it('declarations', () => {
+    const float = Declaration.custom("float", "left");
+    expect(float.getProperty()).toBe("float");
+    expect(float.getValue()).toBe("left");
+
+    const stylesheet = new StyleSheet(`
+      body {
+        font-size: 12px;
+        color: blue;
+        background-color: red;
+      }
+    `);
+    const rule = stylesheet.getRules()[0];
+    rule.addDeclaration(float);
+    expect(stylesheet.toSlimString()).toBe("body {font-size: 12px;color: blue;background-color: red;float: left;}");
+
+    rule.addCustomDeclaration("position", "relative");
+    expect(stylesheet.toSlimString()).toBe("body {font-size: 12px;color: blue;background-color: red;float: left;position: relative;}");
+});
 
 
 
