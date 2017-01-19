@@ -49,4 +49,25 @@ describe('Css', () => {
     expect(selector.getSubject()).toBe("name");
 
   });
+
+
+  it('declarations', () => {
+    const stylesheet = new StyleSheet(`
+      body {
+        font-size: 12px;
+        color: blue;
+        background-color: red;
+      }
+    `);
+
+    const rule = stylesheet.getRules()[0];
+    expect(rule.getDeclarations().length).toBe(3);
+    expect(rule.getDeclarations()[0].getProperty()).toBe("font-size");
+    expect(rule.getDeclarations()[0].getValue()).toBe("12px");
+    expect(rule.getDeclarations()[1].getProperty()).toBe("color");
+    expect(rule.getDeclarations()[1].getValue()).toBe("blue");
+    expect(rule.getDeclarations()[2].getProperty()).toBe("background-color");
+    expect(rule.getDeclarations()[2].getValue()).toBe("red");
+  });
+
 });

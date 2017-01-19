@@ -28,6 +28,25 @@ export class Rule {
   getSelectors(): Selector[] {
     return this.ruleObj.selectors.map(selector => new Selector(selector));
   }
+
+  getDeclarations(): Declaration[] {
+    return this.ruleObj.declarations.map(dec => new Declaration(dec));
+  }
+}
+
+export class Declaration {
+  private declarationObj: any;
+  constructor(obj: any) {
+    this.declarationObj = obj;
+  }
+
+  getProperty(): string {
+    return this.declarationObj.property;
+  }
+
+  getValue(): string {
+    return this.declarationObj.value;
+  }
 }
 
 export class Selector {
