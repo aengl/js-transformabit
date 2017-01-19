@@ -32,6 +32,14 @@ export class Rule {
   getDeclarations(): Declaration[] {
     return this.ruleObj.declarations.map(dec => new Declaration(dec));
   }
+
+  getDelcaration(property: string): Declaration {
+    return this.getDeclarations().filter(dec => dec.getProperty() === property)[0];
+  }
+
+  hasDeclaration(property: string): boolean {
+    return this.getDeclarations().filter(dec => dec.getProperty() === property).length !== 0;
+  }
 }
 
 export class Declaration {

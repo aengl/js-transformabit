@@ -68,6 +68,18 @@ describe('Css', () => {
     expect(rule.getDeclarations()[1].getValue()).toBe("blue");
     expect(rule.getDeclarations()[2].getProperty()).toBe("background-color");
     expect(rule.getDeclarations()[2].getValue()).toBe("red");
+
+    expect(rule.hasDeclaration("font-size")).toBeTruthy();
+    expect(rule.getDelcaration("font-size").getValue()).toBe("12px");
+    expect(rule.hasDeclaration("color")).toBeTruthy();
+    expect(rule.getDelcaration("color").getValue()).toBe("blue");
+    expect(rule.hasDeclaration("background-color")).toBeTruthy();
+    expect(rule.getDelcaration("background-color").getValue()).toBe("red");
+
+    expect(rule.hasDeclaration("foo-bar")).toBeFalsy();
+
   });
+
+
 
 });
