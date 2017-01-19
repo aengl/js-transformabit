@@ -51,6 +51,13 @@ export class Selector {
   isIdSelector(): boolean {
     return this.value.indexOf("#") === 0;
   }
+
+  getSubject(): string {
+    if (this.isHtmlElement()) {
+      return this.value;
+    }
+    return this.value.substr(1);
+  }
 }
 
 const htmlElements = [
