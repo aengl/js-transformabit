@@ -1,3 +1,7 @@
+export declare namespace css {
+  function parse(s: string): any;
+}
+
 export declare namespace ast {
   /**
    * Type declarations for ast-types.

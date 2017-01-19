@@ -3,6 +3,7 @@
     "start": "webpack"
   },
   "devDependencies": {
+    "css": "2.2.1",
     "ast-types": "^0.9.3",
     "babel-core": "^6.21.0",
     "babel-loader": "^6.2.10",
