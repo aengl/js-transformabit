@@ -1,17 +1,33 @@
 import { css } from '../../deps/bundle';
 
-export class StyleSheet {
+export type RuleSet = Rule | AtRule;
+export type AtRule = Media;
 
+export class StyleSheet {
 
   private css: any;
   constructor(cssContent: string) {
     this.css = css.parse(cssContent);
   }
 
-  getRules(): Rule[] {
+  getRuleSets(): RuleSet[] {
+    let rules = new Array<RuleSet>();
+    for (const rule of this.css.stylesheet.rules) {
+      if (rule.type === "media") {
+        rules.push(new Media(rule));
+      } else if (rule.type === "rule") {
+        rules.push(new Rule(rule));
+      }
+    }
+    return rules;
+  }
+
+    getRules(): Rule[] {
     let rules = new Array<Rule>();
     for (const rule of this.css.stylesheet.rules) {
-      rules.push(new Rule(rule));
+      if (rule.type === "rule") {
+        rules.push(new Rule(rule));
+      }
     }
     return rules;
   }
@@ -28,7 +44,6 @@ export class StyleSheet {
     return this.toString().replace(/\n([\s]*)/g, "");
   }
 }
-
 
 export class Rule {
 
@@ -71,6 +86,31 @@ export class Rule {
 
   addCustomDeclaration(property: string, value: string) {
     this.ruleObj.declarations.push(Declaration.custom(property, value).object);
+  }
+}
+
+export class Media {
+  private mediaObj: any;
+  constructor(obj: any) {
+    this.mediaObj = obj;
+  }
+
+  getMediaType(): string {
+    return this.mediaObj.media.substr(0, this.mediaObj.media.indexOf(" "));
+  }
+
+  isRecognisedMediaType(): boolean {
+    const mediaType = this.getMediaType();
+    return mediaTypes.filter(mt => mt.name === mediaType).length !== 0;
+  }
+
+  isDeprecatedMediaType(): boolean {
+    const mediaType = this.getMediaType();
+    const mt = mediaTypes.filter(mt => mt.name === mediaType);
+    if (mt.length === 0) {
+      return undefined;
+    }
+    return mt[0].deprecated;
   }
 }
 
@@ -131,127 +171,27 @@ export class Selector {
   }
 }
 
+const mediaTypes = [
+  {name: 'all', deprecated: false}, {name: 'print', deprecated: false},
+  {name: 'screen', deprecated: false}, {name: 'speech', deprecated: false},
+  {name: 'tty', deprecated: true}, {name: 'tv', deprecated: true},
+  {name: 'projection', deprecated: true}, {name: 'handheld', deprecated: true},
+  {name: 'braille', deprecated: true}, {name: 'embossed', deprecated: true},
+  {name: 'aural', deprecated: true}
+];
+
 const htmlElements = [
-      'a',
-'abbr',
-'acronym',
-'address',
-'applet',
-'area',
-'article',
-'aside',
-'audio',
-'b',
-'base',
-'basefont',
-'bdi',
-'bdo',
-'big',
-'blockquote',
-'body',
-'br',
-'button',
-'canvas',
-'caption',
-'center',
-'cite',
-'code',
-'col',
-'colgroup',
-'data',
-'datalist',
-'dd',
-'del',
-'details',
-'dialog',
-'dir',
-'div',
-'dl',
-'dt',
-'em',
-'embed',
-'fieldset',
-'figcaption',
-'figure',
-'font',
-'footer',
-'form',
-'frame',
-'frameset',
-'head',
-'header',,
-'hr',
-'html',
-'i',
-'iframe',
-'img',
-'input',
-'ins',
-'kbd',
-'keygen',
-'label',
-'legend',
-'li',
-'link',
-'main',
-'map',
-'mark',
-'menu',
-'menuitem',
-'meta',
-'meter',
-'nav',
-'noframes',
-'noscript',
-'object',
-'ol',
-'optgroup',
-'option',
-'output',
-'p',
-'param',
-'picture',
-'pre',
-'progress',
-'q',
-'rp',
-'rt',
-'ruby',
-'s',
-'samp',
-'script',
-'section',
-'select',
-'small',
-'source',
-'span',
-'strike',
-'strong',
-'style',
-'sub',
-'summary',
-'sup',
-'table',
-'tbody',
-'td',
-'textarea',
-'tfoot',
-'th',
-'thead',
-'time',
-'title',
-'tr',
-'track',
-'tt',
-'u',
-'ul',
-'var',
-'video',
-'wbr',
-'h1',
-'h2',
-'h3',
-'h4',
-'h5',
-'h6'
-    ];
+'a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside',
+'audio', 'b', 'base', 'basefont', 'bdi', 'bdo', 'big', 'blockquote', 'body',
+'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup',
+'data', 'datalist', 'dd', 'del', 'details', 'dialog', 'dir', 'div', 'dl', 'dt',
+'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form',
+'frame', 'frameset', 'head', 'header', 'hr', 'html', 'i', 'iframe', 'img',
+'input', 'ins', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'main',
+'map', 'mark', 'menu', 'menuitem', 'meta', 'meter', 'nav', 'noframes', 'noscript',
+'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre',
+'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select',
+'small', 'source', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup',
+'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr',
+'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr', 'h1', 'h2', 'h3', 'h4', 'h5','h6'
+];
