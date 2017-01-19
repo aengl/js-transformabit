@@ -1,4 +1,4 @@
-import {StyleSheet, Declaration} from './Css';
+import {StyleSheet, Declaration, Rule, Selector} from './Css';
 
 describe('Css', () => {
 
@@ -80,7 +80,7 @@ describe('Css', () => {
 
   });
 
-  it('declarations', () => {
+  it('create declarations', () => {
     const float = Declaration.custom("float", "left");
     expect(float.getProperty()).toBe("float");
     expect(float.getValue()).toBe("left");
@@ -98,7 +98,27 @@ describe('Css', () => {
 
     rule.addCustomDeclaration("position", "relative");
     expect(stylesheet.toSlimString()).toBe("body {font-size: 12px;color: blue;background-color: red;float: left;position: relative;}");
-});
+  });
+
+  it('create rules', () => {
+      const rule = Rule.build([new Selector("body")], [
+        Declaration.custom("color", "red"),
+        Declaration.custom("padding", "10px")
+      ]);
+
+    expect(rule.getSelectors().length).toBe(1);
+    const selector = rule.getSelectors()[0];
+    expect(selector.toString()).toBe("body");
+    expect(rule.getDeclarations().length).toBe(2);
+    expect(rule.getDeclarations()[0].getProperty()).toBe("color");
+    expect(rule.getDeclarations()[0].getValue()).toBe("red");
+    expect(rule.getDeclarations()[1].getProperty()).toBe("padding");
+    expect(rule.getDeclarations()[1].getValue()).toBe("10px");
+
+    const stylesheet = new StyleSheet("");
+    stylesheet.addRule(rule);
+    expect(stylesheet.toSlimString()).toBe("body {color: red;padding: 10px;}");
+  });
 
 
 

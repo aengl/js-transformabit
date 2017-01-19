@@ -16,6 +16,10 @@ export class StyleSheet {
     return rules;
   }
 
+  addRule(rule: Rule) {
+    this.css.stylesheet.rules.push(rule.object);
+  }
+
   toString(): string {
     return css.stringify(this.css);
   }
@@ -31,6 +35,18 @@ export class Rule {
   private ruleObj: any;
   constructor(obj: any) {
     this.ruleObj = obj;
+  }
+
+  get object() {
+    return this.ruleObj;
+  }
+
+  static build(selectors: Selector[], declarations: Declaration[]): Rule {
+    return new Rule({
+      "type": "rule",
+      "selectors": selectors.map(selector => selector.toString()),
+      "declarations": declarations.map(dec => dec.object)
+    });
   }
 
   getSelectors(): Selector[] {
