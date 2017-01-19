@@ -1,4 +1,4 @@
-import { GenericJsNode } from './JsNode';
+import { GenericJsNode } from '../JsNode';
 
 export class JsCode {
   static createElement(...args: any[]): GenericJsNode {
@@ -8,6 +8,3 @@ export class JsCode {
     return node;
   }
 }
-
-export * from './jscode/js';
-export * from './jscode/react';

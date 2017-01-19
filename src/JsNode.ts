@@ -1,5 +1,4 @@
 import { ast, recast } from '../deps/bundle';
-import { File } from './JsCode';
 
 // Important! Even though recast just re-exports types from ast-types, JS will
 // consider them to be different objects. When jscodeshift gets a ast.NodePath that
@@ -292,8 +291,8 @@ export class JsNode<T extends ast.Node, P> {
     return node;
   }
 
-  static fromModuleCode(code: string, args?: Object): File {
-    return <File>JsNode.parse(code, args);
+  static fromModuleCode(code: string, args?: Object): GenericJsNode {
+    return JsNode.parse(code, args);
   }
 
   static fromCode<T extends GenericJsNode>(code: string, args?: Object): JsNodeList<T> {

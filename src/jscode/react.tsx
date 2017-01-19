@@ -1,7 +1,7 @@
 import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
-import { JsCode } from '../JsCode';
-import * as js from './js';
+import { JsCode } from './JsCode';
 import { ast } from '../../deps/bundle';
+import * as js from './Js';
 
 const b = ast.builders;
 

@@ -1,5 +1,4 @@
-import { JsNode } from './JsNode';
-import * as js from './JsCode';
+import * as js from './Main';
 
 const JsCode = js.JsCode;
 

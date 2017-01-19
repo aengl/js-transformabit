@@ -1,8 +1,8 @@
 import { JsNode, JsNodeList, JsNodeFactory } from './JsNode';
-import * as js from './JsCode';
+import { JsCode } from './jscode/JsCode';
 import { ast } from '../deps/bundle';
+import * as js from './jscode/Js';
 
-const JsCode = js.JsCode;
 const b = ast.builders;
 
 describe('JsNodeList', () => {

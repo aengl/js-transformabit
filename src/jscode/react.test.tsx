@@ -1,23 +1,16 @@
-import { JsNode} from '../JsNode';
-import {
-  ReactClassComponent,
-  ReactComponent,
-  ReactStatelessComponent,
-  ReactComponentRender,
-  ReactComponentEventHandler,
-  ReturnStatement,
-  Literal,
-  JsCode
-} from '../JsCode';
+import * as js from './Js';
+import * as react from './React';
+import { JsNode } from '../JsNode';
+import { JsCode } from './JsCode';
 
 describe('jscode/react', () => {
   it('ReactStatelessComponent', () => {
     let component = (
-      <ReactStatelessComponent name='Foo'>
-        <ReactComponentRender>
+      <react.ReactStatelessComponent name='Foo'>
+        <react.ReactComponentRender>
           {'<div>bar!</div>'}
-        </ReactComponentRender>
-      </ReactStatelessComponent>
+        </react.ReactComponentRender>
+      </react.ReactStatelessComponent>
     );
     expect(component.format()).toBe(
 `const Foo = props => <div>bar!</div>;`);
@@ -25,16 +18,16 @@ describe('jscode/react', () => {
 
   it('ReactComponent', () => {
     let component = (
-      <ReactComponent name='Foo'>
-        <ReactComponentRender>
+      <react.ReactComponent name='Foo'>
+        <react.ReactComponentRender>
           {'<div>bar!</div>'}
-        </ReactComponentRender>
-        <ReactComponentEventHandler name='bar'>
-          <ReturnStatement>
-            <Literal value={42} />
-          </ReturnStatement>
-        </ReactComponentEventHandler>
-      </ReactComponent>
+        </react.ReactComponentRender>
+        <react.ReactComponentEventHandler name='bar'>
+          <js.ReturnStatement>
+            <js.Literal value={42} />
+          </js.ReturnStatement>
+        </react.ReactComponentEventHandler>
+      </react.ReactComponent>
     );
     expect(component.format()).toBe(
 `const Foo = React.createClass({
@@ -50,16 +43,16 @@ describe('jscode/react', () => {
 
   it('ReactClassComponent', () => {
     let component = (
-      <ReactClassComponent id='Foo'>
-        <ReactComponentRender>
+      <react.ReactClassComponent id='Foo'>
+        <react.ReactComponentRender>
           {'<div>bar!</div>'}
-        </ReactComponentRender>
-        <ReactComponentEventHandler name='bar'>
-          <ReturnStatement>
-            <Literal value={42} />
-          </ReturnStatement>
-        </ReactComponentEventHandler>
-      </ReactClassComponent>
+        </react.ReactComponentRender>
+        <react.ReactComponentEventHandler name='bar'>
+          <js.ReturnStatement>
+            <js.Literal value={42} />
+          </js.ReturnStatement>
+        </react.ReactComponentEventHandler>
+      </react.ReactClassComponent>
     );
     expect(component.format()).toBe(
 `class Foo extends React.Component {
@@ -80,10 +73,10 @@ describe('jscode/react', () => {
     // circumstances. Since we tell findFirstChildOfType() to get us a
     // ReactClassComponent, however, we expect it to return the correct type.
     const node = JsNode.fromModuleCode(code)
-      .findFirstChildOfType(ReactClassComponent);
+      .findFirstChildOfType(react.ReactClassComponent);
     expect(node).toBeDefined();
     expect(node.constructor.name).toBe('ReactClassComponent');
-    expect(node instanceof ReactClassComponent).toBe(true);
+    expect(node instanceof react.ReactClassComponent).toBe(true);
   });
 
   it('ReactClassComponent collections', () => {
@@ -91,34 +84,34 @@ describe('jscode/react', () => {
     // Tricky for similar reasons as the test above. Tests proper typing
     // of complex types in collections.
     const node = JsNode.fromModuleCode(code)
-      .findChildrenOfType(ReactClassComponent)
+      .findChildrenOfType(react.ReactClassComponent)
       .filter(node => node.id().name === 'Foo')
       .at(0);
     expect(node).toBeDefined();
     expect(node.constructor.name).toBe('ReactClassComponent');
-    expect(node instanceof ReactClassComponent).toBe(true);
+    expect(node instanceof react.ReactClassComponent).toBe(true);
   });
 
   it('ReactClassComponent methods', () => {
     const code = 'class Foo extends React.Component {}';
     const node = JsNode.fromModuleCode(code)
-      .findFirstChildOfType(ReactClassComponent);
+      .findFirstChildOfType(react.ReactClassComponent);
     expect(node.id().name).toBe('Foo');
   });
 
   it('ReactClassComponent -> ReactComponent', () => {
     let component = (
-      <ReactClassComponent id='Foo'>
-        <ReactComponentRender>
+      <react.ReactClassComponent id='Foo'>
+        <react.ReactComponentRender>
           {'<div>bar!</div>'}
-        </ReactComponentRender>
-        <ReactComponentEventHandler name='bar'>
-          <ReturnStatement>
-            <Literal value={42} />
-          </ReturnStatement>
-        </ReactComponentEventHandler>
-      </ReactClassComponent>
-    ) as ReactClassComponent;
+        </react.ReactComponentRender>
+        <react.ReactComponentEventHandler name='bar'>
+          <js.ReturnStatement>
+            <js.Literal value={42} />
+          </js.ReturnStatement>
+        </react.ReactComponentEventHandler>
+      </react.ReactClassComponent>
+    ) as react.ReactClassComponent;
     expect(component.convertToReactComponent().format()).toBe(
 `const Foo = React.createClass({
     render() {
@@ -133,17 +126,17 @@ describe('jscode/react', () => {
 
   it('ReactComponent -> ReactClassComponent', () => {
     let component = (
-      <ReactComponent name='Foo'>
-        <ReactComponentRender>
+      <react.ReactComponent name='Foo'>
+        <react.ReactComponentRender>
           {'<div>bar!</div>'}
-        </ReactComponentRender>
-        <ReactComponentEventHandler name='bar'>
-          <ReturnStatement>
-            <Literal value={42} />
-          </ReturnStatement>
-        </ReactComponentEventHandler>
-      </ReactComponent>
-    ) as ReactComponent;
+        </react.ReactComponentRender>
+        <react.ReactComponentEventHandler name='bar'>
+          <js.ReturnStatement>
+            <js.Literal value={42} />
+          </js.ReturnStatement>
+        </react.ReactComponentEventHandler>
+      </react.ReactComponent>
+    ) as react.ReactComponent;
     expect(component.convertToReactClassComponent().format()).toBe(
 `class Foo extends React.Component {
     render() {

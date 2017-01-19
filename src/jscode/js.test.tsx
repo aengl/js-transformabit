@@ -1,6 +1,5 @@
-import * as js from '../JsCode';
-
-const JsCode = js.JsCode;
+import * as js from './Js';
+import { JsCode } from './JsCode';
 
 describe('jscode/js', () => {
 

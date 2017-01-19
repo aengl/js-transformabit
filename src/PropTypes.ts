@@ -1,5 +1,5 @@
 import { GenericJsNode } from './JsNode';
-import * as js from './JsCode';
+import * as js from './jscode/Js';
 
 export function inferPropType(root: GenericJsNode, name: string) {
   // Assignments
