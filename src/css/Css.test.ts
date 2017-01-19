@@ -10,6 +10,17 @@ describe('Css', () => {
           color: red;
       }
     `);
+    expect(stylesheet.getRules().length).toBe(3);
+  });
+
+  it('selectors', () => {
+    const stylesheet = new StyleSheet(`
+      body { font-size: 12px; }
+      .foo {diplay: none;}
+      #name {
+          color: red;
+      }
+    `);
 
     const rules = stylesheet.getRules();
     expect(rules[0].getSelectors().length).toBe(1);
