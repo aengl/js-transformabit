@@ -27,6 +27,10 @@ export class File extends JsNode<ast.File, FileProps> {
   };
 
   protected builder = b.file;
+
+  program(): Program {
+    return this.getNodeForProp<Program>('program');
+  }
 }
 
 /*========================================================================

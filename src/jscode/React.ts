@@ -1,5 +1,4 @@
 import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
-import { JsCode } from './JsCode';
 import { ast } from '../../deps/bundle';
 import * as js from './Js';
 
@@ -288,24 +287,26 @@ export class ReactClassComponent
       throw new Error('Constructor must have BlockStatement as its body');
     }
     // Next, add a bind expression to the constructor body
-    body.append(
-      <js.ExpressionStatement>
-        <js.AssignmentExpression>
-          <js.MemberExpression object='this' property={methodName} />
-          <js.CallExpression callee={(
-            <js.MemberExpression>
-              <js.MemberExpression>
-                <js.ThisExpression />
-                <js.Identifier name={methodName} />
-              </js.MemberExpression>
-              <js.Identifier name='bind' />
-            </js.MemberExpression> as js.MemberExpression
-          )}>
-            <js.ThisExpression />
-          </js.CallExpression>
-        </js.AssignmentExpression>
-      </js.ExpressionStatement> as js.ExpressionStatement
-    );
+    body.append(JsNode.fromCode(
+      `this.${methodName} = this.${methodName}.bind(this);`).at(0) as js.ExpressionStatement);
+    // body.append(
+    //   <js.ExpressionStatement>
+    //     <js.AssignmentExpression>
+    //       <js.MemberExpression object='this' property={methodName} />
+    //       <js.CallExpression callee={(
+    //         <js.MemberExpression>
+    //           <js.MemberExpression>
+    //             <js.ThisExpression />
+    //             <js.Identifier name={methodName} />
+    //           </js.MemberExpression>
+    //           <js.Identifier name='bind' />
+    //         </js.MemberExpression> as js.MemberExpression
+    //       )}>
+    //         <js.ThisExpression />
+    //       </js.CallExpression>
+    //     </js.AssignmentExpression>
+    //   </js.ExpressionStatement> as js.ExpressionStatement
+    // );
   }
 
   convertToReactComponent() {
