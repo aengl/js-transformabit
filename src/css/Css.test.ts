@@ -156,7 +156,7 @@ describe('Css', () => {
 	  expect(keyframe.getValues()[0]).toBe("from");
   });
 
-  it('keyframes multiple values', () => {
+  it('keyframe multiple values', () => {
 	 const stylesheet = new StyleSheet(`
 		@keyframes foobar {
 			from, foo bar {top: 1px;}
@@ -172,7 +172,7 @@ describe('Css', () => {
 	  expect(keyframe.getValues()[2]).toBe("bar");
   });
 
-  it('keyframes declarations', () => {
+  it('keyframe declarations', () => {
   const stylesheet = new StyleSheet(`
 	 @keyframes foobar {
 		 from {top: 1px;}
@@ -193,6 +193,30 @@ describe('Css', () => {
 	expect(keyframe.getDeclarations()[0].getValue()).toBe("200px");
 	expect(keyframe.getDeclarations()[1].getProperty()).toBe("bottom");
 	expect(keyframe.getDeclarations()[1].getValue()).toBe("210px");
+  });
+
+  it('keyframe declaration', () => {
+	  const stylesheet = new StyleSheet(`
+		  @keyframes foobar {
+			  to {top: 200px; bottom: 210px;}
+		  }
+	  `);
+	  const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	  const keyframe = rule.getKeyFrames()[0];
+	  expect(keyframe.getDeclaration(0).getProperty()).toBe("top");
+	  expect(keyframe.getDeclaration("top").getValue()).toBe("200px");
+
+  });
+
+  it('keyframes keyframe', () => {
+	const stylesheet = new StyleSheet(`
+		@keyframes foobar {
+			to {top: 200px; bottom: 210px;}
+		}
+	`);
+	const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	const keyframe = rule.getKeyFrame(0);
+	expect(keyframe.getValues()[0]).toBe("to");
   });
 
 });

@@ -115,6 +115,10 @@ export class KeyFrames {
 	getKeyFrames(): KeyFrame[] {
 		return this.keyframesObj.keyframes.map(kf => new KeyFrame(kf));
 	}
+
+	getKeyFrame(index: number): KeyFrame {
+		return this.getKeyFrames()[index];
+	}
 }
 
 export class KeyFrame {
@@ -129,6 +133,14 @@ export class KeyFrame {
 
 	getDeclarations(): Declaration[] {
 		return this.keyframeObj.declarations.map(dec => new Declaration(dec));
+	}
+
+	getDeclaration(via: string | number): Declaration {
+		if (typeof via === 'string') {
+			return this.getDeclarations().filter(dec => dec.getProperty() == via)[0];
+		} else {
+			return this.getDeclarations()[via];
+		}
 	}
 }
 
