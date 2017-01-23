@@ -1,5 +1,10 @@
+/**
+ * Barrel export for the entire project.
+ */
+
 export * from './JsNode';
-export * from './jscode/JsCode';
-export * from './jscode/Js';
-export * from './jscode/React';
+export * from './JsCode';
+export * from './Js';
+export * from './React';
+export * from './PackageJson';
 export * from './PropTypes';

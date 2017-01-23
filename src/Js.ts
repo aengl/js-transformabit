@@ -1,14 +1,17 @@
+/**
+ * Specialised JsNode classes for basic AST nodes.
+ */
+
 import {
   JsNode,
   JsNodeType,
-  JsNodeFactory,
   JsContainerNode,
   JsNodeList,
   GenericJsNode,
   JsNodeProps,
   JsNodeMeta
-} from '../JsNode';
-import { ast } from '../../deps/bundle';
+} from './JsNode';
+import { ast } from '../deps/bundle';
 
 const b = ast.builders;
 
@@ -18,7 +21,7 @@ const b = ast.builders;
 
 export type FileProps = JsNodeProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class File extends JsNode<ast.File, FileProps> {
   protected meta: JsNodeMeta = {
     program: {
@@ -39,7 +42,7 @@ export class File extends JsNode<ast.File, FileProps> {
 
 export type ProgramProps = JsNodeProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 @JsContainerNode()
 export class Program
   extends JsNode<ast.Program, ProgramProps> {
@@ -63,7 +66,7 @@ export class Program
 
 export type ExpressionProps = JsNodeProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class Expression<T extends ast.Expression, P extends ExpressionProps>
   extends JsNode<T, P> {}
 
@@ -75,7 +78,7 @@ export type GenericExpression = Expression<ast.Expression, ExpressionProps>;
 
 export type StatementProps = JsNodeProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class Statement<T extends ast.Statement, P extends StatementProps>
   extends JsNode<T, P> {}
 
@@ -90,7 +93,7 @@ export type VariableDeclarationProps = JsNodeProps & {
   kind?: ast.VariableKind
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class VariableDeclaration<
   T extends ast.VariableDeclaration, P extends VariableDeclarationProps>
   extends Statement<T, P> {
@@ -151,7 +154,7 @@ export type VariableDeclaratorProps = JsNodeProps & {
   name: string | Pattern
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class VariableDeclarator
   extends JsNode<ast.VariableDeclarator, VariableDeclaratorProps> {
 
@@ -195,7 +198,7 @@ export type LiteralProps = JsNodeProps & {
   value: LiteralValue
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class Literal extends Expression<ast.Literal, LiteralProps> {
   protected meta: JsNodeMeta = {
     value: {
@@ -222,7 +225,7 @@ export type IdentifierProps = ExpressionProps & {
   name: string
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class Identifier extends Expression<ast.Identifier, IdentifierProps> {
   protected meta: JsNodeMeta = {
     name: {
@@ -249,7 +252,7 @@ export type CallExpressionProps = {
   callee: string | GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class CallExpression
   extends Expression<ast.CallExpression, CallExpressionProps> {
 
@@ -278,7 +281,7 @@ export type FunctionDeclarationProps = {
   name: string
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 @JsContainerNode({
   getChildNodes: function() { return (this as FunctionDeclaration).node.body.body; }
 })
@@ -324,7 +327,7 @@ export type FunctionExpressionProps = {
   id?: Identifier | string
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class FunctionExpression
   extends Expression<ast.FunctionExpression, FunctionExpressionProps> {
 
@@ -369,7 +372,7 @@ export class FunctionExpression
 export type BlockStatementProps = {
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 @JsContainerNode()
 export class BlockStatement<T extends ast.BlockStatement, P extends BlockStatementProps>
   extends Statement<T, P> {
@@ -402,7 +405,7 @@ export type PropertyProps = {
   computed?: boolean
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class Property
   extends JsNode<ast.Property, PropertyProps> {
 
@@ -436,7 +439,7 @@ export class Property
 
 export type ObjectExpressionProps = {};
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ObjectExpression
   extends JsNode<ast.ObjectExpression, ObjectExpressionProps> {
 
@@ -455,7 +458,7 @@ export class ObjectExpression
 
 export type ExpressionStatementProps = StatementProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ExpressionStatement
   extends Statement<ast.ExpressionStatement, ExpressionStatementProps> {
 
@@ -480,7 +483,7 @@ export class ExpressionStatement
 
 export type ReturnStatementProps = {};
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatementProps> {
 
   protected meta: JsNodeMeta = {
@@ -505,7 +508,7 @@ export class ReturnStatement extends JsNode<ast.ReturnStatement, ReturnStatement
 
 export type ThisExpressionProps = ExpressionProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ThisExpression
   extends Expression<ast.ThisExpression, ThisExpressionProps> {
 
@@ -521,7 +524,7 @@ export type MemberExpressionProps = ExpressionProps & {
   property?: GenericExpression | string
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class MemberExpression
   extends Expression<ast.MemberExpression, MemberExpressionProps> {
 
@@ -565,7 +568,7 @@ export type AssignmentExpressionProps = {
   right?: LiteralValue | GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class AssignmentExpression
   extends Expression<ast.AssignmentExpression, AssignmentExpressionProps> {
 
@@ -614,7 +617,7 @@ export type ClassDeclarationProps = {
   superClass?: string | Identifier | MemberExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDeclarationProps>
   extends JsNode<T, P> {
 
@@ -638,8 +641,8 @@ export class ClassDeclaration<T extends ast.ClassDeclaration, P extends ClassDec
       fromChildren: [
         MethodDefinition,
         VariableDeclarator,
-        //ClassProperty
-        //ClassPropertyDefinition
+        // ClassProperty
+        // ClassPropertyDefinition
       ]
     }
   };
@@ -704,15 +707,15 @@ export type GenericClassDeclaration = ClassDeclaration<
 export type ClassBodyProps = {
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ClassBody extends JsNode<ast.ClassBody, ClassBodyProps> {
   protected meta: JsNodeMeta = {
     elements: {
       fromChildren: [
         MethodDefinition,
         VariableDeclarator,
-        //ClassProperty
-        //ClassPropertyDefinition
+        // ClassProperty
+        // ClassPropertyDefinition
       ]
     }
   };
@@ -752,7 +755,7 @@ export type MethodDefinitionProps = {
   expression?: FunctionExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class MethodDefinition
   extends JsNode<ast.MethodDefinition, MethodDefinitionProps> {
 
@@ -825,7 +828,7 @@ export type NewExpressionProps = {
   callee: string | GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class NewExpression extends JsNode<ast.NewExpression, NewExpressionProps> {
 
   protected meta: JsNodeMeta = {
@@ -862,7 +865,7 @@ export type BinaryExpressionProps = ExpressionProps & {
   right?: LiteralValue | GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpressionProps> {
   protected meta: JsNodeMeta = {
     operator: {
@@ -906,7 +909,7 @@ export class BinaryExpression extends JsNode<ast.BinaryExpression, BinaryExpress
 
 export type ArrayExpressionProps = ExpressionProps;
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ArrayExpression extends JsNode<ast.ArrayExpression, ArrayExpressionProps> {
 
   protected meta: JsNodeMeta = {
@@ -931,7 +934,7 @@ export type ImportSpecifierProps = {
   local?: string | Identifier
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ImportSpecifier extends JsNode<ast.ImportSpecifier, ImportSpecifierProps> {
   protected meta: JsNodeMeta = {
     imported: {
@@ -960,7 +963,7 @@ export type ImportDeclarationProps = {
   source: LiteralValue | Literal
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class ImportDeclaration extends JsNode<ast.ImportDeclaration, ImportDeclarationProps> {
   protected meta: JsNodeMeta = {
     source: {
@@ -985,7 +988,7 @@ export type UnaryExpressionProps = {
   argument?: string | GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class UnaryExpression extends Expression<ast.UnaryExpression, UnaryExpressionProps> {
   protected meta: JsNodeMeta = {
     operator: {
@@ -1009,7 +1012,7 @@ export type IfStatementProps = {
   test?: GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class IfStatement extends Statement<ast.IfStatement, IfStatementProps> {
   protected meta: JsNodeMeta = {
     test: {
@@ -1043,7 +1046,7 @@ export type JSXIdentifierProps = {
   name: string
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class JSXIdentifier extends Expression<ast.JSXIdentifier, JSXIdentifierProps> {
 
   protected meta: JsNodeMeta = {
@@ -1063,7 +1066,7 @@ export type JSXExpressionContainerProps = {
   expression?: LiteralValue | GenericExpression
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class JSXExpressionContainer
   extends Expression<ast.JSXExpressionContainer, JSXExpressionContainerProps> {
 
@@ -1087,7 +1090,7 @@ export type JSXAttributeProps = {
   value?: LiteralValue | GenericExpression | JSXExpressionContainer
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class JSXAttribute
   extends JsNode<ast.JSXAttribute, JSXAttributeProps> {
 
@@ -1126,7 +1129,7 @@ export type JSXOpeningElementProps = {
   selfClosing?: boolean
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class JSXOpeningElement
   extends JsNode<ast.JSXOpeningElement, JSXOpeningElementProps> {
 
@@ -1156,7 +1159,7 @@ export type JSXClosingElementProps = {
   name?: string | JSXIdentifier
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class JSXClosingElement
   extends JsNode<ast.JSXClosingElement, JSXClosingElementProps> {
 
@@ -1180,7 +1183,7 @@ export type JSXElementProps = {
   selfClosing?: boolean
 };
 
-@JsNodeFactory.registerType
+@JsNode.registerType()
 export class JSXElement
   extends JsNode<ast.JSXElement, JSXElementProps> {
 

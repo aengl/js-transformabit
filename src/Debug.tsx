@@ -1,5 +1,5 @@
-import * as js from './jscode/Js';
-import { JsCode } from './jscode/JsCode';
+import * as js from './Js';
+import { JsCode } from './JsCode';
 
 console.log(
   (<js.ObjectExpression />).format()

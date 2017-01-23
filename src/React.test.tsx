@@ -1,6 +1,6 @@
 import * as js from './Js';
 import * as react from './React';
-import { JsNode } from '../JsNode';
+import { JsNode } from './JsNode';
 import { JsCode } from './JsCode';
 
 describe('jscode/react', () => {

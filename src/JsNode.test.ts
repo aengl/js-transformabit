@@ -1,7 +1,7 @@
-import { JsNode, JsNodeList, JsNodeFactory } from './JsNode';
-import { JsCode } from './jscode/JsCode';
+import { JsNode, JsNodeList } from './JsNode';
+import { JsCode } from './JsCode';
 import { ast } from '../deps/bundle';
-import * as js from './jscode/Js';
+import * as js from './Js';
 
 const b = ast.builders;
 
@@ -108,9 +108,9 @@ describe('JsNodeList', () => {
   });
 });
 
-describe('JsNodeFactory', () => {
-  it('create node', () => {
-    expect(JsNodeFactory.create('Identifier')).toBeInstanceOf(js.Identifier);
+describe('JsNode', () => {
+  it('create node via factory', () => {
+    expect(JsNode.create('Identifier')).toBeInstanceOf(js.Identifier);
   });
 
   it('check super class type', () => {
@@ -119,9 +119,7 @@ describe('JsNodeFactory', () => {
     expect(node).toBeInstanceOf(js.ThisExpression);
     expect(node).toBeInstanceOf(js.Expression);
   });
-});
 
-describe('JsNode', () => {
   it('create & format', () => {
     const code = 'const foo = 42;';
     expect(JsNode.fromModuleCode(code).format()).toBe(code);

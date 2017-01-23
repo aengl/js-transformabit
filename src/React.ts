@@ -1,5 +1,19 @@
-import { JsNode, JsNodeType, GenericJsNode } from '../JsNode';
-import { ast } from '../../deps/bundle';
+/**
+ * Specialised JsNode classes for React specific code constructs.
+ *
+ * Unlinke the wrappers for JS AST nodes, these do not have their type
+ * registered since they are always based on an already existing type and do
+ * not have an AST equivalent representation.
+ *
+ * The JsNode factory will never produce an instance of any of these classes,
+ * which is why they must be converted explicitly.
+ */
+
+// TODO: we probably want to split this up into multiple files in their own
+// directory.
+
+import { JsNode, JsNodeType, GenericJsNode } from './JsNode';
+import { ast } from '../deps/bundle';
 import * as js from './Js';
 
 const b = ast.builders;

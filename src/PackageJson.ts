@@ -1,3 +1,7 @@
+/**
+ * Simplifies reading and editing of package.json files.
+ */
+
 export type Dependency = {
   [name: string]: string;
 };

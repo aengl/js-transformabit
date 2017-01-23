@@ -1,3 +1,7 @@
+/**
+ * Contains various wrappers for AST nodes and AST node lists.
+ */
+
 import { ast, recast } from '../deps/bundle';
 
 // Important! Even though recast just re-exports types from ast-types, JS will
@@ -39,32 +43,6 @@ export type JsNodeBuilder = (...args: any[]) => ast.Node;
 export class InvalidTypeError extends Error {
   constructor(public typeId: string) {
     super(`Invalid type "${typeId}"; only annotated types are allowed`);
-  }
-}
-
-export class JsNodeFactory {
-  static registeredTypes: { [typeName: string]: JsNodeType<any> } = {};
-
-  static registerType(type: JsNodeType<any>): void {
-    JsNodeFactory.registeredTypes[type.name] = type;
-  }
-
-  static getType<T extends GenericJsNode>(typeName: string): JsNodeType<T> {
-    return JsNodeFactory.registeredTypes[typeName];
-  }
-
-  static isComplex(typeName: string): boolean {
-    return JsNodeFactory.registeredTypes[typeName] === undefined;
-  }
-
-  static create<T extends GenericJsNode>(typeName: string): T {
-    const type = JsNodeFactory.getType<T>(typeName);
-    if (!type) {
-      // TODO: once we have all node types implemented, we can throw here.
-      // console.warn('Attempted to create unknown node type: ' + typeName);
-      return <T>new JsNode<any, any>();
-    }
-    return new type();
   }
 }
 
@@ -254,39 +232,40 @@ function flatten(arr) {
  * Represents a node in the AST tree.
  */
 export class JsNode<T extends ast.Node, P> {
-  protected _path: ast.NodePath;
+  static registeredTypes: { [typeName: string]: JsNodeType<any> } = {};
 
-  /**
-   * This is a required property to make TypeScript analyse property types.
-   * It will always be undefined, do reference it in code!
-   */
-  props: P;
+  static registerType() {
+    return function(type: JsNodeType<any>) {
+      JsNode.registeredTypes[type.name] = type;
+    }
+  }
 
-  /**
-   * Contains information for building nodes from JsCode.
-   */
-  protected meta: JsNodeMeta = {};
+  static getType<T extends GenericJsNode>(typeName: string): JsNodeType<T> {
+    return JsNode.registeredTypes[typeName];
+  }
 
-  /**
-   * Called when building AST nodes in build(). Every key in meta results in an
-   * argument (in the order they are declared). The remaining arguments are the
-   * children passed in JsCode, converted to AST nodes.
-   */
-  protected builder: JsNodeBuilder;
+  static isComplex(typeName: string): boolean {
+    return JsNode.registeredTypes[typeName] === undefined;
+  }
 
-  /**
-   * Specifies the types that are valid for children in JsCode.
-   */
-  protected childTypes: JsNodeType<any>[] = [JsNode];
+  static create<T extends GenericJsNode>(typeName: string): T {
+    const type = JsNode.getType<T>(typeName);
+    if (!type) {
+      // TODO: once we have all node types implemented, we can throw here.
+      // console.warn('Attempted to create unknown node type: ' + typeName);
+      return <T>new JsNode<any, any>();
+    }
+    return new type();
+  }
 
   static fromNode<T extends GenericJsNode>(astNode: ast.Node): T {
-    let node = JsNodeFactory.create<T>(astNode.type.toString());
+    let node = JsNode.create<T>(astNode.type.toString());
     node.node = astNode;
     return node;
   }
 
   static fromPath<T extends GenericJsNode>(path: ast.NodePath): T {
-    const node = JsNodeFactory.create<T>(path.value.type.toString());
+    const node = JsNode.create<T>(path.value.type.toString());
     node.path = path;
     return node;
   }
@@ -324,6 +303,31 @@ export class JsNode<T extends ast.Node, P> {
   static parse(code: string, args?: Object) {
     return JsNode.fromPath(new ast.NodePath(recast.parse(code, args)));
   }
+
+  protected _path: ast.NodePath;
+
+  /**
+   * This is a required property to make TypeScript analyse property types.
+   * It will always be undefined, do reference it in code!
+   */
+  props: P;
+
+  /**
+   * Contains information for building nodes from JsCode.
+   */
+  protected meta: JsNodeMeta = {};
+
+  /**
+   * Called when building AST nodes in build(). Every key in meta results in an
+   * argument (in the order they are declared). The remaining arguments are the
+   * children passed in JsCode, converted to AST nodes.
+   */
+  protected builder: JsNodeBuilder;
+
+  /**
+   * Specifies the types that are valid for children in JsCode.
+   */
+  protected childTypes: JsNodeType<any>[] = [JsNode];
 
   get sourceLocation() {
     return this.node.loc;
@@ -933,21 +937,21 @@ declare global {
 export function JsContainerNode(options?: {
   getChildNodes?: () => ast.Node[]
 }) {
-  return function(target) {
-    target.prototype.getChildNodes = (options && options.getChildNodes) ?
+  return function(type: JsNodeType<any>) {
+    type.prototype.getChildNodes = (options && options.getChildNodes) ?
       options.getChildNodes :
       function(): ast.Node[] {
         return this.node.body;
       };
-    target.prototype.append = function(node: GenericJsNode) {
+    type.prototype.append = function(node: GenericJsNode) {
       this.getChildNodes().push(node.node);
       return this;
     };
-    target.prototype.insert = function(index: number, node: GenericJsNode) {
+    type.prototype.insert = function(index: number, node: GenericJsNode) {
       this.getChildNodes().splice(index, 0, node.node);
       return this;
     };
-    target.prototype.prepend = function(node: GenericJsNode) {
+    type.prototype.prepend = function(node: GenericJsNode) {
       this.getChildNodes().splice(0, 0, node.node);
       return this;
     };

@@ -1,5 +1,9 @@
+/**
+ * Various helpers for type inference.
+ */
+
 import { GenericJsNode } from './JsNode';
-import * as js from './jscode/Js';
+import * as js from './Js';
 
 export function inferPropType(root: GenericJsNode, name: string) {
   // Assignments
