@@ -123,19 +123,16 @@ describe('Css', () => {
   it('media rule', () => {
     const stylesheet = new StyleSheet(`
       @media screen and (min-width: 480px) {
-        body {
-          display: block;
-        }
       }
     `);
 
-    expect(stylesheet.getRuleSets().length).toBe(1);
-    const rule: Media = <Media>stylesheet.getRuleSets()[0];
-    expect(rule.getMediaType()).toBe("screen");
-    expect(rule.isRecognisedMediaType()).toBeTruthy();
-    expect(rule.isDeprecatedMediaType()).toBeFalsy();
+     expect(stylesheet.getRuleSets().length).toBe(1);
+     const rule: Media = <Media>stylesheet.getRuleSets()[0];
+     expect(rule.getMediaQuery()).toBe("screen and (min-width: 480px)");
   });
 
 
 
 });
+
+

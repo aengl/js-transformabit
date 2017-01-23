@@ -95,22 +95,8 @@ export class Media {
     this.mediaObj = obj;
   }
 
-  getMediaType(): string {
-    return this.mediaObj.media.substr(0, this.mediaObj.media.indexOf(" "));
-  }
-
-  isRecognisedMediaType(): boolean {
-    const mediaType = this.getMediaType();
-    return mediaTypes.filter(mt => mt.name === mediaType).length !== 0;
-  }
-
-  isDeprecatedMediaType(): boolean {
-    const mediaType = this.getMediaType();
-    const mt = mediaTypes.filter(mt => mt.name === mediaType);
-    if (mt.length === 0) {
-      return undefined;
-    }
-    return mt[0].deprecated;
+  getMediaQuery(): string {
+    return this.mediaObj.media;
   }
 }
 
