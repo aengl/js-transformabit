@@ -1,7 +1,7 @@
 import { css } from '../../deps/bundle';
 
 export type RuleSet = Rule | AtRule;
-export type AtRule = Media;
+export type AtRule = Media | KeyFrames;
 
 export class StyleSheet {
 
@@ -17,7 +17,9 @@ export class StyleSheet {
         rules.push(new Media(rule));
       } else if (rule.type === "rule") {
         rules.push(new Rule(rule));
-      }
+	  } else if (rule.type == "keyframes") {
+		  rules.push(new KeyFrames(rule));
+	  }
     }
     return rules;
   }
@@ -98,6 +100,36 @@ export class Media {
   getMediaQuery(): string {
     return this.mediaObj.media;
   }
+}
+
+export class KeyFrames {
+	private keyframesObj: any;
+	constructor(obj: any) {
+		this.keyframesObj = obj;
+	}
+
+	getName(): string {
+		return this.keyframesObj.name;
+	}
+
+	getKeyFrames(): KeyFrame[] {
+		return this.keyframesObj.keyframes.map(kf => new KeyFrame(kf));
+	}
+}
+
+export class KeyFrame {
+	private keyframeObj: any;
+	constructor(obj: any) {
+		this.keyframeObj = obj;
+	}
+
+	getValues(): string[] {
+		return this.keyframeObj.values;
+	}
+
+	getDeclarations(): Declaration[] {
+		return this.keyframeObj.declarations.map(dec => new Declaration(dec));
+	}
 }
 
 export class Declaration {

@@ -1,4 +1,5 @@
-import {StyleSheet, Declaration, Rule, Selector, Media} from './Css';
+import {StyleSheet, Declaration, Rule, Selector, Media, KeyFrames,
+			KeyFrame} from './Css';
 
 describe('Css', () => {
 
@@ -131,7 +132,68 @@ describe('Css', () => {
      expect(rule.getMediaQuery()).toBe("screen and (min-width: 480px)");
   });
 
+  it('keyframes name', () => {
+	 const stylesheet = new StyleSheet(`
+		@keyframes foobar {
+		}
+	 `);
+	  expect(stylesheet.getRuleSets().length).toBe(1);
+	  const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	  expect(rule.getName()).toBe("foobar");
+  });
 
+  it('keyframes values', () => {
+	 const stylesheet = new StyleSheet(`
+		@keyframes foobar {
+			from {top: 1px;}
+		}
+	 `);
+	  expect(stylesheet.getRuleSets().length).toBe(1);
+	  const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	  expect(rule.getKeyFrames().length).toBe(1);
+	  const keyframe = rule.getKeyFrames()[0];
+	  expect(keyframe.getValues().length).toBe(1);
+	  expect(keyframe.getValues()[0]).toBe("from");
+  });
+
+  it('keyframes multiple values', () => {
+	 const stylesheet = new StyleSheet(`
+		@keyframes foobar {
+			from, foo bar {top: 1px;}
+		}
+	 `);
+	  expect(stylesheet.getRuleSets().length).toBe(1);
+	  const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	  expect(rule.getKeyFrames().length).toBe(1);
+	  const keyframe = rule.getKeyFrames()[0];
+	  expect(keyframe.getValues().length).toBe(3);
+	  expect(keyframe.getValues()[0]).toBe("from");
+	  expect(keyframe.getValues()[1]).toBe("foo");
+	  expect(keyframe.getValues()[2]).toBe("bar");
+  });
+
+  it('keyframes declarations', () => {
+  const stylesheet = new StyleSheet(`
+	 @keyframes foobar {
+		 from {top: 1px;}
+		 to {top: 200px; bottom: 210px;}
+	 }
+  `);
+	expect(stylesheet.getRuleSets().length).toBe(1);
+	const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	expect(rule.getKeyFrames().length).toBe(2);
+	let keyframe = rule.getKeyFrames()[0];
+	expect(keyframe.getDeclarations().length).toBe(1);
+	expect(keyframe.getDeclarations()[0].getProperty()).toBe("top");
+	expect(keyframe.getDeclarations()[0].getValue()).toBe("1px");
+
+	keyframe = rule.getKeyFrames()[1];
+	expect(keyframe.getDeclarations().length).toBe(2);
+	expect(keyframe.getDeclarations()[0].getProperty()).toBe("top");
+	expect(keyframe.getDeclarations()[0].getValue()).toBe("200px");
+	expect(keyframe.getDeclarations()[1].getProperty()).toBe("bottom");
+	expect(keyframe.getDeclarations()[1].getValue()).toBe("210px");
+  });
 
 });
 
