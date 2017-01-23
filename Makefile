@@ -1,12 +1,11 @@
-build:
-	npm run build
+install: clean
+	yarn install
 
-setup:
-	npm install
-	npm install -g typescript@2.1.5
+build:
+	yarn run build
 
 clean:
 	rm -rf dist
 
 test: clean build
-	npm test
+	yarn test
