@@ -205,7 +205,8 @@ describe('Css', () => {
 	  const keyframe = rule.getKeyFrames()[0];
 	  expect(keyframe.getDeclaration(0).getProperty()).toBe("top");
 	  expect(keyframe.getDeclaration("top").getValue()).toBe("200px");
-
+	  expect(keyframe.hasDeclaration("top")).toBeTruthy();
+	  expect(keyframe.hasDeclaration("nukk")).toBeFalsy();
   });
 
   it('keyframes keyframe', () => {
@@ -217,6 +218,19 @@ describe('Css', () => {
 	const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
 	const keyframe = rule.getKeyFrame(0);
 	expect(keyframe.getValues()[0]).toBe("to");
+  });
+
+  it('keyframe add or create declaration', () => {
+	  const stylesheet = new StyleSheet(`
+		  @keyframes foobar {
+			  to {top: 200px;}
+		  }
+	  `);
+	  const rule: KeyFrames = <KeyFrames>stylesheet.getRuleSets()[0];
+	  const keyframe = rule.getKeyFrame(0);
+	  expect(keyframe.addOrCreateDeclaration("bottom", "210px").getValue()).toBe("210px");
+	  expect(keyframe.addOrCreateDeclaration("bottom", "210px").getValue()).toBe("210px");
+	  expect(stylesheet.toSlimString()).toBe("@keyframes foobar {to {top: 200px;bottom: 210px;}}");
   });
 
 });

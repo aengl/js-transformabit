@@ -146,6 +146,23 @@ export class KeyFrame {
 			return this.getDeclarations()[via];
 		}
 	}
+
+	addDeclaration(declaration: Declaration) {
+		this.keyframeObj.declarations.push(declaration.object);
+	}
+
+	hasDeclaration(property: string): boolean {
+		return this.getDeclarations().filter(p => p.getProperty() == property).length !== 0;
+	}
+
+	addOrCreateDeclaration(property: string, defaultValue: string): Declaration {
+		if (this.hasDeclaration(property)) {
+			return this.getDeclaration(property);
+		}
+		let dec = Declaration.custom(property, defaultValue);
+		this.addDeclaration(dec);
+		return dec;
+	}
 }
 
 export class Declaration {
