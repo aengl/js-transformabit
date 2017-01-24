@@ -131,6 +131,10 @@ export class KeyFrame {
 		return this.keyframeObj.values;
 	}
 
+	getValue(index: number): string {
+		return this.getValues()[index];
+	}
+
 	getDeclarations(): Declaration[] {
 		return this.keyframeObj.declarations.map(dec => new Declaration(dec));
 	}
