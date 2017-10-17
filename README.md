@@ -2,6 +2,8 @@
 
 # js-transformabit
 
+A code transformation library that we did for Atomist. Defunct, can be removed.
+
 ## Building
 
 Run `npm run build` or `npm run build-watch` or `tsc`.
